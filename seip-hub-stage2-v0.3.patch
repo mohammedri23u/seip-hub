@@ -1,0 +1,1002 @@
+diff --git a/.gitignore b/.gitignore
+index 34c925f..dd712b2 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -10,3 +10,6 @@ out
+ coverage
+ __pycache__
+ .venv
++
++# TypeScript incremental cache
++*.tsbuildinfo
+diff --git a/README.md b/README.md
+index d191243..dea647d 100644
+--- a/README.md
++++ b/README.md
+@@ -2,17 +2,21 @@
+ 
+ SEIP Hub is the governed digital layer for program management, live learning, assessment, human-supervised AI-assisted grading, and analytics.
+ 
+-## Foundation status
++## Current status — Stage 2
+ 
+-This repository currently contains the first secure foundation slice:
++The repository now contains the first working program-management vertical slice:
+ 
+-- Next.js 16 App Router
+-- TypeScript
+-- Tailwind CSS
++- Next.js 16 App Router + TypeScript + Tailwind CSS
+ - Supabase SSR authentication using publishable keys
+-- Program/cohort/session data model
+ - RLS-first authorization
+-- Login and protected dashboard skeleton
++- Role-aware dashboard backed by live Supabase data
++- Platform-admin program creation
++- Program Director cohort creation
++- Cohort session creation with generated join codes
++- Session detail with attendance/facilitator/learning-objective metrics
++- Foundation database migrations for programs, cohorts, groups, sessions, learning objectives, attendance, and audit events
++
++The next vertical slice will add learner/educator roster management and learning-objective authoring/mapping before Realtime live-session interaction.
+ 
+ ## Local setup
+ 
+@@ -22,10 +26,14 @@ npm install
+ npm run dev
+ ```
+ 
+-The app requires a dedicated Supabase project and the foundation migration before authenticated screens can return data.
++The app requires the dedicated SEIP Hub Supabase project and the foundation migrations before authenticated screens can return data.
++
++## First administrator
++
++There is intentionally no browser route that can promote a user to platform administrator. Follow `docs/STAGE2_BOOTSTRAP.md` once to create the first Auth user and promote that user through the Supabase SQL editor.
+ 
+ ## Security
+ 
+ Do not put a Supabase secret/service key in any `NEXT_PUBLIC_` environment variable. The browser uses only the publishable key and database access is governed by RLS.
+ 
+-See `docs/ARCHITECTURE.md` and `docs/BOOTSTRAP.md`.
++See `docs/ARCHITECTURE.md`, `docs/BOOTSTRAP.md`, and `docs/STAGE2.md`.
+diff --git a/docs/STAGE2.md b/docs/STAGE2.md
+new file mode 100644
+index 0000000..42cbc94
+--- /dev/null
++++ b/docs/STAGE2.md
+@@ -0,0 +1,20 @@
++# Stage 2 — Program / Cohort / Session vertical slice
++
++Implemented:
++
++- Role-aware dashboard with real Supabase data
++- Platform-admin program creation
++- Automatic program-director membership for the creator
++- Program detail with cohort metrics and cohort creation
++- Cohort detail with learner/session metrics and session creation
++- Session detail with join code, attendance count, facilitators, and mapped learning objectives
++- All reads and writes use the authenticated Supabase SSR client and continue to rely on database RLS
++
++Deferred to the next vertical slices:
++
++- Learner and educator roster management UI
++- Learning objective authoring/mapping UI
++- Realtime session join / polls / responses
++- Assessment engine
++- AI-assisted grading
++- Python analytics service
+diff --git a/docs/STAGE2_BOOTSTRAP.md b/docs/STAGE2_BOOTSTRAP.md
+new file mode 100644
+index 0000000..81792e4
+--- /dev/null
++++ b/docs/STAGE2_BOOTSTRAP.md
+@@ -0,0 +1,29 @@
++# Stage 2 bootstrap
++
++The application deliberately has no public signup route yet. Bootstrap the first administrator once through the Supabase Dashboard.
++
++## 1. Create the first Auth user
++
++In Supabase Dashboard → Authentication → Users, create a user with email/password.
++
++The `on_auth_user_created` trigger creates the matching row in `public.profiles` automatically.
++
++## 2. Promote the user to platform administrator
++
++Copy the user's UUID from Authentication → Users, then run this in the SQL editor:
++
++```sql
++insert into public.platform_admins (user_id)
++values ('PASTE_AUTH_USER_UUID_HERE')
++on conflict (user_id) do nothing;
++```
++
++## 3. Sign in locally
++
++Open `/login`, sign in with that account, then use **Create program** from the dashboard.
++
++Creating a program also creates an active `program_director` membership for the administrator who created it.
++
++## Security note
++
++The bootstrap SQL is a one-time administrative action. There is intentionally no browser-side route that can promote a user to `platform_admin`.
+diff --git a/src/app/dashboard/page.tsx b/src/app/dashboard/page.tsx
+index bed7758..386cc70 100644
+--- a/src/app/dashboard/page.tsx
++++ b/src/app/dashboard/page.tsx
+@@ -1,84 +1,106 @@
+-import { redirect } from 'next/navigation'
+-import { createClient } from '@/lib/supabase/server'
++import Link from 'next/link'
++import { AppShell } from '@/components/app-shell'
++import { MetricCard } from '@/components/metric-card'
++import { StatusBadge } from '@/components/status-badge'
++import { requireUser } from '@/lib/auth/require-user'
+ 
+-export default async function DashboardPage() {
+-  const supabase = await createClient()
+-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims()
++type Program = { id: string; name: string; code: string; status: string }
++type ProgramRelation = Program | Program[] | null
++type MembershipRow = { role: string; programs: ProgramRelation }
++type CohortIdRow = { id: string }
+ 
+-  if (claimsError || !claimsData?.claims?.sub) redirect('/login')
++function readProgram(program: ProgramRelation) {
++  if (Array.isArray(program)) return program[0] ?? null
++  return program
++}
+ 
+-  const userId = claimsData.claims.sub
+-  const [{ data: profile }, { data: memberships }] = await Promise.all([
++export default async function DashboardPage() {
++  const { supabase, userId } = await requireUser()
++
++  const [{ data: profile }, { data: memberships }, { data: platformAdmin }] = await Promise.all([
+     supabase.from('profiles').select('full_name, status').eq('id', userId).maybeSingle(),
+     supabase
+       .from('program_memberships')
+       .select('role, programs(id, name, code, status)')
+       .eq('user_id', userId)
+       .eq('status', 'active'),
++    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
+   ])
+ 
+-  return (
+-    <main className="min-h-screen bg-slate-100 px-6 py-10 text-slate-950">
+-      <div className="mx-auto max-w-6xl">
+-        <header className="flex items-start justify-between gap-5">
+-          <div>
+-            <p className="text-sm font-semibold tracking-[0.18em] text-sky-700">SEIP HUB</p>
+-            <h1 className="mt-2 text-4xl font-semibold">Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}</h1>
+-            <p className="mt-2 text-slate-600">Foundation dashboard — role-aware program access.</p>
+-          </div>
+-          <form action="/auth/signout" method="post">
+-            <button className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium">Sign out</button>
+-          </form>
+-        </header>
++  const membershipRows = (memberships ?? []) as MembershipRow[]
++  const programs = membershipRows
++    .map((membership: MembershipRow) => ({ role: membership.role, program: readProgram(membership.programs) }))
++    .filter((entry): entry is { role: string; program: { id: string; name: string; code: string; status: string } } => Boolean(entry.program))
+ 
+-        <section className="mt-10 grid gap-4 md:grid-cols-3">
+-          <Metric label="Active programs" value={memberships?.length ?? 0} />
+-          <Metric label="Account status" value={profile?.status ?? 'pending'} />
+-          <Metric label="Foundation" value="v0.1" />
+-        </section>
++  const programIds = programs.map((entry) => entry.program.id)
++  let cohortCount = 0
++  let upcomingSessionCount = 0
+ 
+-        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6">
+-          <h2 className="text-xl font-semibold">Your program access</h2>
+-          <div className="mt-5 space-y-3">
+-            {memberships?.length ? (
+-              memberships.map((membership, index) => (
+-                <div key={index} className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4">
+-                  <div>
+-                    <p className="font-medium">{readProgramName(membership.programs)}</p>
+-                    <p className="text-sm text-slate-500">{readProgramCode(membership.programs)}</p>
+-                  </div>
+-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+-                    {membership.role.replaceAll('_', ' ')}
+-                  </span>
+-                </div>
+-              ))
+-            ) : (
+-              <p className="text-slate-500">No active program membership yet.</p>
+-            )}
+-          </div>
+-        </section>
+-      </div>
+-    </main>
+-  )
+-}
++  if (programIds.length) {
++    const { data: cohorts } = await supabase.from('cohorts').select('id').in('program_id', programIds)
++    cohortCount = cohorts?.length ?? 0
++
++    const cohortIds = ((cohorts ?? []) as CohortIdRow[]).map((cohort: CohortIdRow) => cohort.id)
++    if (cohortIds.length) {
++      const { count } = await supabase
++        .from('sessions')
++        .select('id', { count: 'exact', head: true })
++        .in('cohort_id', cohortIds)
++        .in('status', ['scheduled', 'live'])
++      upcomingSessionCount = count ?? 0
++    }
++  }
+ 
+-function Metric({ label, value }: { label: string; value: string | number }) {
+   return (
+-    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+-      <p className="text-sm text-slate-500">{label}</p>
+-      <p className="mt-2 text-2xl font-semibold capitalize">{value}</p>
+-    </div>
+-  )
+-}
++    <AppShell
++      title={`Welcome${profile?.full_name ? `, ${profile.full_name}` : ''}`}
++      actions={platformAdmin ? (
++        <Link href="/programs/new" className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
++          Create program
++        </Link>
++      ) : null}
++    >
++      <section className="grid gap-4 md:grid-cols-4">
++        <MetricCard label="Active programs" value={programs.length} />
++        <MetricCard label="Cohorts" value={cohortCount} />
++        <MetricCard label="Upcoming / live sessions" value={upcomingSessionCount} />
++        <MetricCard label="Account status" value={profile?.status ?? 'pending'} />
++      </section>
+ 
+-function readProgramName(program: unknown): string {
+-  if (Array.isArray(program)) return String(program[0]?.name ?? 'Program')
+-  if (program && typeof program === 'object' && 'name' in program) return String((program as { name?: unknown }).name ?? 'Program')
+-  return 'Program'
+-}
++      <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++        <div className="flex items-center justify-between gap-4">
++          <div>
++            <h2 className="text-xl font-semibold">Your programs</h2>
++            <p className="mt-1 text-sm text-slate-500">Program access is enforced by Supabase Row Level Security.</p>
++          </div>
++        </div>
+ 
+-function readProgramCode(program: unknown): string {
+-  if (Array.isArray(program)) return String(program[0]?.code ?? '')
+-  if (program && typeof program === 'object' && 'code' in program) return String((program as { code?: unknown }).code ?? '')
+-  return ''
++        <div className="mt-5 grid gap-4 lg:grid-cols-2">
++          {programs.length ? programs.map(({ program, role }) => (
++            <Link
++              key={`${program.id}-${role}`}
++              href={`/programs/${program.id}`}
++              className="group rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50"
++            >
++              <div className="flex items-start justify-between gap-4">
++                <div>
++                  <p className="text-lg font-semibold group-hover:text-sky-700">{program.name}</p>
++                  <p className="mt-1 text-sm text-slate-500">{program.code}</p>
++                </div>
++                <StatusBadge status={program.status} />
++              </div>
++              <div className="mt-5 flex items-center justify-between text-sm">
++                <span className="font-medium capitalize text-slate-600">{role.replaceAll('_', ' ')}</span>
++                <span className="text-sky-700">Open program →</span>
++              </div>
++            </Link>
++          )) : (
++            <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:col-span-2">
++              No active program membership yet.
++            </div>
++          )}
++        </div>
++      </section>
++    </AppShell>
++  )
+ }
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 6fe50a7..d15b70e 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -4,9 +4,30 @@
+   color-scheme: light;
+ }
+ 
++* {
++  box-sizing: border-box;
++}
++
++html {
++  background: #f1f5f9;
++}
++
+ body {
+   margin: 0;
+-  background: #f7f8fb;
+-  color: #111827;
++  background: #f1f5f9;
++  color: #0f172a;
+   font-family: Arial, Helvetica, sans-serif;
++  -webkit-font-smoothing: antialiased;
++}
++
++button,
++input,
++textarea,
++select {
++  font: inherit;
++}
++
++button,
++a {
++  -webkit-tap-highlight-color: transparent;
+ }
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 3253014..fd63de9 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,4 +1,5 @@
+ import type { Metadata } from 'next'
++import type { ReactNode } from 'react'
+ import './globals.css'
+ 
+ export const metadata: Metadata = {
+@@ -6,7 +7,7 @@ export const metadata: Metadata = {
+   description: 'Learning, assessment, and analytics for SEIP',
+ }
+ 
+-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
++export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+   return (
+     <html lang="en">
+       <body>{children}</body>
+diff --git a/src/app/programs/[programId]/actions.ts b/src/app/programs/[programId]/actions.ts
+new file mode 100644
+index 0000000..5cb3529
+--- /dev/null
++++ b/src/app/programs/[programId]/actions.ts
+@@ -0,0 +1,32 @@
++'use server'
++
++import { revalidatePath } from 'next/cache'
++import { redirect } from 'next/navigation'
++import { requireUser } from '@/lib/auth/require-user'
++
++export async function createCohort(programId: string, formData: FormData) {
++  const name = String(formData.get('name') ?? '').trim()
++  const startDate = String(formData.get('start_date') ?? '').trim()
++  const endDate = String(formData.get('end_date') ?? '').trim()
++
++  if (!name) redirect(`/programs/${programId}?error=missing_cohort_name`)
++
++  const { supabase, userId } = await requireUser()
++  const { data: cohort, error } = await supabase
++    .from('cohorts')
++    .insert({
++      program_id: programId,
++      name,
++      start_date: startDate || null,
++      end_date: endDate || null,
++      status: 'active',
++      created_by: userId,
++    })
++    .select('id')
++    .single()
++
++  if (error || !cohort) redirect(`/programs/${programId}?error=create_cohort_failed`)
++
++  revalidatePath(`/programs/${programId}`)
++  redirect(`/programs/${programId}/cohorts/${cohort.id}`)
++}
+diff --git a/src/app/programs/[programId]/cohorts/[cohortId]/actions.ts b/src/app/programs/[programId]/cohorts/[cohortId]/actions.ts
+new file mode 100644
+index 0000000..45013ad
+--- /dev/null
++++ b/src/app/programs/[programId]/cohorts/[cohortId]/actions.ts
+@@ -0,0 +1,39 @@
++'use server'
++
++import { revalidatePath } from 'next/cache'
++import { redirect } from 'next/navigation'
++import { requireUser } from '@/lib/auth/require-user'
++
++export async function createSession(programId: string, cohortId: string, formData: FormData) {
++  const title = String(formData.get('title') ?? '').trim()
++  const scheduledAt = String(formData.get('scheduled_at') ?? '').trim()
++  const durationRaw = String(formData.get('duration_minutes') ?? '').trim()
++  const durationMinutes = durationRaw ? Number(durationRaw) : null
++
++  if (!title) redirect(`/programs/${programId}/cohorts/${cohortId}?error=missing_session_title`)
++  if (durationMinutes !== null && (!Number.isInteger(durationMinutes) || durationMinutes <= 0)) {
++    redirect(`/programs/${programId}/cohorts/${cohortId}?error=invalid_duration`)
++  }
++
++  const { supabase, userId } = await requireUser()
++  const joinCode = `SEIP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
++
++  const { data: session, error } = await supabase
++    .from('sessions')
++    .insert({
++      cohort_id: cohortId,
++      title,
++      scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
++      duration_minutes: durationMinutes,
++      status: scheduledAt ? 'scheduled' : 'draft',
++      join_code: joinCode,
++      created_by: userId,
++    })
++    .select('id')
++    .single()
++
++  if (error || !session) redirect(`/programs/${programId}/cohorts/${cohortId}?error=create_session_failed`)
++
++  revalidatePath(`/programs/${programId}/cohorts/${cohortId}`)
++  redirect(`/sessions/${session.id}`)
++}
+diff --git a/src/app/programs/[programId]/cohorts/[cohortId]/page.tsx b/src/app/programs/[programId]/cohorts/[cohortId]/page.tsx
+new file mode 100644
+index 0000000..aa83869
+--- /dev/null
++++ b/src/app/programs/[programId]/cohorts/[cohortId]/page.tsx
+@@ -0,0 +1,91 @@
++import Link from 'next/link'
++import { notFound } from 'next/navigation'
++import { AppShell } from '@/components/app-shell'
++import { MetricCard } from '@/components/metric-card'
++import { StatusBadge } from '@/components/status-badge'
++import { requireUser } from '@/lib/auth/require-user'
++import { createSession } from './actions'
++
++export default async function CohortPage({
++  params,
++  searchParams,
++}: {
++  params: Promise<{ programId: string; cohortId: string }>
++  searchParams: Promise<{ error?: string }>
++}) {
++  const { programId, cohortId } = await params
++  const query = await searchParams
++  const { supabase, userId } = await requireUser()
++
++  const [{ data: cohort }, { data: program }, { data: membership }, { data: platformAdmin }, { data: sessions }, { count: learnerCount }] = await Promise.all([
++    supabase.from('cohorts').select('id, name, start_date, end_date, status, program_id').eq('id', cohortId).eq('program_id', programId).maybeSingle(),
++    supabase.from('programs').select('name, code').eq('id', programId).maybeSingle(),
++    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
++    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
++    supabase.from('sessions').select('id, title, scheduled_at, duration_minutes, status, join_code').eq('cohort_id', cohortId).order('scheduled_at', { ascending: true, nullsFirst: false }),
++    supabase.from('cohort_memberships').select('id', { count: 'exact', head: true }).eq('cohort_id', cohortId).eq('member_type', 'learner').eq('status', 'active'),
++  ])
++
++  if (!cohort || !program) notFound()
++  const canManage = membership?.role === 'program_director' || Boolean(platformAdmin)
++  const sessionRows = (sessions ?? []) as Array<{ id: string; title: string; scheduled_at: string | null; duration_minutes: number | null; status: string; join_code: string | null }>
++  const liveOrScheduled = sessionRows.filter((session) => session.status === 'live' || session.status === 'scheduled').length
++
++  return (
++    <AppShell
++      eyebrow={`${program.code} · COHORT`}
++      title={cohort.name}
++      actions={<Link href={`/programs/${programId}`} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to program</Link>}
++    >
++      <section className="grid gap-4 md:grid-cols-3">
++        <MetricCard label="Learners" value={learnerCount ?? 0} />
++        <MetricCard label="Sessions" value={sessionRows.length} />
++        <MetricCard label="Upcoming / live" value={liveOrScheduled} />
++      </section>
++
++      <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <div className="flex items-center justify-between gap-4">
++            <div><h2 className="text-xl font-semibold">Sessions</h2><p className="mt-1 text-sm text-slate-500">Teaching schedule for this cohort.</p></div>
++            <StatusBadge status={cohort.status} />
++          </div>
++          <div className="mt-5 space-y-3">
++            {sessionRows.length ? sessionRows.map((session) => (
++              <Link key={session.id} href={`/sessions/${session.id}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 px-4 py-4 hover:bg-slate-50">
++                <div>
++                  <p className="font-semibold">{session.title}</p>
++                  <p className="mt-1 text-sm text-slate-500">{formatDateTime(session.scheduled_at)}{session.duration_minutes ? ` · ${session.duration_minutes} min` : ''}</p>
++                </div>
++                <StatusBadge status={session.status} />
++              </Link>
++            )) : <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No sessions yet.</p>}
++          </div>
++        </div>
++
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <h2 className="text-xl font-semibold">Create session</h2>
++          <p className="mt-1 text-sm text-slate-500">A unique join code is generated automatically.</p>
++          {query.error ? <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">Session creation failed.</p> : null}
++
++          {canManage ? (
++            <form action={createSession.bind(null, programId, cohortId)} className="mt-5 space-y-4">
++              <Input label="Session title" name="title" placeholder="Clinical Reasoning 01" />
++              <Input label="Scheduled time" name="scheduled_at" type="datetime-local" />
++              <Input label="Duration (minutes)" name="duration_minutes" type="number" placeholder="60" />
++              <button className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Create session</button>
++            </form>
++          ) : <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">Your role does not allow session creation.</div>}
++        </div>
++      </section>
++    </AppShell>
++  )
++}
++
++function Input({ label, name, placeholder, type = 'text' }: { label: string; name: string; placeholder?: string; type?: string }) {
++  return <label className="block"><span className="text-sm font-medium text-slate-700">{label}</span><input name={name} type={type} placeholder={placeholder} required={name === 'title'} min={type === 'number' ? 1 : undefined} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" /></label>
++}
++
++function formatDateTime(value: string | null) {
++  if (!value) return 'Not scheduled'
++  return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
++}
+diff --git a/src/app/programs/[programId]/page.tsx b/src/app/programs/[programId]/page.tsx
+new file mode 100644
+index 0000000..7d9e2aa
+--- /dev/null
++++ b/src/app/programs/[programId]/page.tsx
+@@ -0,0 +1,106 @@
++import Link from 'next/link'
++import { notFound } from 'next/navigation'
++import { AppShell } from '@/components/app-shell'
++import { MetricCard } from '@/components/metric-card'
++import { StatusBadge } from '@/components/status-badge'
++import { requireUser } from '@/lib/auth/require-user'
++import { createCohort } from './actions'
++
++export default async function ProgramPage({
++  params,
++  searchParams,
++}: {
++  params: Promise<{ programId: string }>
++  searchParams: Promise<{ error?: string }>
++}) {
++  const { programId } = await params
++  const query = await searchParams
++  const { supabase, userId } = await requireUser()
++
++  const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: cohorts }, { count: loCount }] = await Promise.all([
++    supabase.from('programs').select('id, name, code, description, status').eq('id', programId).maybeSingle(),
++    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
++    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
++    supabase.from('cohorts').select('id, name, start_date, end_date, status').eq('program_id', programId).order('start_date', { ascending: false }),
++    supabase.from('learning_objectives').select('id', { count: 'exact', head: true }).eq('program_id', programId).eq('status', 'active'),
++  ])
++
++  if (!program) notFound()
++
++  const canManage = membership?.role === 'program_director' || Boolean(platformAdmin)
++  const cohortRows = (cohorts ?? []) as Array<{ id: string; name: string; start_date: string | null; end_date: string | null; status: string }>
++  const cohortIds = cohortRows.map((cohort) => cohort.id)
++  let sessionCount = 0
++  if (cohortIds.length) {
++    const { count } = await supabase.from('sessions').select('id', { count: 'exact', head: true }).in('cohort_id', cohortIds)
++    sessionCount = count ?? 0
++  }
++
++  return (
++    <AppShell
++      eyebrow={`${program.code} · PROGRAM`}
++      title={program.name}
++      actions={<Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>}
++    >
++      {program.description ? <p className="mb-7 max-w-3xl text-slate-600">{program.description}</p> : null}
++
++      <section className="grid gap-4 md:grid-cols-3">
++        <MetricCard label="Cohorts" value={cohortRows.length} />
++        <MetricCard label="Sessions" value={sessionCount} />
++        <MetricCard label="Active learning objectives" value={loCount ?? 0} />
++      </section>
++
++      <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <div className="flex items-center justify-between gap-4">
++            <div>
++              <h2 className="text-xl font-semibold">Cohorts</h2>
++              <p className="mt-1 text-sm text-slate-500">Each cohort owns its groups, sessions, and learner roster.</p>
++            </div>
++            <StatusBadge status={program.status} />
++          </div>
++
++          <div className="mt-5 space-y-3">
++            {cohortRows.length ? cohortRows.map((cohort) => (
++              <Link key={cohort.id} href={`/programs/${programId}/cohorts/${cohort.id}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 px-4 py-4 hover:bg-slate-50">
++                <div>
++                  <p className="font-semibold">{cohort.name}</p>
++                  <p className="mt-1 text-sm text-slate-500">{formatDateRange(cohort.start_date, cohort.end_date)}</p>
++                </div>
++                <StatusBadge status={cohort.status} />
++              </Link>
++            )) : <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No cohorts yet.</p>}
++          </div>
++        </div>
++
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <h2 className="text-xl font-semibold">Create cohort</h2>
++          <p className="mt-1 text-sm text-slate-500">Program Director only.</p>
++          {query.error ? <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">Cohort creation failed.</p> : null}
++
++          {canManage ? (
++            <form action={createCohort.bind(null, programId)} className="mt-5 space-y-4">
++              <Input label="Cohort name" name="name" placeholder="SEIP 2026-A" />
++              <Input label="Start date" name="start_date" type="date" />
++              <Input label="End date" name="end_date" type="date" />
++              <button className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Create cohort</button>
++            </form>
++          ) : (
++            <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">Your role does not allow cohort management.</div>
++          )}
++        </div>
++      </section>
++    </AppShell>
++  )
++}
++
++function Input({ label, name, placeholder, type = 'text' }: { label: string; name: string; placeholder?: string; type?: string }) {
++  return <label className="block"><span className="text-sm font-medium text-slate-700">{label}</span><input name={name} type={type} placeholder={placeholder} required={name === 'name'} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" /></label>
++}
++
++function formatDateRange(start: string | null, end: string | null) {
++  if (!start && !end) return 'Dates not set'
++  if (start && !end) return `Starts ${start}`
++  if (!start && end) return `Ends ${end}`
++  return `${start} → ${end}`
++}
+diff --git a/src/app/programs/new/actions.ts b/src/app/programs/new/actions.ts
+new file mode 100644
+index 0000000..8cbafc6
+--- /dev/null
++++ b/src/app/programs/new/actions.ts
+@@ -0,0 +1,38 @@
++'use server'
++
++import { revalidatePath } from 'next/cache'
++import { redirect } from 'next/navigation'
++import { requireUser } from '@/lib/auth/require-user'
++
++export async function createProgram(formData: FormData) {
++  const name = String(formData.get('name') ?? '').trim()
++  const code = String(formData.get('code') ?? '').trim().toUpperCase()
++  const description = String(formData.get('description') ?? '').trim()
++
++  if (!name || !code) redirect('/programs/new?error=missing_fields')
++  if (!/^[A-Z0-9_-]{2,20}$/.test(code)) redirect('/programs/new?error=invalid_code')
++
++  const { supabase, userId } = await requireUser()
++  const { data: admin } = await supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle()
++  if (!admin) redirect('/dashboard')
++
++  const { data: program, error } = await supabase
++    .from('programs')
++    .insert({ name, code, description: description || null, status: 'active', created_by: userId })
++    .select('id')
++    .single()
++
++  if (error || !program) redirect('/programs/new?error=create_failed')
++
++  const { error: membershipError } = await supabase.from('program_memberships').insert({
++    program_id: program.id,
++    user_id: userId,
++    role: 'program_director',
++    status: 'active',
++  })
++
++  if (membershipError) redirect('/programs/new?error=membership_failed')
++
++  revalidatePath('/dashboard')
++  redirect(`/programs/${program.id}`)
++}
+diff --git a/src/app/programs/new/page.tsx b/src/app/programs/new/page.tsx
+new file mode 100644
+index 0000000..8632039
+--- /dev/null
++++ b/src/app/programs/new/page.tsx
+@@ -0,0 +1,50 @@
++import Link from 'next/link'
++import { AppShell } from '@/components/app-shell'
++import { requireUser } from '@/lib/auth/require-user'
++import { createProgram } from './actions'
++
++export default async function NewProgramPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
++  const { supabase, userId } = await requireUser()
++  const params = await searchParams
++  const { data: admin } = await supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle()
++
++  if (!admin) {
++    return (
++      <AppShell title="Create program">
++        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
++          Only platform administrators can create programs.
++        </div>
++      </AppShell>
++    )
++  }
++
++  return (
++    <AppShell
++      title="Create program"
++      actions={<Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Cancel</Link>}
++    >
++      <section className="max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
++        {params.error ? <p className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">Unable to create the program. Check the fields and try again.</p> : null}
++        <form action={createProgram} className="space-y-5">
++          <Field label="Program name" name="name" placeholder="Student Education Improvement Program" />
++          <Field label="Program code" name="code" placeholder="SEIP" helper="2–20 letters, numbers, underscores, or hyphens." />
++          <label className="block">
++            <span className="text-sm font-medium text-slate-700">Description</span>
++            <textarea name="description" rows={5} className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
++          </label>
++          <button className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Create program</button>
++        </form>
++      </section>
++    </AppShell>
++  )
++}
++
++function Field({ label, name, placeholder, helper }: { label: string; name: string; placeholder?: string; helper?: string }) {
++  return (
++    <label className="block">
++      <span className="text-sm font-medium text-slate-700">{label}</span>
++      <input name={name} placeholder={placeholder} required className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100" />
++      {helper ? <span className="mt-1 block text-xs text-slate-500">{helper}</span> : null}
++    </label>
++  )
++}
+diff --git a/src/app/sessions/[sessionId]/page.tsx b/src/app/sessions/[sessionId]/page.tsx
+new file mode 100644
+index 0000000..e65dd29
+--- /dev/null
++++ b/src/app/sessions/[sessionId]/page.tsx
+@@ -0,0 +1,105 @@
++import Link from 'next/link'
++import { notFound } from 'next/navigation'
++import { AppShell } from '@/components/app-shell'
++import { MetricCard } from '@/components/metric-card'
++import { StatusBadge } from '@/components/status-badge'
++import { requireUser } from '@/lib/auth/require-user'
++
++type ObjectiveRelation = { code?: string; title?: string; domain?: string | null } | Array<{ code?: string; title?: string; domain?: string | null }> | null
++
++type ObjectiveMapRow = {
++  weight: number | null
++  learning_objectives: ObjectiveRelation
++}
++
++export default async function SessionPage({ params }: { params: Promise<{ sessionId: string }> }) {
++  const { sessionId } = await params
++  const { supabase, userId } = await requireUser()
++
++  const { data: session } = await supabase
++    .from('sessions')
++    .select('id, cohort_id, title, description, scheduled_at, duration_minutes, status, join_code')
++    .eq('id', sessionId)
++    .maybeSingle()
++
++  if (!session) notFound()
++
++  const { data: cohort } = await supabase.from('cohorts').select('id, name, program_id').eq('id', session.cohort_id).maybeSingle()
++  if (!cohort) notFound()
++
++  const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: ownFacilitator }, { data: facilitators }, { data: objectives }] = await Promise.all([
++    supabase.from('programs').select('name, code').eq('id', cohort.program_id).maybeSingle(),
++    supabase.from('program_memberships').select('role').eq('program_id', cohort.program_id).eq('user_id', userId).eq('status', 'active').maybeSingle(),
++    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
++    supabase.from('session_facilitators').select('user_id').eq('session_id', sessionId).eq('user_id', userId).maybeSingle(),
++    supabase.from('session_facilitators').select('user_id, facilitator_role').eq('session_id', sessionId),
++    supabase.from('session_learning_objectives').select('weight, learning_objectives(code, title, domain)').eq('session_id', sessionId),
++  ])
++
++  const canManageSession = Boolean(platformAdmin) || membership?.role === 'program_director' || Boolean(ownFacilitator)
++  let attendanceMetricLabel = 'My attendance'
++  let attendanceMetricValue: string | number = 'Not recorded'
++
++  if (canManageSession) {
++    const { count } = await supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('session_id', sessionId).in('status', ['present', 'late'])
++    attendanceMetricLabel = 'Attendance so far'
++    attendanceMetricValue = count ?? 0
++  } else {
++    const { data: ownAttendance } = await supabase.from('attendance_records').select('status').eq('session_id', sessionId).eq('learner_id', userId).maybeSingle()
++    attendanceMetricValue = ownAttendance?.status ? ownAttendance.status.replaceAll('_', ' ') : 'Not recorded'
++  }
++
++  const objectiveRows = (objectives ?? []) as ObjectiveMapRow[]
++
++  return (
++    <AppShell
++      eyebrow={`${program?.code ?? 'SEIP'} · SESSION`}
++      title={session.title}
++      actions={<Link href={`/programs/${cohort.program_id}/cohorts/${cohort.id}`} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to cohort</Link>}
++    >
++      <div className="flex flex-wrap items-center gap-3">
++        <StatusBadge status={session.status} />
++        <span className="text-sm text-slate-500">{formatDateTime(session.scheduled_at)}</span>
++        {session.duration_minutes ? <span className="text-sm text-slate-500">{session.duration_minutes} min</span> : null}
++      </div>
++
++      <section className="mt-7 grid gap-4 md:grid-cols-3">
++        <MetricCard label={attendanceMetricLabel} value={attendanceMetricValue} />
++        <MetricCard label="Facilitators" value={facilitators?.length ?? 0} />
++        <MetricCard label="Mapped learning objectives" value={objectiveRows.length} />
++      </section>
++
++      <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <h2 className="text-xl font-semibold">Live session access</h2>
++          <p className="mt-1 text-sm text-slate-500">Live interactions arrive in the next build stage.</p>
++          <div className="mt-5 rounded-2xl bg-slate-950 p-6 text-white">
++            <p className="text-xs font-semibold tracking-[0.18em] text-sky-300">JOIN CODE</p>
++            <p className="mt-2 font-mono text-3xl font-semibold tracking-wider">{session.join_code ?? 'NOT SET'}</p>
++          </div>
++        </div>
++
++        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
++          <h2 className="text-xl font-semibold">Learning objectives</h2>
++          <div className="mt-5 space-y-3">
++            {objectiveRows.length ? objectiveRows.map((item: ObjectiveMapRow, index: number) => {
++              const objective = readObjective(item.learning_objectives)
++              return <div key={index} className="rounded-2xl border border-slate-200 p-4"><p className="text-xs font-semibold tracking-wide text-sky-700">{objective?.code ?? 'LO'}</p><p className="mt-1 font-medium">{objective?.title ?? 'Learning objective'}</p>{objective?.domain ? <p className="mt-1 text-sm text-slate-500">{objective.domain}</p> : null}</div>
++            }) : <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No learning objectives mapped yet.</p>}
++          </div>
++        </div>
++      </section>
++    </AppShell>
++  )
++}
++
++function readObjective(value: ObjectiveRelation): { code?: string; title?: string; domain?: string | null } | null {
++  if (Array.isArray(value)) return value[0] ?? null
++  if (value && typeof value === 'object') return value
++  return null
++}
++
++function formatDateTime(value: string | null) {
++  if (!value) return 'Not scheduled'
++  return new Intl.DateTimeFormat('en', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(value))
++}
+diff --git a/src/components/app-shell.tsx b/src/components/app-shell.tsx
+new file mode 100644
+index 0000000..b0f1e2c
+--- /dev/null
++++ b/src/components/app-shell.tsx
+@@ -0,0 +1,47 @@
++import type { ReactNode } from 'react'
++import Link from 'next/link'
++
++export function AppShell({
++  children,
++  title,
++  eyebrow = 'SEIP HUB',
++  actions,
++}: {
++  children: ReactNode
++  title: string
++  eyebrow?: string
++  actions?: ReactNode
++}) {
++  return (
++    <main className="min-h-screen bg-slate-100 text-slate-950">
++      <div className="border-b border-slate-200 bg-white">
++        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
++          <div className="flex items-center gap-6">
++            <Link href="/dashboard" className="text-sm font-bold tracking-[0.18em] text-sky-700">
++              SEIP HUB
++            </Link>
++            <nav className="hidden gap-4 text-sm text-slate-600 sm:flex">
++              <Link href="/dashboard" className="hover:text-slate-950">Dashboard</Link>
++            </nav>
++          </div>
++          <form action="/auth/signout" method="post">
++            <button className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
++              Sign out
++            </button>
++          </form>
++        </div>
++      </div>
++
++      <div className="mx-auto max-w-7xl px-6 py-8 md:py-10">
++        <header className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
++          <div>
++            <p className="text-sm font-semibold tracking-[0.18em] text-sky-700">{eyebrow}</p>
++            <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">{title}</h1>
++          </div>
++          {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
++        </header>
++        <div className="mt-8">{children}</div>
++      </div>
++    </main>
++  )
++}
+diff --git a/src/components/metric-card.tsx b/src/components/metric-card.tsx
+new file mode 100644
+index 0000000..045b425
+--- /dev/null
++++ b/src/components/metric-card.tsx
+@@ -0,0 +1,9 @@
++export function MetricCard({ label, value, helper }: { label: string; value: string | number; helper?: string }) {
++  return (
++    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
++      <p className="text-sm font-medium text-slate-500">{label}</p>
++      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
++      {helper ? <p className="mt-2 text-sm text-slate-500">{helper}</p> : null}
++    </div>
++  )
++}
+diff --git a/src/components/status-badge.tsx b/src/components/status-badge.tsx
+new file mode 100644
+index 0000000..500c170
+--- /dev/null
++++ b/src/components/status-badge.tsx
+@@ -0,0 +1,18 @@
++export function StatusBadge({ status }: { status: string }) {
++  const normalized = status.toLowerCase()
++  const tone = normalized === 'active' || normalized === 'live'
++    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
++    : normalized === 'scheduled'
++      ? 'border-sky-200 bg-sky-50 text-sky-700'
++      : normalized === 'completed'
++        ? 'border-violet-200 bg-violet-50 text-violet-700'
++        : normalized === 'paused' || normalized === 'cancelled'
++          ? 'border-amber-200 bg-amber-50 text-amber-700'
++          : 'border-slate-200 bg-slate-50 text-slate-600'
++
++  return (
++    <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${tone}`}>
++      {status.replaceAll('_', ' ')}
++    </span>
++  )
++}
+diff --git a/src/lib/auth/require-user.ts b/src/lib/auth/require-user.ts
+new file mode 100644
+index 0000000..df70fb4
+--- /dev/null
++++ b/src/lib/auth/require-user.ts
+@@ -0,0 +1,12 @@
++import { redirect } from 'next/navigation'
++import { createClient } from '@/lib/supabase/server'
++
++export async function requireUser() {
++  const supabase = await createClient()
++  const { data, error } = await supabase.auth.getClaims()
++  const userId = data?.claims?.sub
++
++  if (error || !userId) redirect('/login')
++
++  return { supabase, userId, claims: data.claims }
++}
+diff --git a/src/lib/supabase/proxy.ts b/src/lib/supabase/proxy.ts
+index 15caa40..d11e543 100644
+--- a/src/lib/supabase/proxy.ts
++++ b/src/lib/supabase/proxy.ts
+@@ -12,12 +12,15 @@ export async function updateSession(request: NextRequest) {
+         getAll() {
+           return request.cookies.getAll()
+         },
+-        setAll(cookiesToSet) {
++        setAll(cookiesToSet, headers) {
+           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+           supabaseResponse = NextResponse.next({ request })
+           cookiesToSet.forEach(({ name, value, options }) => {
+             supabaseResponse.cookies.set(name, value, options)
+           })
++          Object.entries(headers).forEach(([key, value]) => {
++            supabaseResponse.headers.set(key, value)
++          })
+         },
+       },
+     },
+diff --git a/src/lib/supabase/server.ts b/src/lib/supabase/server.ts
+index 13af194..24692fb 100644
+--- a/src/lib/supabase/server.ts
++++ b/src/lib/supabase/server.ts
+@@ -12,7 +12,7 @@ export async function createClient() {
+         getAll() {
+           return cookieStore.getAll()
+         },
+-        setAll(cookiesToSet) {
++        setAll(cookiesToSet, _headers) {
+           try {
+             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+           } catch {

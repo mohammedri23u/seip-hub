@@ -1,84 +1,106 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { AppShell } from '@/components/app-shell'
+import { MetricCard } from '@/components/metric-card'
+import { StatusBadge } from '@/components/status-badge'
+import { requireUser } from '@/lib/auth/require-user'
+
+type Program = { id: string; name: string; code: string; status: string }
+type ProgramRelation = Program | Program[] | null
+type MembershipRow = { role: string; programs: ProgramRelation }
+type CohortIdRow = { id: string }
+
+function readProgram(program: ProgramRelation) {
+  if (Array.isArray(program)) return program[0] ?? null
+  return program
+}
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims()
+  const { supabase, userId } = await requireUser()
 
-  if (claimsError || !claimsData?.claims?.sub) redirect('/login')
-
-  const userId = claimsData.claims.sub
-  const [{ data: profile }, { data: memberships }] = await Promise.all([
+  const [{ data: profile }, { data: memberships }, { data: platformAdmin }] = await Promise.all([
     supabase.from('profiles').select('full_name, status').eq('id', userId).maybeSingle(),
     supabase
       .from('program_memberships')
       .select('role, programs(id, name, code, status)')
       .eq('user_id', userId)
       .eq('status', 'active'),
+    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ])
 
+  const membershipRows = (memberships ?? []) as MembershipRow[]
+  const programs = membershipRows
+    .map((membership: MembershipRow) => ({ role: membership.role, program: readProgram(membership.programs) }))
+    .filter((entry): entry is { role: string; program: { id: string; name: string; code: string; status: string } } => Boolean(entry.program))
+
+  const programIds = programs.map((entry) => entry.program.id)
+  let cohortCount = 0
+  let upcomingSessionCount = 0
+
+  if (programIds.length) {
+    const { data: cohorts } = await supabase.from('cohorts').select('id').in('program_id', programIds)
+    cohortCount = cohorts?.length ?? 0
+
+    const cohortIds = ((cohorts ?? []) as CohortIdRow[]).map((cohort: CohortIdRow) => cohort.id)
+    if (cohortIds.length) {
+      const { count } = await supabase
+        .from('sessions')
+        .select('id', { count: 'exact', head: true })
+        .in('cohort_id', cohortIds)
+        .in('status', ['scheduled', 'live'])
+      upcomingSessionCount = count ?? 0
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 text-slate-950">
-      <div className="mx-auto max-w-6xl">
-        <header className="flex items-start justify-between gap-5">
+    <AppShell
+      title={`Welcome${profile?.full_name ? `, ${profile.full_name}` : ''}`}
+      actions={platformAdmin ? (
+        <Link href="/programs/new" className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+          Create program
+        </Link>
+      ) : null}
+    >
+      <section className="grid gap-4 md:grid-cols-4">
+        <MetricCard label="Active programs" value={programs.length} />
+        <MetricCard label="Cohorts" value={cohortCount} />
+        <MetricCard label="Upcoming / live sessions" value={upcomingSessionCount} />
+        <MetricCard label="Account status" value={profile?.status ?? 'pending'} />
+      </section>
+
+      <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold tracking-[0.18em] text-sky-700">SEIP HUB</p>
-            <h1 className="mt-2 text-4xl font-semibold">Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}</h1>
-            <p className="mt-2 text-slate-600">Foundation dashboard — role-aware program access.</p>
+            <h2 className="text-xl font-semibold">Your programs</h2>
+            <p className="mt-1 text-sm text-slate-500">Program access is enforced by Supabase Row Level Security.</p>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium">Sign out</button>
-          </form>
-        </header>
+        </div>
 
-        <section className="mt-10 grid gap-4 md:grid-cols-3">
-          <Metric label="Active programs" value={memberships?.length ?? 0} />
-          <Metric label="Account status" value={profile?.status ?? 'pending'} />
-          <Metric label="Foundation" value="v0.1" />
-        </section>
-
-        <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6">
-          <h2 className="text-xl font-semibold">Your program access</h2>
-          <div className="mt-5 space-y-3">
-            {memberships?.length ? (
-              memberships.map((membership, index) => (
-                <div key={index} className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4">
-                  <div>
-                    <p className="font-medium">{readProgramName(membership.programs)}</p>
-                    <p className="text-sm text-slate-500">{readProgramCode(membership.programs)}</p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
-                    {membership.role.replaceAll('_', ' ')}
-                  </span>
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {programs.length ? programs.map(({ program, role }) => (
+            <Link
+              key={`${program.id}-${role}`}
+              href={`/programs/${program.id}`}
+              className="group rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-lg font-semibold group-hover:text-sky-700">{program.name}</p>
+                  <p className="mt-1 text-sm text-slate-500">{program.code}</p>
                 </div>
-              ))
-            ) : (
-              <p className="text-slate-500">No active program membership yet.</p>
-            )}
-          </div>
-        </section>
-      </div>
-    </main>
+                <StatusBadge status={program.status} />
+              </div>
+              <div className="mt-5 flex items-center justify-between text-sm">
+                <span className="font-medium capitalize text-slate-600">{role.replaceAll('_', ' ')}</span>
+                <span className="text-sky-700">Open program →</span>
+              </div>
+            </Link>
+          )) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:col-span-2">
+              No active program membership yet.
+            </div>
+          )}
+        </div>
+      </section>
+    </AppShell>
   )
-}
-
-function Metric({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold capitalize">{value}</p>
-    </div>
-  )
-}
-
-function readProgramName(program: unknown): string {
-  if (Array.isArray(program)) return String(program[0]?.name ?? 'Program')
-  if (program && typeof program === 'object' && 'name' in program) return String((program as { name?: unknown }).name ?? 'Program')
-  return 'Program'
-}
-
-function readProgramCode(program: unknown): string {
-  if (Array.isArray(program)) return String(program[0]?.code ?? '')
-  if (program && typeof program === 'object' && 'code' in program) return String((program as { code?: unknown }).code ?? '')
-  return ''
 }

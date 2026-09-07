@@ -10,3 +10,6 @@ out
 coverage
 __pycache__
 .venv
+
+# TypeScript incremental cache
+*.tsbuildinfo

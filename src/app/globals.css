@@ -4,9 +4,30 @@
   color-scheme: light;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #f1f5f9;
+}
+
 body {
   margin: 0;
-  background: #f7f8fb;
-  color: #111827;
+  background: #f1f5f9;
+  color: #0f172a;
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
