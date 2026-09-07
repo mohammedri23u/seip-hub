@@ -40,7 +40,10 @@ export default async function ProgramPage({
     <AppShell
       eyebrow={`${program.code} · PROGRAM`}
       title={program.name}
-      actions={<Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>}
+      actions={<>
+        <Link href={`/programs/${programId}/assessment`} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white">Assessment Center</Link>
+        <Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>
+      </>}
     >
       {program.description ? <p className="mb-7 max-w-3xl text-slate-600">{program.description}</p> : null}
 

@@ -37,3 +37,23 @@ There is intentionally no browser route that can promote a user to platform admi
 Do not put a Supabase secret/service key in any `NEXT_PUBLIC_` environment variable. The browser uses only the publishable key and database access is governed by RLS.
 
 See `docs/ARCHITECTURE.md`, `docs/BOOTSTRAP.md`, and `docs/STAGE2.md`.
+
+
+## Current build
+
+Stage 3 Assessment Core adds a versioned question bank, blueprinting, assessment lifecycle, secure learner exam delivery, and server-side objective scoring. See `docs/STAGE3.md`.
+
+## Stage 4 — AI-assisted written grading
+
+Stage 4 adds versioned rubrics, criterion-level AI proposed scoring, mandatory human review, moderation, and final human score approval. AI is optional at runtime; without `OPENAI_API_KEY`, the human grading workflow remains fully functional.
+
+Create the Stage 4 migration using the Supabase CLI-generated timestamp:
+
+```bash
+./scripts/create-stage4-migration.sh
+python3 scripts/check-foundation.py
+npm run typecheck
+npx supabase db push --dry-run
+```
+
+See `docs/STAGE4.md` for the evidence rationale, governance rules, and validation flow.
