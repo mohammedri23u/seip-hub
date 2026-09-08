@@ -22,7 +22,7 @@ export default async function OrientationPage({ searchParams }: { searchParams: 
         <div className="ten-world-copy">
           <p className="ten-eyebrow">FIRST ACTIVATION</p>
           <h2>Four signals are waiting in Baghdad.</h2>
-          <p>You will move through four live clinical-reasoning missions. Your facilitator controls when each scene advances; your phone is where you commit, discuss, revote, and reflect.</p>
+          <p>You will move through four live clinical-reasoning missions. Your facilitator controls when each scene advances. Keep this site on your phone for private commits, confidence, revotes and reflection; discuss the reasoning with your peers in the teaching space around you.</p>
           <div className="relative mt-6 h-24 w-56 overflow-hidden rounded-xl bg-[#f7f0df]"><Image src={brandAssets.lockup} alt="THE TEN — Baghdad Nexus" fill sizes="224px" className="object-cover" /></div>
         </div>
         <figure className="ten-world-art"><Image src={worldAssets.nexus} alt="The Baghdad Nexus gateway" fill sizes="(max-width:720px) 100vw, 50vw" className="object-cover" priority /></figure>
