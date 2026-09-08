@@ -1,5 +1,6 @@
 export { AnswerOption } from './answer-option'
 export { AssessmentExperience } from './assessment-experience'
+export { CaseCard } from './case-card'
 export { CharacterGuide } from './character-guide'
 export { FeedbackPanel } from './feedback-panel'
 export { ProgressTracker } from './progress-tracker'
