@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { brandAssets } from '@/lib/the-ten/assets'
 import { motionStyles } from '@/lib/the-ten/motion'
 
-const navigation = [['/learner', 'Journey'], ['/learner/sessions', 'Sessions'], ['/learner/assessments', 'Checkpoints'], ['/learner/progress', 'Progress']] as const
+const navigation = [['/learner', 'Baghdad'], ['/learner/progress', 'My Codex'], ['/learner/certificate', 'Completion']] as const
 
 export function LearnerShell({ title, intro, active = '/learner', children, actions }: { title: string; intro?: string; active?: string; children: ReactNode; actions?: ReactNode }) {
   return <div className="ten-learner" style={motionStyles}>
@@ -14,12 +14,12 @@ export function LearnerShell({ title, intro, active = '/learner', children, acti
         <Link className="ten-wordmark" href="/learner" aria-label="THE TEN — Baghdad Nexus learner home">
           <Image src={brandAssets.lockup} alt="" fill sizes="(max-width: 720px) 132px, 164px" loading="lazy" className="object-cover object-center" />
         </Link>
-        <nav aria-label="Learner navigation">{navigation.map(([href, label]) => <Link key={href} href={href} aria-current={href === active ? 'page' : undefined}>{label}</Link>)}</nav>
+        <nav aria-label="Learner journey navigation">{navigation.map(([href, label]) => <Link key={href} href={href} aria-current={href === active ? 'page' : undefined}>{label}</Link>)}</nav>
         <details className="ten-account"><summary>Account</summary><div><Link href="/learner/orientation">Orientation</Link><Link href="/dashboard">SEIP workspace</Link><form action="/auth/signout" method="post"><button type="submit">Sign out</button></form></div></details>
       </div>
     </header>
     <main id="learner-content" tabIndex={-1} className="ten-main">
-      <div className="ten-page-heading"><p className="ten-eyebrow">Your learning journey</p><h1>{title}</h1>{intro && <p>{intro}</p>}{actions && <div className="ten-spaced">{actions}</div>}</div>
+      <div className="ten-page-heading"><p className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</p><h1>{title}</h1>{intro && <p>{intro}</p>}{actions && <div className="ten-spaced">{actions}</div>}</div>
       {children}
     </main>
     <footer className="ten-footer">THE TEN · Baghdad Nexus <span>Think carefully. Learn together. Reflect.</span></footer>
