@@ -78,7 +78,7 @@ export function FacilitatorStudio({ studio, catalog }: { studio: TenStudio; cata
         <DecorSprite name="geometric-star" size={70} className="absolute right-[38%] top-[9%] opacity-45" />
       </div>
       <div className="relative z-10 flex min-h-[360px] max-w-3xl flex-col justify-end p-6 sm:p-8">
-        <Image src={brandAssets.wordmark} alt="THE TEN — BAGHDAD NEXUS" width={360} height={150} className="mb-4 h-auto w-56 object-contain object-left sm:w-72" />
+        <Image src={brandAssets.lockup} alt="THE TEN — BAGHDAD NEXUS" width={360} height={150} className="mb-4 h-auto w-56 object-contain object-left sm:w-72" />
         <p className="text-xs font-black tracking-[.18em] text-[#f2d99b]">FACILITATOR CONTROL ROOM</p>
         <h2 className="mt-3 max-w-2xl font-serif text-3xl sm:text-5xl">You conduct the Signal. The platform carries the room.</h2>
         <p className="mt-4 max-w-2xl leading-7 text-[#d8e7e2]">Choose one prepared mission and open it. Learners see the waiting room in Baghdad after their Entry Baseline; you advance only the teaching state.</p>
