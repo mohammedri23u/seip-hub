@@ -56,7 +56,7 @@ export function MissionReasoningTool({ initial }: { initial: Snapshot }) {
       const { data } = await supabase.auth.getSession()
       if (data.session?.access_token) supabase.realtime.setAuth(data.session.access_token)
       if (cancelled) return
-      channel = supabase.channel(`ten:${initial.id}`, { config: { private: true } })
+      channel = supabase.channel(`ten-tool:${initial.id}`, { config: { private: true } })
         .on('broadcast', { event: 'state' }, () => { void refresh() })
         .subscribe()
     })()
