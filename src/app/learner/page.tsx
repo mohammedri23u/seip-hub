@@ -31,7 +31,7 @@ export default async function LearnerHome() {
     </LearnerShell>
   }
 
-  return <LearnerShell title={name ? `Baghdad is open, ${name}` : 'Baghdad is open'} intro="This is your world, not a dashboard. Live missions appear as your facilitator activates them; completed signals stay part of the city.">
+  return <LearnerShell immersive title={name ? `Baghdad is open, ${name}` : 'Baghdad is open'} intro="This is your world, not a dashboard. Live missions appear as your facilitator activates them; completed signals stay part of the city.">
     <JourneyWorld summary={summary} catalog={catalog} />
   </LearnerShell>
 }
