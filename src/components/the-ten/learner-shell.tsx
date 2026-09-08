@@ -6,7 +6,7 @@ import { motionStyles } from '@/lib/the-ten/motion'
 
 const navigation = [['/learner', 'Baghdad'], ['/learner/progress', 'My Codex'], ['/learner/certificate', 'Completion']] as const
 
-export function LearnerShell({ title, intro, active = '/learner', children, actions }: { title: string; intro?: string; active?: string; children: ReactNode; actions?: ReactNode }) {
+export function LearnerShell({ title, intro, active = '/learner', children, actions, immersive = false }: { title: string; intro?: string; active?: string; children: ReactNode; actions?: ReactNode; immersive?: boolean }) {
   return <div className="ten-learner" style={motionStyles}>
     <a href="#learner-content" className="ten-skip">Skip to learning content</a>
     <header className="ten-header">
@@ -18,8 +18,9 @@ export function LearnerShell({ title, intro, active = '/learner', children, acti
         <details className="ten-account"><summary>Account</summary><div><Link href="/learner/orientation">Orientation</Link><Link href="/dashboard">SEIP workspace</Link><form action="/auth/signout" method="post"><button type="submit">Sign out</button></form></div></details>
       </div>
     </header>
-    <main id="learner-content" tabIndex={-1} className="ten-main">
-      <div className="ten-page-heading"><p className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</p><h1>{title}</h1>{intro && <p>{intro}</p>}{actions && <div className="ten-spaced">{actions}</div>}</div>
+    <main id="learner-content" tabIndex={-1} className={`ten-main ${immersive ? 'pt-3 sm:pt-5' : ''}`}>
+      {immersive ? <div className="sr-only"><h1>{title}</h1>{intro && <p>{intro}</p>}</div> : <div className="ten-page-heading"><p className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</p><h1>{title}</h1>{intro && <p>{intro}</p>}{actions && <div className="ten-spaced">{actions}</div>}</div>}
+      {immersive && actions ? <div className="mb-4 flex justify-end">{actions}</div> : null}
       {children}
     </main>
     <footer className="ten-footer">THE TEN · Baghdad Nexus <span>Think carefully. Learn together. Reflect.</span></footer>
