@@ -3,6 +3,7 @@ import { FacilitatorRoomIntelligence } from '@/components/the-ten/facilitator-ro
 import { LiveMission } from '@/components/the-ten/live-mission'
 import { MissionVisualOverlay } from '@/components/the-ten/mission-visual-overlay'
 import { getTenSnapshot } from '@/lib/the-ten/runtime'
+import styles from './mission-world.module.css'
 
 type InitialSnapshot = Record<string, unknown> & {
   manager?: boolean
@@ -20,9 +21,9 @@ export default async function LearnerMissionPage({ params }: { params: Promise<{
     notFound()
   }
 
-  return <>
+  return <div className={styles.root} data-mission={snapshot.mission_id ?? 'unknown'}>
     <LiveMission initial={snapshot as never} />
     <MissionVisualOverlay missionId={snapshot.mission_id} phase={snapshot.phase} />
     {snapshot.manager && snapshot.phase ? <FacilitatorRoomIntelligence runId={runId} initialPhase={snapshot.phase} initialCloseoutSaved={Boolean(snapshot.closeout_saved)} /> : null}
-  </>
+  </div>
 }
