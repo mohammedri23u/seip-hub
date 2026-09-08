@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 type Tone = 'neutral' | 'success' | 'danger' | 'warning' | 'accent' | 'gold'
 
 const tones: Record<Tone, string> = {
@@ -9,7 +11,7 @@ const tones: Record<Tone, string> = {
   gold: 'border-[#E5C67A] bg-[#FFF7DD] text-[#8B6A2B]',
 }
 
-export function StatusBadge({ children, tone = 'neutral' }: { children: React.ReactNode; tone?: Tone }) {
+export function StatusBadge({ children, tone = 'neutral' }: { children: ReactNode; tone?: Tone }) {
   return (
     <span className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.11em] ${tones[tone]}`}>
       {children}
