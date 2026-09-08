@@ -20,7 +20,8 @@ const signalTone = {
 export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; catalog: TenCatalog }) {
   const missions = summary.missions ?? []
   const completed = summary.mission_completed_count ?? 0
-  const total = summary.mission_required_count ?? 4
+  const revealedTotal = summary.mission_required_count ?? 4
+  const programSignalsTotal = 10
 
   return <div className="space-y-7">
     <section className="relative isolate overflow-hidden rounded-[2.25rem] border border-[#315b5d] bg-[#15383b] text-[#fffdf8] shadow-[0_30px_90px_rgba(23,54,58,.22)]" aria-labelledby="baghdad-world-title">
@@ -33,12 +34,12 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
           <div className="rounded-3xl border border-white/20 bg-[#17363a]/82 p-5 shadow-2xl backdrop-blur-md sm:p-7">
             <p className="text-[10px] font-black tracking-[.22em] text-[#f2d99b] sm:text-xs">BAGHDAD NEXUS · FIRST ACTIVATION</p>
             <h2 id="baghdad-world-title" className="mt-2 font-serif text-3xl leading-tight sm:text-5xl">The city is your journey.</h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#d8e7e2] sm:text-base">Each live mission appears as a Signal in Baghdad. Complete the reasoning sequence and the Signal remains active in your world.</p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-[#d8e7e2] sm:text-base">Four of THE TEN Signals are revealed in First Activation. Each live mission appears in Baghdad; complete its reasoning sequence and that Signal remains active in your world.</p>
           </div>
         </div>
 
         <div className="absolute right-5 top-5 z-20 hidden rounded-full border border-[#f2d99b]/60 bg-[#17363a]/88 px-4 py-3 text-center sm:block">
-          <div className="text-2xl font-black text-[#f2d99b]">{completed}/{total}</div>
+          <div className="text-2xl font-black text-[#f2d99b]">{completed}/{programSignalsTotal}</div>
           <div className="text-[10px] font-bold uppercase tracking-[.16em]">Signals active</div>
         </div>
 
@@ -55,7 +56,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
           <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-[#f2d99b]/70 bg-[#fffdf8] shadow-[0_0_0_12px_rgba(23,54,58,.35),0_0_55px_rgba(70,185,189,.35)]">
             <Image src={brandAssets.crest} alt="" fill sizes="128px" className="object-cover" />
           </div>
-          <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#17363a]/88 px-3 py-2 text-[10px] font-black tracking-[.14em] text-[#f2d99b] backdrop-blur">NEXUS · {completed} SIGNALS</div>
+          <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#17363a]/88 px-3 py-2 text-[10px] font-black tracking-[.14em] text-[#f2d99b] backdrop-blur">NEXUS · {completed}/{programSignalsTotal} SIGNALS</div>
         </div>
 
         <div className="absolute inset-0 z-30 hidden sm:block">
@@ -71,7 +72,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
 
         <div className="absolute inset-x-3 bottom-3 z-30 sm:hidden">
           <div className="rounded-[1.5rem] border border-white/15 bg-[#102f32]/90 p-3 shadow-2xl backdrop-blur-md">
-            <div className="mb-2 flex items-center justify-between px-1"><span className="text-[10px] font-black tracking-[.14em] text-[#f2d99b]">SIGNALS</span><span className="text-[10px] font-bold text-[#d8e7e2]">{completed}/{total} active</span></div>
+            <div className="mb-2 flex items-center justify-between px-1"><span className="text-[10px] font-black tracking-[.14em] text-[#f2d99b]">REVEALED SIGNALS</span><span className="text-[10px] font-bold text-[#d8e7e2]">{completed}/{programSignalsTotal} active</span></div>
             <div className="grid grid-cols-4 gap-2">{missions.map(mission => {
               const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
               const character = characterByMission[mission.id as keyof typeof characterByMission]
@@ -85,7 +86,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
     </section>
 
     <section id="missions" aria-labelledby="mission-path-title">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4"><div><p className="ten-eyebrow">SIGNAL DOSSIERS</p><h2 id="mission-path-title" className="font-serif text-3xl">Four mentors. Four reasoning lenses.</h2></div><div className="text-sm font-bold text-[#526c6e]">{completed} complete · {Math.max(total - completed, 0)} remaining</div></div>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-4"><div><p className="ten-eyebrow">SIGNAL DOSSIERS · FIRST ACTIVATION</p><h2 id="mission-path-title" className="font-serif text-3xl">Four mentors. Four reasoning lenses.</h2></div><div className="text-sm font-bold text-[#526c6e]">{completed}/{revealedTotal} revealed Signals complete</div></div>
       <div className="grid gap-4 lg:grid-cols-2">
         {missions.map((mission) => {
           const catalogMission = catalog.missions.find(item => item.id === mission.id)
@@ -114,7 +115,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
       <div className="ten-panel">
         <p className="ten-eyebrow">THE NEXUS</p>
         <h2>Your next gate is determined by what is actually recorded.</h2>
-        <p>{summary.next_stage === 'missions' ? 'Watch Baghdad for the next live Signal. When the facilitator opens it, the waiting room appears automatically.' : summary.next_stage === 'posttest' ? 'All four Signals are active. The Exit Transfer Check is now your next gate.' : summary.next_stage === 'feedback' ? 'Your post-test is recorded. Share the final program reflection to finish the journey.' : summary.next_stage === 'certificate' ? 'Every required gate is complete. Your completion pathway is ready.' : 'Your recorded journey determines the next gate.'}</p>
+        <p>{summary.next_stage === 'missions' ? 'Watch Baghdad for the next live Signal. When the facilitator opens it, the waiting room appears automatically.' : summary.next_stage === 'posttest' ? 'All four revealed Signals are active. The Exit Transfer Check is now your next gate; THE TEN still contains unrevealed Signals beyond First Activation.' : summary.next_stage === 'feedback' ? 'Your post-test is recorded. Share the final program reflection to finish this activation.' : summary.next_stage === 'certificate' ? 'Every required First Activation gate is complete. Your completion pathway is ready.' : 'Your recorded journey determines the next gate.'}</p>
         {summary.next_stage === 'posttest' && summary.posttest?.id && <Link className="ten-action ten-spaced" href={`/assessments/${summary.posttest.id}/take`}>Begin Exit Transfer Check →</Link>}
         {summary.next_stage === 'certificate' && <Link className="ten-action ten-spaced" href="/learner/certificate">Open completion pathway →</Link>}
         <Link className="ten-text-link ten-spaced" href="/learner/progress">Open My Codex →</Link>
