@@ -12,10 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://ozwelzqoasjywfnoypmq.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_md8KdsX4WrVufH219aJNnw_cNRrWhuo
-      SEIP_AI_GRADING_MODEL: gpt-5.6-luna
-      SEIP_AI_PROMPT_VERSION: written_rubric_v1
+      # Build-only placeholders. CI does not authenticate or query a live project.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +30,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Learner state tests
+        run: node --experimental-strip-types scripts/test-the-ten.mjs
 
       - name: Build
         run: npm run build

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 import { AnswerOption } from './answer-option'
 import { ProgressTracker } from './progress-tracker'
@@ -29,6 +29,11 @@ function SubmitButton({ answered, total }: { answered: number; total: number }) 
   )
 }
 
+function AssessmentFields({ children }: { children: ReactNode }) {
+  const { pending } = useFormStatus()
+  return <fieldset disabled={pending} aria-busy={pending} className="min-w-0 space-y-5"><legend className="sr-only">Assessment responses</legend>{children}<span className="sr-only" role="status">{pending ? 'Submitting your assessment. Please wait.' : ''}</span></fieldset>
+}
+
 export function AssessmentExperience({
   items,
   action,
@@ -45,6 +50,7 @@ export function AssessmentExperience({
 
   return (
     <form action={action} className="mx-auto max-w-4xl space-y-5">
+      <AssessmentFields>
       <div className="sticky top-3 z-10">
         <ProgressTracker total={items.length} answered={answered} />
       </div>
@@ -106,6 +112,7 @@ export function AssessmentExperience({
         </div>
         <SubmitButton answered={answered} total={items.length} />
       </section>
+      </AssessmentFields>
     </form>
   )
 }

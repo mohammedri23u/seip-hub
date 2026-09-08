@@ -26,12 +26,15 @@ const stateClasses: Record<TheTenFeedbackState, string> = {
 
 export function AnswerOption({ name, value, label, text, state = 'idle', checked, disabled, onChange }: Props) {
   const id = useId()
-  const effectiveState = disabled ? 'disabled' : state
+  const hasFeedback = state === 'correct' || state === 'incorrect' || state === 'partial'
+  const effectiveState = disabled && !hasFeedback && state !== 'submitting' && state !== 'selected' ? 'disabled' : state
 
   return (
     <label
       htmlFor={id}
-      className={`group flex min-h-14 cursor-pointer items-start gap-3 rounded-[18px] border px-4 py-3.5 transition duration-200 motion-reduce:transform-none motion-reduce:transition-none ${stateClasses[effectiveState]}`}
+      data-state={effectiveState}
+      data-locked={disabled || undefined}
+      className={`ten-answer group flex min-h-14 items-start gap-3 rounded-[18px] border px-4 py-3.5 transition duration-200 motion-reduce:transform-none motion-reduce:transition-none ${disabled ? 'cursor-default' : 'cursor-pointer'} ${stateClasses[effectiveState]}`}
     >
       <input
         id={id}
@@ -46,7 +49,7 @@ export function AnswerOption({ name, value, label, text, state = 'idle', checked
       <span className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border text-xs font-black transition ${checked ? 'border-[#1F6668] bg-[#1F6668] text-white' : 'border-[#BFAF95] bg-white text-[#17363A]'}`}>
         {label}
       </span>
-      <span className="min-w-0 pt-0.5 text-[15px] font-medium leading-6 text-[#17363A]">{text}</span>
+      <span className="min-w-0 pt-0.5 text-[15px] font-medium leading-6 text-[#17363A]">{text}{hasFeedback && <span className="mt-1 block text-xs font-bold">{state === 'correct' ? 'Correct' : state === 'partial' ? 'Partially correct' : 'Incorrect — review the feedback'}</span>}</span>
     </label>
   )
 }

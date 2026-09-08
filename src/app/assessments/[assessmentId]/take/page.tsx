@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { AppShell } from '@/components/app-shell'
+import { LearnerShell } from '@/components/the-ten/learner-shell'
 import { AssessmentExperience } from '@/components/the-ten/assessment-experience'
 import { requireUser } from '@/lib/auth/require-user'
+import { checkpointState } from '@/lib/the-ten/journey'
 import { startAssessment, submitAssessment } from './actions'
 
 type DeliveryOption = { id: string; text: string; position: number }
@@ -14,7 +15,7 @@ const backLink = (
     href="/learner/assessments"
     className="rounded-[14px] border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-bold text-[#17363A] transition hover:border-[#1F6668] hover:bg-white motion-reduce:transition-none"
   >
-    Back to journey
+    Back to checkpoints
   </Link>
 )
 
@@ -31,7 +32,7 @@ export default async function TakeAssessmentPage({
 
   const { data: assessment } = await supabase
     .from('assessments')
-    .select('id, title, status, duration_minutes')
+    .select('id, cohort_id, title, assessment_type, status, opens_at, closes_at, duration_minutes')
     .eq('id', assessmentId)
     .maybeSingle()
 
@@ -39,14 +40,21 @@ export default async function TakeAssessmentPage({
 
   const { data: attempt } = await supabase
     .from('assessment_attempts')
-    .select('id, status, started_at')
+    .select('id, assessment_id, status, submitted_at, started_at')
     .eq('assessment_id', assessmentId)
     .eq('learner_id', userId)
     .maybeSingle()
 
+  const availability = checkpointState(assessment, attempt ?? undefined)
+  if (availability.state === 'locked' && (!attempt || attempt.status === 'in_progress')) {
+    return <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
+      <section className="ten-panel"><h2>{availability.label}</h2><p>{availability.reason}</p></section>
+    </LearnerShell>
+  }
+
   if (!attempt) {
     return (
-      <AppShell eyebrow="THE TEN · ASSESSMENT" title={assessment.title} actions={backLink}>
+      <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
         <section className="mx-auto max-w-2xl overflow-hidden rounded-[32px] border border-[#D8CCB6] bg-[#FFFDF8] shadow-[0_22px_70px_rgba(23,54,58,0.10)]">
           <div className="border-b border-[#E4D9C5] bg-[#17363A] px-6 py-7 text-[#FFFDF8] sm:px-8">
             <div className="inline-flex rounded-full border border-[#D8A94E]/50 bg-[#D8A94E]/10 px-3 py-1.5 text-xs font-black tracking-[0.16em] text-[#F2D99B]">
@@ -79,24 +87,24 @@ export default async function TakeAssessmentPage({
             </form>
           </div>
         </section>
-      </AppShell>
+      </LearnerShell>
     )
   }
 
   if (attempt.status !== 'in_progress') {
     return (
-      <AppShell eyebrow="THE TEN · ASSESSMENT" title={assessment.title} actions={backLink}>
+      <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
         <div className="mx-auto max-w-2xl rounded-[30px] border border-[#CFE1DC] bg-[#FFFDF8] p-7 text-center shadow-[0_18px_55px_rgba(23,54,58,0.08)] sm:p-9">
-          <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#EAF7F1] text-xl font-black text-[#2F8A72]">✓</div>
-          <p className="mt-4 text-lg font-black text-[#17363A]">Checkpoint submitted</p>
+          <div className={`mx-auto grid size-14 place-items-center rounded-full text-xl font-black ${attempt.status === 'invalidated' ? 'bg-[#FFF7E8] text-[#86602B]' : 'bg-[#EAF7F1] text-[#2F8A72]'}`}>{attempt.status === 'invalidated' ? '!' : '✓'}</div>
+          <p className="mt-4 text-lg font-black text-[#17363A]">{attempt.status === 'invalidated' ? 'Attempt invalidated' : 'Checkpoint submitted'}</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#5D7172]">
-            This attempt is locked. Your journey can continue while any written responses move through the supervised grading workflow.
+            {attempt.status === 'invalidated' ? 'This attempt has been invalidated. Contact your facilitator for guidance.' : 'This attempt is locked. Your journey can continue while any written responses move through the supervised grading workflow.'}
           </p>
-          <Link href="/learner/assessments" className="mt-5 inline-flex min-h-11 items-center rounded-[14px] bg-[#1F6668] px-5 py-2.5 text-sm font-black text-white">
+          <Link href="/learner" className="mt-5 inline-flex min-h-11 items-center rounded-[14px] bg-[#1F6668] px-5 py-2.5 text-sm font-black text-white">
             Continue journey →
           </Link>
         </div>
-      </AppShell>
+      </LearnerShell>
     )
   }
 
@@ -105,8 +113,8 @@ export default async function TakeAssessmentPage({
   const delivery = data as Delivery
 
   return (
-    <AppShell
-      eyebrow="THE TEN · LIVE CHECKPOINT"
+    <LearnerShell
+      active="/learner/assessments"
       title={delivery.title}
       actions={
         <span className="rounded-[14px] border border-[#D8CCB6] bg-[#FFFDF8] px-4 py-2.5 text-sm font-black text-[#17363A] shadow-sm">
@@ -116,7 +124,7 @@ export default async function TakeAssessmentPage({
     >
       {query.error ? (
         <p role="alert" className="mx-auto mb-5 max-w-4xl rounded-[16px] border border-[#E4B9B4] bg-[#FCEFED] px-4 py-3 text-sm font-semibold text-[#8C403A]">
-          We could not save or submit this checkpoint. Your current page is still open; review your answers and try again.
+          We could not save or submit this checkpoint. This page has reloaded; re-enter and review your answers before trying again.
         </p>
       ) : null}
 
@@ -124,6 +132,6 @@ export default async function TakeAssessmentPage({
         items={delivery.items}
         action={submitAssessment.bind(null, assessmentId, attempt.id)}
       />
-    </AppShell>
+    </LearnerShell>
   )
 }

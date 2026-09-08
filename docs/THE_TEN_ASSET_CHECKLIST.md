@@ -46,3 +46,11 @@ Use semantic filenames (for example `nexus-spark.png`, `baghdad-arch.png`, `medi
 - do not mirror a pose unless explicitly approved
 - optimize large PNGs before production while visually comparing against the master asset
 - use `next/image` for raster display
+
+## 2026-09-08 staging status
+
+No approved image files are available in the current branch. `assets.ts` therefore uses `null` for the brand/world paths and all character poses. The previous branch's safety stash has not been used as an asset source.
+
+The learner world renders accessible text navigation while world art is absent. Character guidance renders the character name and message while neutral art is absent; a missing reaction falls back to neutral only after an approved neutral file has been staged. There is no fabricated placeholder character and no request to a nonexistent image.
+
+`missingCharacterAssets` lists the exact expected neutral/reaction filenames for all four identities. Stage the files above, then change only the matching manifest entries.

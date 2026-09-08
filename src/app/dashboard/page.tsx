@@ -60,6 +60,7 @@ export default async function DashboardPage() {
         </Link>
       ) : null}
     >
+      <Link href="/learner" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</span><h2>Enter your learning journey</h2><p>Sessions, checkpoints, and your progress in one place.</p></div><span aria-hidden="true">→</span></Link>
       <section className="grid gap-4 md:grid-cols-4">
         <MetricCard label="Active programs" value={programs.length} />
         <MetricCard label="Cohorts" value={cohortCount} />
