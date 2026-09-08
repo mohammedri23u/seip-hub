@@ -35,7 +35,7 @@ Runtime mapping:
 - Evidence weighting is represented by the canonical highest-diagnostic-weight decision stage.
 - Transfer Micro-case is a separate required transfer response.
 
-Fidelity note: the current Differential Builder is structured and touch-friendly but uses fields rather than literal drag-and-drop. This preserves semantics and accessibility; drag sorting is visual/interaction polish, not a content change.
+Fidelity note: the current Differential Builder is structured and touch-friendly but uses accessible fields rather than literal drag-and-drop. This preserves semantics and keyboard/mobile usability; drag sorting is optional visual polish, not missing content.
 
 ### M02 — QUESTION THE EVIDENCE · Al-Razi
 Canonical activities:
@@ -46,13 +46,14 @@ Canonical activities:
 5. Bias Tagging
 
 Runtime mapping:
-- The canonical initial framing decision is delivered before downstream test evidence.
+- the recorded canonical initial framing decision remains the authoritative stage response.
+- a supplemental `Framing Challenge` scratchpad now lets the learner strip away the patient-provided label and build a neutral symptom/context/high-value-feature frame before committing. It is intentionally unscored and does not reveal an answer.
 - ECG and early hs-cTn stages preserve Peer Instruction and separate revote records.
 - confidence is captured at canonical marked stages on the 20/40/60/80/100 scale and is never a mark multiplier.
 - Evidence Board is a structured Supports / Opposes / Missing / Final judgment interaction.
 - premature-closure bias tagging is a canonical decision stage.
 
-Fidelity note: the source activity description says learners “rewrite indigestion into a neutral symptom representation”; the structured JSON stage itself is a single-choice framing decision. Production follows the canonical stage contract rather than inventing an extra scored response.
+The scratchpad closes the activity-description gap without inventing an extra scored question or altering the structured JSON stage contract.
 
 ### M03 — TEST THE HYPOTHESIS · Jabir ibn Hayyan
 Canonical activities:
@@ -64,12 +65,14 @@ Canonical activities:
 
 Runtime mapping:
 - Stage 1 requires ranked differential + explicit low/intermediate/high probability before investigation stages.
-- PERC and Wells are progressive separate stages, preserving the clinical order and peer cycles.
-- D-dimer choice and meaning are separate decisions.
-- CTPA and management appear only after the preceding reasoning sequence.
-- Stage 6 explicitly reconstructs the educational sequence in the shared debrief: suspicion → probability rule → D-dimer → imaging → management.
+- the live M03 experience now includes an accessible, mobile Rule Builder synchronized to the room:
+  - Stage 2: learner works through all eight PERC features from already-released clues; the tool does not label the correct mission answer before Reveal.
+  - Stage 3: learner builds the two-level PE Wells score using the canonical criteria/weights and sees the ≤4 / >4 threshold while the separate mission commit remains authoritative.
+- PERC and Wells remain progressive separate canonical stages with their original peer cycles.
+- D-dimer choice/meaning, CTPA and management remain in source sequence.
+- during Debrief/Completed, an accessible order-reconstruction tool asks learners to rebuild `Suspicion → Clinical probability → D-dimer when indicated → Definitive imaging → Management` using move-earlier/move-later controls instead of inaccessible drag-only UI.
 
-Fidelity note: the current learner interaction expresses PERC/Wells through staged decisions rather than a literal interactive checklist, and Sequence Reconstruction is represented in debrief rather than a drag-sort widget. These are the two main remaining interaction-fidelity opportunities; the clinical sequence itself is already correct and protected.
+This implements the intended Rule Builder and Sequence Reconstruction without changing the answer flow or exposing future clinical evidence.
 
 ### M04 — TREAT THE PATIENT · Hippocrates
 Canonical activities:
@@ -80,13 +83,14 @@ Canonical activities:
 5. Final Transfer Case
 
 Runtime mapping:
-- initial free-text reasoning captures immediate priorities before downstream evidence.
+- initial free-text reasoning remains the authoritative response before downstream evidence.
+- a supplemental two-column `Parallel Priorities` scratchpad now separates `STABILIZE NOW` from `DIAGNOSE SAFELY`, helping learners prepare the recorded response without auto-supplying clinical actions.
 - allergy/renal/medication/local-guidance safety actions use canonical multiselect.
 - treatment is followed by mandatory reassessment stages before further action.
 - final team commit stores the short synthesis/rationale.
 - Transfer Micro-case is separately required for Signal completion.
 
-Fidelity note: Parallel Priorities is currently a free-text response rather than a two-column visual organizer; its required reasoning is still recorded before management reveal.
+The organizer is intentionally a local reasoning aid; it cannot grant completion and does not replace the canonical free-text record.
 
 ## Assessment parity
 
@@ -95,6 +99,8 @@ Database verification confirms both journey checkpoints contain 12 distinct item
 - `THE TEN — Exit Transfer Check`
 
 The pair uses the matched `TEN-CR-01` through `TEN-CR-12` bank. The corrected source keys are preserved. The post-test remains inaccessible until all four mission Signals have valid completion credit.
+
+Entry and Exit assessment start screens now use the Nexus gate visual language, while the actual question-taking surface remains deliberately focused and conventional for accessibility and assessment integrity.
 
 ## Completion integrity rehearsal
 
@@ -113,13 +119,13 @@ Learner snapshot projection was tested separately:
 - at Reveal: the permitted answer/feedback/expected reasoning becomes available
 - facilitator-only stage ID remains removed from learner projection
 
+Supplemental reasoning tools use only rule structures and clues already released in the current stage. They do not fetch private content tables or model-answer fields.
+
 ## Remaining fidelity work before final sign-off
 
-These are interaction/visual fidelity items, not missing medical content:
-1. identity-locked character reaction pose assets
-2. richer PERC/Wells Rule Builder presentation without changing canonical answer flow
-3. optional accessible sequence-reconstruction interaction for M03 debrief
-4. optional two-column Parallel Priorities organizer for M04 while retaining the canonical free-text record
-5. final authenticated multi-device live-room rehearsal on real phones
+The remaining gaps are operational/art-production items, not missing First Activation educational content:
+1. identity-locked character reaction pose assets (`introduce`, `guide`, `thinking`, `hint`, `correct`, `incorrect`, `partial`, `celebrate`, `locked`)
+2. final authenticated multi-device live-room rehearsal on real phones
+3. final visual sign-off on actual devices after reaction art is staged
 
-No item above should delay or alter the canonical educational sequence. If a richer interaction threatens accessibility, real-time reliability, or the source content contract, the existing structured response remains authoritative.
+No remaining item should alter the canonical educational sequence. If a richer interaction threatens accessibility, realtime reliability or the source content contract, the persisted structured response remains authoritative.
