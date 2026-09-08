@@ -10,14 +10,15 @@ export default async function LearnerProgress({ searchParams }: { searchParams: 
   const [summary, codexRaw, query] = await Promise.all([getJourneySummary(), getTenCodex(), searchParams])
   const codex = codexRaw as CodexEntry[]
   const completed = summary.mission_completed_count ?? 0
-  const required = summary.mission_required_count ?? 4
+  const revealed = summary.mission_required_count ?? 4
+  const programSignalsTotal = 10
 
   return <LearnerShell active="/learner/progress" title="My Codex" intro="A record of the reasoning principles you activated, what changed your mind, and what returns later through Nexus Echo.">
     {query.echo === 'saved' && <p role="status" className="ten-notice">Nexus Echo saved. The answer anchor is now visible for that retrieval item.</p>}
     {query.error && <p role="alert" className="ten-notice ten-notice-error">That Nexus Echo could not be saved. Check that it has unlocked and try again.</p>}
 
     <section className="grid gap-4 md:grid-cols-3">
-      <div className="ten-panel"><p className="ten-eyebrow">SIGNALS</p><div className="mt-2 font-serif text-4xl">{completed}/{required}</div><p>Mission signals activated in your recorded journey.</p></div>
+      <div className="ten-panel"><p className="ten-eyebrow">SIGNALS</p><div className="mt-2 font-serif text-4xl">{completed}/{programSignalsTotal}</div><p>Signals active across THE TEN. First Activation reveals {revealed} of the ten.</p></div>
       <div className="ten-panel"><p className="ten-eyebrow">NEXT GATE</p><div className="mt-2 font-serif text-2xl capitalize">{summary.next_stage?.replaceAll('_',' ') ?? 'Journey'}</div><p>Your next step is driven by persisted completion records, not by page visits.</p></div>
       <div className="ten-panel"><p className="ten-eyebrow">RETRIEVAL</p><div className="mt-2 font-serif text-4xl">{codex.reduce((sum,entry)=>sum+(entry.echo?.filter(item=>item.unlocked).length ?? 0),0)}</div><p>Nexus Echo prompts currently unlocked.</p></div>
     </section>
