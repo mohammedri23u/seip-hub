@@ -52,6 +52,12 @@ export type TenCatalog = {
   admin: boolean
 }
 
+export type TenStudio = {
+  missions: Array<{ id: string; content: MissionCatalogEntry & Record<string, unknown>; published: boolean }>
+  sessions: Array<{ id: string; title: string; join_code: string | null; cohort: string }>
+  admin: boolean
+}
+
 export async function getJourneySummary(): Promise<JourneySummary> {
   const { supabase } = await requireUser()
   const { data, error } = await supabase.rpc('journey_summary', { target_cohort_id: null })
@@ -64,6 +70,13 @@ export async function getTenCatalog(): Promise<TenCatalog> {
   const { data, error } = await supabase.rpc('ten_api', { operation: 'catalog', payload: {} })
   if (error) throw new Error(`Could not load Baghdad Nexus: ${error.message}`)
   return (data ?? { missions: [], runs: [], signals: 0, staff: false, admin: false }) as TenCatalog
+}
+
+export async function getTenStudio(): Promise<TenStudio> {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase.rpc('ten_api', { operation: 'studio', payload: {} })
+  if (error) throw new Error(`Could not load facilitator studio: ${error.message}`)
+  return (data ?? { missions: [], sessions: [], admin: false }) as TenStudio
 }
 
 export async function getTenSnapshot(runId: string) {
