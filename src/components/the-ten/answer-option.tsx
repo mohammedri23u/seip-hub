@@ -4,6 +4,7 @@ import { useId } from 'react'
 import type { TheTenFeedbackState } from '@/lib/the-ten/tokens'
 
 type Props = {
+  type?: 'radio' | 'checkbox'
   name: string
   value: string
   label: string
@@ -24,7 +25,7 @@ const stateClasses: Record<TheTenFeedbackState, string> = {
   disabled: 'border-[#DED7C9] bg-[#F3EEE5] opacity-60',
 }
 
-export function AnswerOption({ name, value, label, text, state = 'idle', checked, disabled, onChange }: Props) {
+export function AnswerOption({ type = 'radio', name, value, label, text, state = 'idle', checked, disabled, onChange }: Props) {
   const id = useId()
   const hasFeedback = state === 'correct' || state === 'incorrect' || state === 'partial'
   const effectiveState = disabled && !hasFeedback && state !== 'submitting' && state !== 'selected' ? 'disabled' : state
@@ -38,7 +39,7 @@ export function AnswerOption({ name, value, label, text, state = 'idle', checked
     >
       <input
         id={id}
-        type="radio"
+        type={type}
         name={name}
         value={value}
         checked={checked}
@@ -46,8 +47,8 @@ export function AnswerOption({ name, value, label, text, state = 'idle', checked
         onChange={onChange}
         className="sr-only"
       />
-      <span className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border text-xs font-black transition ${checked ? 'border-[#1F6668] bg-[#1F6668] text-white' : 'border-[#BFAF95] bg-white text-[#17363A]'}`}>
-        {label}
+      <span className={`mt-0.5 grid size-7 shrink-0 place-items-center border text-xs font-black transition ${type === 'checkbox' ? 'rounded-[8px]' : 'rounded-full'} ${checked ? 'border-[#1F6668] bg-[#1F6668] text-white' : 'border-[#BFAF95] bg-white text-[#17363A]'}`}>
+        {checked && type === 'checkbox' ? <span aria-hidden="true">✓</span> : label}
       </span>
       <span className="min-w-0 pt-0.5 text-[15px] font-medium leading-6 text-[#17363A]">{text}{hasFeedback && <span className="mt-1 block text-xs font-bold">{state === 'correct' ? 'Correct' : state === 'partial' ? 'Partially correct' : 'Incorrect — review the feedback'}</span>}</span>
     </label>

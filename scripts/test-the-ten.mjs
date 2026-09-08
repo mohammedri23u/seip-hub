@@ -1,28 +1,100 @@
 import assert from 'node:assert/strict'
-import { checkpointState, nextJourneyAction, isSubmitted } from '../src/lib/the-ten/journey.ts'
+import { attachLearnerMembershipStatus, checkpointState, nextJourneyAction, isSubmitted, retainedLearnerMembershipStatuses } from '../src/lib/the-ten/journey.ts'
 import { formativeAnswerReducer as reduce, initialAnswerState, validFormativeFeedback } from '../src/lib/the-ten/case-flow.ts'
 import { releasedScoreOutcome } from '../src/lib/the-ten/feedback.ts'
+import { assessmentResponseRows, assessmentResponseValues, InvalidAssessmentResponse } from '../src/lib/assessment/submission.ts'
 
 const now = Date.parse('2026-09-08T12:00:00Z')
 const assessment = { id: 'a', title: 'Baseline', cohort_id: 'c', assessment_type: 'diagnostic', status: 'live', opens_at: null, closes_at: null, duration_minutes: null }
 const attempt = { id: 't', assessment_id: 'a', status: 'in_progress', submitted_at: null }
-assert.equal(checkpointState(assessment, undefined, now).state, 'available')
-assert.equal(checkpointState(assessment, attempt, now).state, 'in_progress')
+assert.equal(checkpointState(assessment, undefined, { now }).state, 'available')
+assert.equal(checkpointState(assessment, attempt, { now }).state, 'in_progress')
 for (const fields of [{ status: 'scheduled' }, { opens_at: '2026-09-09T12:00:00Z' }, { closes_at: '2026-09-07T12:00:00Z' }, { status: 'grading' }, { status: 'released' }]) {
-  assert.equal(checkpointState({ ...assessment, ...fields }, attempt, now).state, 'locked')
+  assert.equal(checkpointState({ ...assessment, ...fields }, attempt, { now }).state, 'locked')
 }
-assert.equal(checkpointState({ ...assessment, closes_at: '2026-09-08T12:00:00Z' }, attempt, now).state, 'in_progress')
-assert.equal(checkpointState(assessment, { ...attempt, status: 'invalidated' }, now).href, undefined)
+assert.equal(checkpointState({ ...assessment, closes_at: '2026-09-08T12:00:00Z' }, attempt, { now }).state, 'in_progress')
+assert.equal(checkpointState(assessment, { ...attempt, status: 'invalidated' }, { now }).href, undefined)
 assert.equal(isSubmitted({ ...attempt, status: 'invalidated' }), false)
 assert.equal(isSubmitted({ ...attempt, status: 'late' }), true)
-assert.equal(checkpointState(assessment, { ...attempt, status: 'submitted' }, now).href, '/learner/progress')
-assert.equal(checkpointState({ ...assessment, status: 'released' }, { ...attempt, status: 'submitted' }, now).href, '/learner/results/t')
+assert.equal(checkpointState(assessment, { ...attempt, status: 'submitted' }, { now }).href, '/learner/progress')
+assert.equal(checkpointState({ ...assessment, status: 'released' }, { ...attempt, status: 'submitted' }, { now }).href, '/learner/results/t')
+assert.equal(checkpointState(assessment, undefined, { now, canTake: false }).label, 'Cohort completed')
+assert.equal(checkpointState({ ...assessment, status: 'released' }, { ...attempt, status: 'submitted' }, { now, canTake: false }).href, '/learner/results/t')
 
-const data = { name: null, cohorts: [{ id: 'c', name: 'Cohort' }], assessments: [assessment], attempts: [], sessions: [{ id: 's', title: 'Session', status: 'live' }], attendance: [] }
+assert.deepEqual(retainedLearnerMembershipStatuses, ['active', 'completed'])
+assert.deepEqual(attachLearnerMembershipStatus(
+  [{ id: 'active', name: 'Active' }, { id: 'completed', name: 'Completed' }, { id: 'other', name: 'Other' }],
+  [{ cohort_id: 'active', status: 'active' }, { cohort_id: 'completed', status: 'completed' }],
+), [
+  { id: 'active', name: 'Active', membership_status: 'active' },
+  { id: 'completed', name: 'Completed', membership_status: 'completed' },
+])
+
+const data = { name: null, cohorts: [{ id: 'c', name: 'Cohort', membership_status: 'active' }], assessments: [assessment], attempts: [], sessions: [{ id: 's', cohort_id: 'c', title: 'Session', status: 'live' }], attendance: [] }
 assert.equal(nextJourneyAction(data, now).href, '/assessments/a/take')
 assert.equal(nextJourneyAction({ ...data, assessments: [] }, now).href, '/learner/sessions/s')
 assert.equal(nextJourneyAction({ ...data, assessments: [], sessions: [] }, now).href, '/learner/progress')
 assert.equal(nextJourneyAction({ ...data, cohorts: [], assessments: [], sessions: [] }, now).href, '/learner/orientation')
+const completedHistory = { ...data, cohorts: [{ id: 'c', name: 'Completed cohort', membership_status: 'completed' }] }
+assert.equal(nextJourneyAction(completedHistory, now).href, '/learner/progress')
+const mixedJourney = {
+  ...completedHistory,
+  cohorts: [...completedHistory.cohorts, { id: 'current', name: 'Current cohort', membership_status: 'active' }],
+  sessions: [...completedHistory.sessions, { id: 'current-session', cohort_id: 'current', title: 'Current session', status: 'live' }],
+}
+assert.equal(nextJourneyAction(mixedJourney, now).href, '/learner/sessions/current-session')
+
+const multipleItem = { question_version_id: 'multiple', question_type: 'multiple_response', options: [{ id: 'a' }, { id: 'b' }, { id: 'c' }] }
+let formData = new FormData()
+assert.deepEqual(assessmentResponseValues(multipleItem, formData), { selected_option_id: null, selected_option_ids: [], text_response: null })
+assert.deepEqual(assessmentResponseRows([multipleItem], formData, 'attempt'), [{
+  attempt_id: 'attempt',
+  question_version_id: 'multiple',
+  selected_option_id: null,
+  selected_option_ids: [],
+  text_response: null,
+}])
+formData.append('q_multiple', 'b')
+assert.deepEqual(assessmentResponseValues(multipleItem, formData), { selected_option_id: null, selected_option_ids: ['b'], text_response: null })
+formData.append('q_multiple', 'a')
+assert.deepEqual(assessmentResponseValues(multipleItem, formData), { selected_option_id: null, selected_option_ids: ['a', 'b'], text_response: null })
+formData.append('q_multiple', 'b')
+assert.deepEqual(assessmentResponseValues(multipleItem, formData), { selected_option_id: null, selected_option_ids: ['a', 'b'], text_response: null })
+assert.deepEqual(assessmentResponseRows([multipleItem], formData, 'attempt'), [{
+  attempt_id: 'attempt',
+  question_version_id: 'multiple',
+  selected_option_id: null,
+  selected_option_ids: ['a', 'b'],
+  text_response: null,
+}])
+formData = new FormData()
+formData.append('q_multiple', 'not-delivered')
+assert.throws(() => assessmentResponseValues(multipleItem, formData), InvalidAssessmentResponse)
+
+const singleItem = { ...multipleItem, question_version_id: 'single', question_type: 'single_best_answer' }
+formData = new FormData()
+assert.equal(assessmentResponseValues(singleItem, formData), null)
+formData.append('q_single', 'c')
+assert.deepEqual(assessmentResponseValues(singleItem, formData), { selected_option_id: 'c', selected_option_ids: null, text_response: null })
+formData.append('q_single', 'a')
+assert.throws(() => assessmentResponseValues(singleItem, formData), InvalidAssessmentResponse)
+
+formData = new FormData()
+formData.append('q_written', '  Clinical reasoning  ')
+assert.deepEqual(assessmentResponseValues({ question_version_id: 'written', question_type: 'structured_written', options: [] }, formData), {
+  selected_option_id: null,
+  selected_option_ids: null,
+  text_response: 'Clinical reasoning',
+})
+const mixedForm = new FormData()
+mixedForm.append('q_single', 'a')
+mixedForm.append('q_multiple', 'c')
+assert.deepEqual(assessmentResponseRows([singleItem, multipleItem], mixedForm, 'attempt'), [
+  { attempt_id: 'attempt', question_version_id: 'single', selected_option_id: 'a', selected_option_ids: null, text_response: null },
+  { attempt_id: 'attempt', question_version_id: 'multiple', selected_option_id: null, selected_option_ids: ['c'], text_response: null },
+])
+mixedForm.append('q_multiple', 'not-delivered')
+assert.throws(() => assessmentResponseRows([singleItem, multipleItem], mixedForm, 'attempt'), InvalidAssessmentResponse)
 
 assert.equal(reduce(initialAnswerState, { type: 'submit' }), initialAnswerState)
 let state = reduce(initialAnswerState, { type: 'select', optionId: 'o' })
@@ -46,4 +118,4 @@ assert.equal(reduce(state, { type: 'fail' }), state)
 for (const [score, max, expected] of [[0, 2, 'incorrect'], [1, 2, 'partial'], [2, 2, 'correct'], [3, 2, null], [-1, 2, null], [0, 0, null], [NaN, 2, null]]) {
   assert.equal(releasedScoreOutcome(score, max), expected)
 }
-console.log('THE TEN: checkpoint windows, invalidation/release gates, next actions, feedback integrity, retry, duplicate-submit and locked-answer checks passed.')
+console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, multiple-response normalization, incompatible-field clearing, feedback integrity, retry, duplicate-submit and released-score checks passed.')

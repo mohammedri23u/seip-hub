@@ -52,7 +52,8 @@ export function FormativeQuestion({ question, character, submitAnswer, onBusy, o
       state={state.selected === option.id ? state.feedback?.outcome ?? (state.status === 'submitting' ? 'submitting' : 'selected') : 'idle'}
       onChange={() => dispatch({ type: 'select', optionId: option.id })} />)}</fieldset>
     {question.lockedReason && <p className="ten-notice">Locked: {question.lockedReason}</p>}
-    <div aria-live="polite" aria-atomic="true">{state.error && <p role="alert" className="ten-notice ten-notice-error">{state.error}</p>}{state.status === 'submitting' && <p>Confirming your answer…</p>}{state.feedback && presentation && <div className="ten-feedback-sequence"><FeedbackPanel state={state.feedback.outcome} title={presentation.title}>{state.feedback.explanation}</FeedbackPanel></div>}</div>
+    {state.error && <p role="alert" className="ten-notice ten-notice-error">{state.error}</p>}
+    <div aria-live="polite" aria-atomic="true">{state.status === 'submitting' && <p>Confirming your answer…</p>}{state.feedback && presentation && <div className="ten-feedback-sequence"><FeedbackPanel state={state.feedback.outcome} title={presentation.title}>{state.feedback.explanation}</FeedbackPanel></div>}</div>
     {state.status !== 'review' && <button type="button" className="ten-action" disabled={locked || !state.selected} onClick={submit}>{state.status === 'submitting' ? 'Submitting…' : 'Confirm answer'}</button>}
     {character && <div className="ten-spaced"><CharacterGuide character={character} reaction={presentation?.reaction ?? (state.status === 'submitting' ? 'thinking' : question.lockedReason ? 'locked' : 'guide')} message={state.feedback ? 'Take a moment with the explanation before continuing.' : 'Consider the evidence before you commit to an answer.'} /></div>}
   </section>

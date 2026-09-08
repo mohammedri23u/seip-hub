@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { CaseCard } from './case-card'
 import { StatusBadge } from './status-badge'
-import { checkpointState, formatJourneyDate, isSubmitted, type JourneyData } from '@/lib/the-ten/journey'
+import { checkpointState, formatJourneyDate, isActiveLearnerCohort, isSubmitted, type JourneyData } from '@/lib/the-ten/journey'
 
 export function JourneySummary({ data }: { data: JourneyData }) {
   const attended = data.attendance.filter(a => a.status === 'present' || a.status === 'late').length
@@ -28,7 +28,11 @@ export function SessionCards({ data }: { data: JourneyData }) {
 export function CheckpointCards({ data }: { data: JourneyData }) {
   if (!data.assessments.length) return <div className="ten-empty"><h3>No checkpoints announced yet</h3><p>Baseline, formative, and final assessments will appear here when published for your cohort.</p></div>
   return <div className="ten-card-grid">{data.assessments.map(assessment => {
-    const view = checkpointState(assessment, data.attempts.find(a => a.assessment_id === assessment.id))
+    const view = checkpointState(
+      assessment,
+      data.attempts.find(a => a.assessment_id === assessment.id),
+      { canTake: isActiveLearnerCohort(data, assessment.cohort_id) },
+    )
     return <CaseCard key={assessment.id} title={assessment.title} description={view.reason} badge={assessment.assessment_type.replaceAll('_', ' ')}
       state={view.state} statusLabel={view.label} actionLabel={view.label} href={view.href} lockedReason={view.state === 'locked' ? 'Your facilitator controls access to this checkpoint.' : undefined}
       meta={`${data.cohorts.find(c => c.id === assessment.cohort_id)?.name ?? 'Checkpoint'}${assessment.duration_minutes ? ` · ${assessment.duration_minutes} min` : ' · Untimed'}`} />

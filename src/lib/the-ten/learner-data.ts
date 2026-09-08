@@ -1,16 +1,17 @@
 import 'server-only'
 import { requireUser } from '@/lib/auth/require-user'
-import type { JourneyData, LearnerAssessment, LearnerAttempt, LearnerSession, Attendance } from './journey'
+import { attachLearnerMembershipStatus, retainedLearnerMembershipStatuses, type JourneyData, type LearnerAssessment, type LearnerAttempt, type LearnerSession, type Attendance, type LearnerMembership } from './journey'
 
 /** Uses the signed-in user's client and existing RLS. Never reads protected question keys. */
 export async function getLearnerJourney(): Promise<JourneyData> {
   const { supabase, userId } = await requireUser()
   const [profile, memberships] = await Promise.all([
     supabase.from('profiles').select('full_name').eq('id', userId).maybeSingle(),
-    supabase.from('cohort_memberships').select('cohort_id').eq('user_id', userId).eq('member_type', 'learner').eq('status', 'active'),
+    supabase.from('cohort_memberships').select('cohort_id, status').eq('user_id', userId).eq('member_type', 'learner').in('status', [...retainedLearnerMembershipStatuses]),
   ])
   if (profile.error || memberships.error) throw new Error('Could not load learner membership.')
-  const ids = [...new Set((memberships.data ?? []).map(m => m.cohort_id as string))]
+  const membershipRows = (memberships.data ?? []) as LearnerMembership[]
+  const ids = [...new Set(membershipRows.map((membership) => membership.cohort_id))]
   if (!ids.length) return { name: profile.data?.full_name ?? null, cohorts: [], sessions: [], assessments: [], attempts: [], attendance: [] }
   const [cohorts, sessions, assessments] = await Promise.all([
     supabase.from('cohorts').select('id, name').in('id', ids).order('name'),
@@ -26,7 +27,8 @@ export async function getLearnerJourney(): Promise<JourneyData> {
   ])
   if (attendance.error || attempts.error) throw new Error('Could not load your progress.')
   return {
-    name: profile.data?.full_name ?? null, cohorts: cohorts.data ?? [],
+    name: profile.data?.full_name ?? null,
+    cohorts: attachLearnerMembershipStatus(cohorts.data ?? [], membershipRows),
     sessions: (sessions.data ?? []) as LearnerSession[], assessments: (assessments.data ?? []) as LearnerAssessment[],
     attendance: (attendance.data ?? []) as Attendance[], attempts: (attempts.data ?? []) as LearnerAttempt[],
   }

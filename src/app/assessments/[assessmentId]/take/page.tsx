@@ -45,7 +45,16 @@ export default async function TakeAssessmentPage({
     .eq('learner_id', userId)
     .maybeSingle()
 
-  const availability = checkpointState(assessment, attempt ?? undefined)
+  const { data: learnerMembership } = await supabase
+    .from('cohort_memberships')
+    .select('status')
+    .eq('cohort_id', assessment.cohort_id)
+    .eq('user_id', userId)
+    .eq('member_type', 'learner')
+    .in('status', ['active', 'completed'])
+    .maybeSingle()
+
+  const availability = checkpointState(assessment, attempt ?? undefined, { canTake: learnerMembership?.status === 'active' })
   if (availability.state === 'locked' && (!attempt || attempt.status === 'in_progress')) {
     return <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
       <section className="ten-panel"><h2>{availability.label}</h2><p>{availability.reason}</p></section>

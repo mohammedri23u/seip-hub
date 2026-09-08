@@ -17,7 +17,7 @@ export function FeedbackPanel({
   children: ReactNode
 }) {
   return (
-    <div aria-live="polite" className={`rounded-[20px] border p-4 motion-safe:animate-[theTenFeedbackIn_280ms_ease-out] ${styles[state]}`}>
+    <div className={`rounded-[20px] border p-4 motion-safe:animate-[theTenFeedbackIn_280ms_ease-out] ${styles[state]}`}>
       <p className="text-sm font-black tracking-wide">{title}</p>
       <div className="mt-1 text-sm leading-6">{children}</div>
     </div>
