@@ -2,6 +2,10 @@
 
 :root {
   color-scheme: light;
+  --the-ten-parchment: #f7f0df;
+  --the-ten-ink: #17363a;
+  --the-ten-teal: #1f6668;
+  --the-ten-gold: #d8a94e;
 }
 
 * {
@@ -9,13 +13,15 @@
 }
 
 html {
-  background: #f1f5f9;
+  background: var(--the-ten-parchment);
 }
 
 body {
   margin: 0;
-  background: #f1f5f9;
-  color: #0f172a;
+  background:
+    radial-gradient(circle at top right, rgba(70, 185, 189, 0.08), transparent 28rem),
+    linear-gradient(180deg, #fbf6e9 0%, var(--the-ten-parchment) 100%);
+  color: var(--the-ten-ink);
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -30,4 +36,31 @@ select {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(31, 102, 104, 0.32);
+  outline-offset: 3px;
+}
+
+@keyframes theTenFeedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
