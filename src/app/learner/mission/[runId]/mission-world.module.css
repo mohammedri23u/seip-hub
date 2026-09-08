@@ -1,0 +1,49 @@
+.root {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+  background-color: #f7f0df;
+  background-image:
+    linear-gradient(180deg, rgba(247, 240, 223, .72), rgba(247, 240, 223, .92)),
+    url('/the-ten/world/baghdad.png');
+  background-size: cover;
+  background-position: center top;
+}
+
+.root > :global(main) {
+  background-color: rgba(247, 240, 223, .78) !important;
+}
+
+.root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(70, 185, 189, .09), transparent 26rem),
+    linear-gradient(90deg, rgba(23, 54, 58, .04), transparent 18%, transparent 82%, rgba(23, 54, 58, .04));
+}
+
+@media (max-width: 767px) {
+  .root {
+    background-size: auto 72vh;
+    background-repeat: no-repeat;
+    background-position: 50% 4rem;
+  }
+
+  .root > :global(main) {
+    background-color: rgba(247, 240, 223, .89) !important;
+  }
+
+  .root::before {
+    background: linear-gradient(180deg, rgba(247, 240, 223, .05), rgba(247, 240, 223, .42) 34rem, transparent 52rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .root * {
+    scroll-behavior: auto !important;
+  }
+}
