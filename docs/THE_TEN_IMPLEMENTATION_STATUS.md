@@ -1,108 +1,211 @@
-# THE TEN Implementation Status
+# THE TEN — BAGHDAD NEXUS Implementation Status
 
-## Current branch and preservation
+Updated: 2026-09-08
+Branch: `codex/the-ten-interaction-system`
+PR: #3 (Draft, not merged)
 
-Continued on `codex/the-ten-interaction-system` from its remote tracking branch on 2026-09-08.
+## Preservation and safety
 
-All previous tracked and untracked work from `main` is preserved in the untouched safety stash:
-`On main: safety/main-before-the-ten-interaction-system-2026-09-08`.
-No stash content was applied or copied into this branch. This learner-experience slice is prepared for remote review through the existing PR #3; it is not merged into `main`. No deployment action was performed.
+- `main` remains unchanged by this work.
+- The existing safety stash remains untouched: `safety/main-before-the-ten-interaction-system-2026-09-08` (`7f41c60a9efdee77be5fe874d0d14a6da5f4a210`).
+- No stash apply/pop/drop, hard reset, or merge to `main` is part of this implementation.
+- Learner, facilitator, assessment, grading, and certificate authority remains server/database-backed; page visits never fabricate completion.
 
-## Implemented learner journey slice
+## Product direction now implemented
 
-- `/learner`: approved Baghdad hero and focused Nexus progression art with accessible text world navigation, next action, recorded participation, session cards, and checkpoint cards.
-- `/learner/orientation`: four concise orientation steps with links into the journey.
-- `/learner/sessions` and `/learner/sessions/[sessionId]`: scheduled/live/ended/cancelled sessions, briefings, learning objectives, and the learner's recorded attendance.
-- `/learner/assessments`: available, in-progress, upcoming, closed, submitted, released, and invalidated checkpoint states; visible opening/lock reasons and start-failure feedback.
-- `/learner/progress`: attendance and checkpoint history with released-result links. Session ended, attendance recorded, and assessment submitted remain separate facts.
-- `/learner/results/[attemptId]`: ownership-filtered, release-gated response scores. Final reviewed decisions take precedence over recorded objective scores. No overall grade is invented from an incomplete response set; protected questions, keys, draft reviews, and internal rationales are not fetched.
-- `/learner/certificate`: explicit eligibility-unavailable state with a progress link. There is no certificate backend contract in this branch.
-- Active and completed learner cohort memberships are retained in the journey. Completed cohorts keep historical sessions, attendance, progress, released results, and a path for future certificate evidence; only active cohorts contribute current/next actions or checkpoint availability.
-- Persistent learner navigation, orientation/account menu, sign out, skip link, and links from the existing SEIP dashboard/workspace.
-- Formal assessment taking uses the learner shell and retains the existing action binding and `q_<question_version_id>` fields. Single-answer questions use radios, `multiple_response` uses native checkboxes with multiple selected IDs, and written responses remain text. Pending submission disables edits; keyboard focus is visible on answer labels. Invalidated attempts no longer display a success state. Closed/unopened checkpoints show an explanation.
-- A focused final-confirmation step reports answered and unanswered counts plus exact unanswered question numbers before an attempt can be locked.
-- Loading, fetch-error/retry, empty, and missing-art states.
+The learner-facing product is no longer organized primarily as an LMS dashboard. The primary journey is:
 
-## Reusable formative case flow
+`Sign in → Orientation → Entry Baseline → Baghdad World → M01 → M02 → M03 → M04 → My Codex / Nexus Echo → Exit Transfer Check → Final Feedback → Completion Certificate`
 
-`CaseExperience`, `CaseProgressTracker`, and `FormativeQuestion` support Intro → History → Examination → Investigations → Management → Summary.
+The website is a mobile-first interactive reasoning companion. It contains no Zoom SDK, meeting link, embedded video room, or dependency on a specific conferencing platform. Peer discussion occurs in the teaching space around the learner; the phone is used for private commit, optional confidence, revote, structured reasoning interactions, transfer and reflection.
 
-The adapter supplies published sections, completion/lock state, and confirmed feedback. The answer state machine supports idle, selected, submitting, locked review, correct, incorrect, partial, and retry after a failed confirmation. It rejects mismatched feedback, prevents duplicate submissions, preserves the reviewed selection across section navigation, and does not advance persisted completion based on clicks. Formative feedback now has one owning `aria-live` region; `FeedbackPanel` no longer nests a second announcement region.
+## Canonical content
 
-`CharacterGuide` reactions resolve through the typed asset manifest. The four approved neutral portraits are staged and every unavailable reaction pose falls back to the matching neutral identity. No pose is invented.
+`THE_TEN_FIRST_ACTIVATION_CONTENT_v1.0` is the educational source of truth. The four published missions in `ten_content` are loaded from the canonical structured package:
 
-Motion uses the existing centralized timing tokens, short directional section exit/entry, a single feedback pulse/nudge, delayed explanation, and reduced-motion fallbacks. The page shell remains still.
+- `M01 — SEE THE PATTERN` · Ibn Sina · 6 stages
+- `M02 — QUESTION THE EVIDENCE` · Al-Razi · 6 stages
+- `M03 — TEST THE HYPOTHESIS` · Jabir ibn Hayyan · 6 stages
+- `M04 — TREAT THE PATIENT` · Hippocrates · 7 stages
 
-The case flow is tested with synthetic fixtures only. It is **not connected to a live case feed**: this branch has no published case content/delivery/feedback contract. No mock clinical cases are shipped to learners.
+The runtime preserves the supplied sequence, options, answer keys, expected reasoning, mentor lenses, error tags, transfer cases, clinical references and Nexus Echo content. It does not invent missing `promptIfStuck` or dedicated PPT cue fields; the canonical stage ID is used as the presenter cue where needed.
 
-## Backend contracts preserved
+The Entry Baseline and Exit Transfer Check each contain the canonical 12-item low-stakes reasoning bank. The source-truth correction migration fixed an earlier 0-based answer-index interpretation before any attempts existed. Database verification confirms the canonical keys: B, C, B, B, A, B, B, B, B, B, B, B.
 
-- Existing Supabase auth client, claims checks, session refresh, RLS, migrations, assessment delivery RPC, scoring triggers, and grading workflow are unchanged.
-- Journey reads use active and completed learner cohort memberships through the signed-in user's client. Attempts/attendance are explicitly filtered to that user and the retained cohort content. Presentation logic uses membership status to separate current learning from historical access.
-- The assessment submission action now builds and validates the complete response payload before writing. Multiple-response IDs must belong to the delivered question; zero, one, and multiple selections use `selected_option_ids`, while `selected_option_id` and `text_response` are cleared. Single-answer and written rows likewise clear incompatible fields. Existing RLS and database validation/scoring triggers remain authoritative.
-- Checkpoint opening times are presentation checks only. Existing RLS/RPCs remain the authority for taking and submitting an assessment.
-- Formal correctness stays hidden before release, including for a learner who also has a staff role.
-- No certificate eligibility, attendance, mastery, or mission completion is inferred from UI interaction.
-- No database writes or schema changes were made during this work.
+Assessment language remains formative: these records do not independently certify clinical competence, confidence is not a mark multiplier, and no public learner ranking is exposed.
+
+## Baghdad learner journey
+
+`/learner` is now a journey gate and world, not a sessions/checkpoints dashboard:
+
+- Before orientation: Baghdad remains narratively closed.
+- After orientation but before baseline: illustrated Nexus Entry Gate.
+- After baseline: full Baghdad World with a central Nexus and four Signal locations.
+- Each Signal visibly represents locked/waiting/live/completed state and links directly into the synchronized mission when available.
+- Desktop uses a world map with four mentor Signal hotspots and Nexus connections; mobile uses a compact four-Signal mission dock over the world art.
+- Accessible Signal Dossiers remain below the visual world as a conventional text/navigation path.
+- Completed Signals remain visible as persistent world progression.
+
+Primary learner navigation is now `Baghdad`, `My Codex`, and `Completion`. Historical sessions/checkpoints routes remain available as supporting/fallback records rather than the product's primary mental model.
+
+## Live Mission Engine
+
+Learner mission route: `/learner/mission/[runId]`
+
+The synchronized room supports:
+
+- Waiting
+- Commit Open
+- Commit Locked
+- Peer Discussion only on canonical peer-instruction stages
+- Revote Open
+- Reveal
+- next-stage progression
+- Transfer micro-case
+- Debrief
+- Completed
+
+Server-side command validation prevents invalid transitions. Non-peer stages correctly skip Discussion/Revote. Learner answer writes are accepted only during the permitted room state.
+
+Supported canonical interaction patterns include:
+
+- single choice
+- true/false
+- multiselect
+- free text
+- Problem Representation + differential categories
+- Evidence Map
+- diagnosis + confidence
+- differential + probability
+- team commit
+- transfer response
+
+Revote preloads the learner's initial response so changing or retaining an answer is deliberate. Initial and revote records remain separate. Required confidence must be selected before submission at marked stages. Future clues, answer keys and feedback remain excluded from learner snapshots until Reveal.
+
+Mission-specific color atmosphere differentiates Pattern, Evidence, Hypothesis and Treatment while keeping one franchise language. Character reaction requests use the typed asset manifest and safely fall back to each approved neutral portrait until approved pose files exist.
+
+## Realtime, attendance and completion safety
+
+Realtime broadcasts are separated into room-state events and response-count events so learner submissions do not create unnecessary whole-room state storms. Polling remains a resilience fallback.
+
+Live-response inserts create/update attendance records for actual participating learners. A waiting-room page visit by itself does not grant mission completion.
+
+Mission Signal / My Codex credit is guarded at the database layer: a learner must have a recorded response for every required stage index plus the transfer response. Completing the room cannot fabricate credit for a passive or incomplete learner.
+
+A facilitator-only metrics RPC exposes:
+
+- joined learners
+- completion-ready learners
+- incomplete learners
+- initial vote distribution
+- revote distribution
+- initial confidence mean
+- revote confidence mean
+- changed-answer count
+
+These are process/learning signals, not competence labels.
+
+## Facilitator experience
+
+Facilitator route: `/facilitator/the-ten`
+
+Four prepared 90-minute First Activation sessions are seeded once with join codes `TEN-M01` through `TEN-M04`. The facilitator does not rebuild content per delivery.
+
+Normal use is:
+
+`Make session live → Commit → Lock → (Discussion → Revote when canonical) → Reveal → Next → Transfer → Debrief → Complete`
+
+Room creation is the authoritative launch path and atomically marks the prepared session live. It does not rely on a broad direct session-update permission.
+
+The live facilitator UI exposes response progress, presenter stage ID, expected reasoning, mentor lens, common errors, confidence shift, initial/revote distributions, changed-answer count, and completion-readiness warnings.
+
+After completion, the facilitator records a fidelity closeout covering:
+
+- individual commit before discussion
+- answer withheld until Reveal
+- rationale elicited
+- debrief completed
+- optional delivery notes
+
+Fidelity data is explicitly a delivery/process record, not a one-session teacher-quality score.
+
+## My Codex and Nexus Echo
+
+`/learner/progress` is presented as `My Codex`.
+
+Each eligible completed Signal stores its reasoning principle, completion time and learner reflection. Nexus Echo items remain locked until their canonical delayed-retrieval time; the current structured package uses 60 hours, within the intended 48–72 hour interval. The answer anchor remains hidden until the learner first submits a retrieval response.
+
+## Pre-test, post-test and completion
+
+Journey configuration links:
+
+- `THE TEN — Entry Baseline` (`diagnostic`, 12 items)
+- `THE TEN — Exit Transfer Check` (`final`, 12 items)
+
+The pre-test is gated by orientation. Mission access is gated by the submitted Entry Baseline. The post-test is gated by completion of all four required Signals.
+
+`/learner/certificate` reads persisted backend records for:
+
+- orientation
+- Entry Baseline
+- four required mission Signals
+- Exit Transfer Check
+- configured attendance requirement
+- final program feedback
+
+Only an eligible journey can issue a completion certificate. The certificate stores a verification code and eligibility snapshot. It is described as a completion record, not a validated clinical-competence credential.
+
+## AI boundary
+
+The existing server-only OpenAI grading integration remains optional and advisory for written-response rubric support. It is not required for mission progression and is not exposed as a learner chatbot. Human review/moderation remains authoritative for final written grading decisions.
+
+The core First Activation journey remains functional when `OPENAI_API_KEY` is absent.
+
+## Visual assets
+
+Production currently includes:
+
+- clean THE TEN — BAGHDAD NEXUS lockup
+- crest
+- Baghdad world artwork
+- Nexus artwork
+- approved neutral portraits for Ibn Sina, Al-Razi, Jabir ibn Hayyan and Hippocrates
+
+Approved reaction-pose PNGs, isolated decorative/vector exports and medical-system icon exports are not yet physically present. Missing reaction states intentionally fall back to the corresponding neutral portrait; no character likeness is fabricated in code.
+
+## Database migrations added for First Activation
+
+- `20260908030720_ten_first_activation`
+- `20260908212856_ten_journey_assessment_seed`
+- `20260908214008_ten_first_activation_sessions`
+- `20260908215241_ten_assessment_source_truth_correction`
+- `20260908215612_ten_runtime_live_hardening`
+- `20260908220213_ten_journey_fk_indexes`
+- `20260908220542_ten_facilitator_metrics`
+
+The remote Supabase project contains matching applied migrations.
 
 ## Validation
 
-- `npm ci`: passed (lockfile unchanged).
-- Initial typecheck found stale `.next` generated types from the prior branch. The old cache was preserved at `/tmp/the-ten-previous-build.PjxVig`; regenerated types/build passed without changing backend source.
-- Final pre-push validation (2026-09-08): `npm run typecheck`, `npm run build`, and the state tests below all passed. The build also passed with build-only Supabase placeholders, without requiring live project credentials.
-- `node --experimental-strip-types scripts/test-the-ten.mjs`: passed. Covers active/completed membership retention, current-mission separation, checkpoint windows, historical released-result access, zero/one/multiple selection payloads, delivery-ID rejection, incompatible-field clearing, complete-payload validation, feedback identity checks, retry, duplicate submission, locked answers, and released-score bounds.
-- Browser-rendered route/component harness with synthetic data: desktop 1440px, tablet 768px, mobile 390px and 320px; no page overflow, browser errors, failed requests, missing images, or image 404s. Captured learner home, orientation, sessions, checkpoints, assessment taking, progress, results, and mobile learner home. Checked skip link/account menu, keyboard radio/checkbox selection and focus, reduced motion, answered/unanswered confirmation, one Baghdad image preload, and lazy secondary artwork.
-- Production runtime: signed-out visits to learner home, progress, certificate, sessions, checkpoints, and a result route redirected to `/login`.
-- Local QA harness and screenshots: `/tmp/the-ten-browser-qa/` (not deployed).
-- Authenticated learner reads against the connected database and multi-device behavior were not exercised. Synthetic component checks do not establish production data integration.
+The GitHub Quality Gate runs:
 
-## Staged and missing visual assets
+- `npm ci`
+- `npm run typecheck`
+- `node --experimental-strip-types scripts/test-the-ten.mjs`
+- `npm run build`
 
-Stage 1 includes the clean and crest brand marks, Baghdad and Nexus world art, and neutral portraits for Ibn Sina, Jabir ibn Hayyan, Hippocrates, and Al-Razi. The two composed reference screenshots remain outside `public/` and are not shipped.
+The latest fully checked implementation before this status update passed typecheck, learner regression tests and production build in GitHub Actions. Each subsequent implementation commit remains subject to the same PR Quality Gate before review/merge.
 
-Remaining dependencies are the nine approved reaction poses per character, isolated decorative/vector exports, and medical-system icon exports. `missingCharacterAssets` enumerates only unavailable reaction paths.
+The existing browser QA covered 1440, 768, 390 and 320 px layouts, keyboard interaction and reduced motion. A final authenticated multi-device rehearsal remains the last meaningful operational QA: one facilitator device plus at least two learner phones traversing a full mission in realtime.
 
-## Next recommended slice
+## Deployment/security notes still requiring account-level action
 
-1. Export and approve reaction poses, decorative elements, and medical-system icons as isolated production assets; do not derive them from composed references.
-2. Supply the published formative case content/feedback contract and connect it to `CaseExperience`; authoritative feedback and completion must remain outside the UI.
-3. Supply the authoritative certificate requirements/eligibility/issued-certificate contract, then replace the explicit unavailable state with a linked checklist and view/download action.
-4. Run authenticated integration QA for active and completed learner memberships, multiple-response scoring, released results, case delivery, and certificate states.
+Supabase database advisors were reviewed. New journey foreign-key index findings were addressed. TEN/journey tables intentionally expose no direct RLS policies because they are RPC-only surfaces; SECURITY DEFINER RPCs perform their own user/session/role checks before accessing those tables.
 
-## Changed file inventory
+One account-level Auth setting remains outside the repository migration surface: Supabase **Leaked Password Protection** is currently disabled and should be enabled in Auth settings before production launch.
 
-- Routes: `src/app/learner/page.tsx`, `orientation/page.tsx`, `sessions/page.tsx`, `sessions/[sessionId]/page.tsx`, `assessments/page.tsx`, `progress/page.tsx`, `results/[attemptId]/page.tsx`, `certificate/page.tsx`, `loading.tsx`, and `error.tsx` (all under `src/app/learner/`).
-- Existing route/navigation integration: `src/app/assessments/[assessmentId]/take/page.tsx`, `src/app/assessments/[assessmentId]/take/actions.ts`, `src/app/dashboard/page.tsx`, `src/components/app-shell.tsx`.
-- New components under `src/components/the-ten/`: `learner-shell.tsx`, `journey-overview.tsx`, `world/baghdad-world.tsx`, `case/case-experience.tsx`, `case/case-progress-tracker.tsx`, `case/formative-question.tsx`.
-- Updated components under `src/components/the-ten/`: `answer-option.tsx`, `assessment-experience.tsx`, `case-card.tsx`, `character-guide.tsx`, `progress-tracker.tsx`, and `index.ts`.
-- Presentation/data modules under `src/lib/the-ten/`: `journey.ts`, `learner-data.ts`, `case-flow.ts`, `feedback.ts`, `motion.ts`, and `assets.ts`; formal response normalization lives in `src/lib/assessment/submission.ts`.
-- Styling: `src/app/globals.css`. The generated `next-env.d.ts` import changes were excluded from the commit.
-- CI: `.github/workflows/quality.yml` now uses build-only Supabase placeholders and runs the learner state tests.
-- Regression checks and documentation: `scripts/test-the-ten.mjs`, `src/components/the-ten/README.md`, `docs/THE_TEN_ASSET_CHECKLIST.md`, and this status document.
+Public certificate verification is intentionally callable without learner authentication; all other journey actions remain authenticated and internally authorized.
 
+## Review status
 
-## Remote review audit (2026-09-08)
-
-- Reviewed each changed/untracked file and the complete prospective diff against fetched `origin/main`, including the earlier component-system commits already on PR #3.
-- No changes to SQL/schema, Supabase clients, auth/session helpers, scoring triggers, or grading/AI services. The assessment submission action now supports validated `multiple_response` payloads while preserving its auth, attempt-status, delivery-RPC, upsert, and final-lock authority checks.
-- Credential-pattern and file-type checks found no secrets, environment files, screenshots, generated build artifacts, temporary test output, or unrelated local files in the intended change set. CI project-specific public configuration was replaced with build-only placeholders.
-- `next-env.d.ts` was returned to its tracked contents after validation. `.env.local`, `.next`, dependency directories, browser fixtures, and screenshots remain local and unstaged.
-- PR #3 is open with base `main` and head `codex/the-ten-interaction-system`. Publishing this commit updates that existing PR; no duplicate PR or merge is required.
-- Safety stash identity remains `7f41c60a9efdee77be5fe874d0d14a6da5f4a210` with its original name and position. No stash mutation is part of this review.
-- Remaining fallbacks and the next recommended phase are unchanged: approved art staging, authoritative case-feed/feedback integration, authoritative certificate requirements/eligibility/issued records, then authenticated integration QA.
-
-## PR #3 review findings resolved (2026-09-08)
-
-- Completed learner memberships now retain historical journey access, matching the existing RLS definition of cohort membership. Current-mission and open-checkpoint presentation remains restricted to active memberships.
-- Formal `multiple_response` delivery now uses accessible checkboxes, preserves all selected IDs in client state and FormData, validates IDs against delivered options before any response write, and stores them in `selected_option_ids` with incompatible fields cleared.
-- Formative feedback has a single live announcement owner.
-- Formal assessment locking requires an explicit confirmation that names answered and unanswered counts and lists unanswered question numbers.
-- No artwork was staged while addressing the review. Existing `null` asset entries and text fallbacks remain unchanged.
-
-## Stage 1 approved visual integration (2026-09-08)
-
-- Fast-forwarded to approved asset-map commit `4b180fdba6c2123287a08f2ed340221813ffed25` before staging.
-- Verified and staged only the eight mapped production PNGs under `public/the-ten/`; `references/` was not copied into production.
-- Enabled the clean brand lockup, Baghdad learner-home illustration, focused Nexus progression element, and all four neutral character portraits.
-- Preserved textual journey navigation and all learner-data, assessment, grading, RLS, certificate, and formative-case contracts.
-- Image loading uses `next/image`: Baghdad alone is preloaded as the learner-home LCP candidate; lockup, Nexus, and portraits remain lazy with responsive `sizes`.
+The implementation remains on Draft PR #3 and is not merged to `main`. Do not merge until the user has reviewed the final visual/interaction experience and an authenticated live-room rehearsal has passed.
