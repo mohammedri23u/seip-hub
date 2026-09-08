@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { FacilitatorRoomIntelligence } from '@/components/the-ten/facilitator-room-intelligence'
 import { LiveMission } from '@/components/the-ten/live-mission'
 import { MissionReasoningTool } from '@/components/the-ten/mission-reasoning-tool'
+import { MissionScratchpad } from '@/components/the-ten/mission-scratchpad'
 import { MissionVisualOverlay } from '@/components/the-ten/mission-visual-overlay'
 import { getTenSnapshot } from '@/lib/the-ten/runtime'
 import styles from './mission-world.module.css'
@@ -35,6 +36,7 @@ export default async function LearnerMissionPage({ params }: { params: Promise<{
     <LiveMission initial={snapshot as never} />
     <MissionVisualOverlay missionId={snapshot.mission_id} phase={snapshot.phase} />
     {reasoningToolInitial ? <MissionReasoningTool initial={reasoningToolInitial} /> : null}
+    {reasoningToolInitial ? <MissionScratchpad initial={reasoningToolInitial} /> : null}
     {snapshot.manager && snapshot.phase ? <FacilitatorRoomIntelligence runId={runId} initialPhase={snapshot.phase} initialCloseoutSaved={Boolean(snapshot.closeout_saved)} /> : null}
   </div>
 }
