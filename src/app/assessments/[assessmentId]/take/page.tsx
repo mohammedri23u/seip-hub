@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { LearnerShell } from '@/components/the-ten/learner-shell'
 import { AssessmentExperience } from '@/components/the-ten/assessment-experience'
+import { CheckpointGate } from '@/components/the-ten/checkpoint-gate'
+import { LearnerShell } from '@/components/the-ten/learner-shell'
 import { requireUser } from '@/lib/auth/require-user'
 import { checkpointState } from '@/lib/the-ten/journey'
 import { startAssessment, submitAssessment } from './actions'
@@ -12,10 +13,10 @@ type Delivery = { assessment_id: string; title: string; description: string | nu
 
 const backLink = (
   <Link
-    href="/learner/assessments"
+    href="/learner"
     className="rounded-[14px] border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-bold text-[#17363A] transition hover:border-[#1F6668] hover:bg-white motion-reduce:transition-none"
   >
-    Back to checkpoints
+    Back to Baghdad
   </Link>
 )
 
@@ -32,7 +33,7 @@ export default async function TakeAssessmentPage({
 
   const { data: assessment } = await supabase
     .from('assessments')
-    .select('id, cohort_id, title, assessment_type, status, opens_at, closes_at, duration_minutes')
+    .select('id, cohort_id, title, description, assessment_type, status, opens_at, closes_at, duration_minutes')
     .eq('id', assessmentId)
     .maybeSingle()
 
@@ -56,53 +57,35 @@ export default async function TakeAssessmentPage({
 
   const availability = checkpointState(assessment, attempt ?? undefined, { canTake: learnerMembership?.status === 'active' })
   if (availability.state === 'locked' && (!attempt || attempt.status === 'in_progress')) {
-    return <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
+    return <LearnerShell active="/learner" title={assessment.title} actions={backLink}>
       <section className="ten-panel"><h2>{availability.label}</h2><p>{availability.reason}</p></section>
     </LearnerShell>
   }
 
   if (!attempt) {
+    const checkpointKind = assessment.assessment_type === 'diagnostic' ? 'entry' : assessment.assessment_type === 'final' ? 'exit' : 'checkpoint'
     return (
-      <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
-        <section className="mx-auto max-w-2xl overflow-hidden rounded-[32px] border border-[#D8CCB6] bg-[#FFFDF8] shadow-[0_22px_70px_rgba(23,54,58,0.10)]">
-          <div className="border-b border-[#E4D9C5] bg-[#17363A] px-6 py-7 text-[#FFFDF8] sm:px-8">
-            <div className="inline-flex rounded-full border border-[#D8A94E]/50 bg-[#D8A94E]/10 px-3 py-1.5 text-xs font-black tracking-[0.16em] text-[#F2D99B]">
-              NEXUS CHECKPOINT
-            </div>
-            <h2 className="mt-4 text-2xl font-black tracking-tight">Ready to begin?</h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-[#D9E6E3]">
-              Once you enter this checkpoint, your attempt is linked to your account. Move carefully through each question and submit when you are satisfied with your reasoning.
-            </p>
-          </div>
-
-          <div className="p-6 sm:p-8">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[18px] border border-[#E1D3BA] bg-[#FFF7E7] p-4">
-                <p className="text-xs font-black tracking-[0.12em] text-[#8B6A2B]">DURATION</p>
-                <p className="mt-1 font-bold text-[#17363A]">
-                  {assessment.duration_minutes ? `${assessment.duration_minutes} minutes` : 'Untimed'}
-                </p>
-              </div>
-              <div className="rounded-[18px] border border-[#CFE1DC] bg-[#EEF8F5] p-4">
-                <p className="text-xs font-black tracking-[0.12em] text-[#1F6668]">ATTEMPT STATE</p>
-                <p className="mt-1 font-bold text-[#17363A]">Not started</p>
-              </div>
-            </div>
-
+      <LearnerShell active="/learner" immersive title={assessment.title}>
+        <CheckpointGate
+          title={assessment.title}
+          description={assessment.description}
+          durationMinutes={assessment.duration_minutes}
+          kind={checkpointKind}
+          startAction={
             <form action={startAssessment.bind(null, assessmentId)}>
-              <button className="mt-6 min-h-12 w-full rounded-[16px] bg-[#1F6668] px-6 py-3 text-sm font-black text-white shadow-[0_12px_30px_rgba(31,102,104,0.18)] transition hover:-translate-y-0.5 hover:bg-[#195A5C] motion-reduce:transform-none motion-reduce:transition-none">
-                Enter assessment
+              <button className="min-h-14 w-full rounded-[16px] bg-[#d8a94e] px-6 py-3 text-sm font-black text-[#17363a] shadow-[0_12px_30px_rgba(216,169,78,0.20)] transition hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none">
+                {checkpointKind === 'entry' ? 'Open the Entry Gate →' : checkpointKind === 'exit' ? 'Enter the Exit Gate →' : 'Enter checkpoint →'}
               </button>
             </form>
-          </div>
-        </section>
+          }
+        />
       </LearnerShell>
     )
   }
 
   if (attempt.status !== 'in_progress') {
     return (
-      <LearnerShell active="/learner/assessments" title={assessment.title} actions={backLink}>
+      <LearnerShell active="/learner" title={assessment.title} actions={backLink}>
         <div className="mx-auto max-w-2xl rounded-[30px] border border-[#CFE1DC] bg-[#FFFDF8] p-7 text-center shadow-[0_18px_55px_rgba(23,54,58,0.08)] sm:p-9">
           <div className={`mx-auto grid size-14 place-items-center rounded-full text-xl font-black ${attempt.status === 'invalidated' ? 'bg-[#FFF7E8] text-[#86602B]' : 'bg-[#EAF7F1] text-[#2F8A72]'}`}>{attempt.status === 'invalidated' ? '!' : '✓'}</div>
           <p className="mt-4 text-lg font-black text-[#17363A]">{attempt.status === 'invalidated' ? 'Attempt invalidated' : 'Checkpoint submitted'}</p>
@@ -123,7 +106,7 @@ export default async function TakeAssessmentPage({
 
   return (
     <LearnerShell
-      active="/learner/assessments"
+      active="/learner"
       title={delivery.title}
       actions={
         <span className="rounded-[14px] border border-[#D8CCB6] bg-[#FFFDF8] px-4 py-2.5 text-sm font-black text-[#17363A] shadow-sm">
