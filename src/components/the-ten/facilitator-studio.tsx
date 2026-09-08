@@ -6,26 +6,35 @@ import { useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { TenCatalog, TenStudio } from '@/lib/the-ten/runtime'
 
+function missionForSession(joinCode: string | null, title: string) {
+  const code = joinCode?.match(/^TEN-(M0[1-4])$/)?.[1] ?? title.match(/^(M0[1-4])\b/)?.[1]
+  return code ?? null
+}
+
 export function FacilitatorStudio({ studio, catalog }: { studio: TenStudio; catalog: TenCatalog }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const [sessionId, setSessionId] = useState(studio.sessions[0]?.id ?? '')
-  const [missionId, setMissionId] = useState(studio.missions.find(m => m.published)?.id ?? '')
-  const [busy, setBusy] = useState(false)
+  const [busySession, setBusySession] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const existing = catalog.runs.find(run => run.session_id === sessionId)
+  const prepared = studio.sessions
+    .map(session => ({ session, missionId: missionForSession(session.join_code, session.title) }))
+    .filter((item): item is { session: TenStudio['sessions'][number]; missionId: string } => Boolean(item.missionId))
+    .sort((a,b) => a.missionId.localeCompare(b.missionId))
 
-  async function launch() {
-    if (!sessionId || !missionId) return
-    setBusy(true); setError(null)
+  async function launch(sessionId: string, missionId: string) {
+    setBusySession(sessionId); setError(null)
+    const existing = catalog.runs.find(run => run.session_id === sessionId)
     if (existing) { router.push(`/learner/mission/${existing.id}`); return }
 
+    const mission = studio.missions.find(item => item.id === missionId && item.published)
+    if (!mission) { setBusySession(null); setError(`${missionId} is not published.`); return }
+
     const { error: sessionError } = await supabase.from('sessions').update({ status: 'live' }).eq('id', sessionId)
-    if (sessionError) { setBusy(false); setError(sessionError.message); return }
+    if (sessionError) { setBusySession(null); setError(sessionError.message); return }
 
     const { data, error: createError } = await supabase.rpc('ten_api', { operation: 'create', payload: { session_id: sessionId, mission_id: missionId } })
-    setBusy(false)
+    setBusySession(null)
     if (createError) { setError(createError.message); return }
     const runId = (data as { id?: string } | null)?.id
     if (!runId) { setError('The room was created but no run ID was returned.'); return }
@@ -36,18 +45,27 @@ export function FacilitatorStudio({ studio, catalog }: { studio: TenStudio; cata
     {error && <p role="alert" className="rounded-2xl border border-[#c76057] bg-[#fcefed] p-4 font-bold text-[#8c403a]">{error}</p>}
 
     <section className="overflow-hidden rounded-[2rem] border border-[#315b5d] bg-[#17363a] text-white shadow-[0_25px_75px_rgba(23,54,58,.16)]">
-      <div className="p-6 sm:p-8"><p className="text-xs font-black tracking-[.18em] text-[#f2d99b]">FACILITATOR CONTROL ROOM</p><h2 className="mt-3 font-serif text-3xl sm:text-4xl">The content is already built. You only open the signal.</h2><p className="mt-4 max-w-2xl leading-7 text-[#d8e7e2]">Choose the prepared session and mission. Going live creates one synchronized room; learners who completed orientation and the Entry Baseline will see it appear in Baghdad automatically.</p></div>
-      <div className="grid gap-4 border-t border-white/15 bg-[#102f32] p-5 sm:grid-cols-2 sm:p-7">
-        <label className="text-sm font-bold">Prepared session<select className="mt-2 min-h-14 w-full rounded-2xl border border-white/20 bg-[#fffdf8] px-4 text-[#17363a]" value={sessionId} onChange={e => setSessionId(e.target.value)}>{studio.sessions.map(session => <option key={session.id} value={session.id}>{session.title} · {session.cohort} · {session.join_code ?? 'no code'}</option>)}</select></label>
-        <label className="text-sm font-bold">Mission signal<select className="mt-2 min-h-14 w-full rounded-2xl border border-white/20 bg-[#fffdf8] px-4 text-[#17363a]" value={missionId} onChange={e => setMissionId(e.target.value)}>{studio.missions.filter(m => m.published).map(mission => <option key={mission.id} value={mission.id}>{mission.id} · {String(mission.content.title ?? mission.id)}</option>)}</select></label>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/15 p-5 sm:p-7"><div><p className="text-xs font-black tracking-[.12em] text-[#f2d99b]">ROOM STATE</p><p className="mt-1 font-bold">{existing ? `Existing room · ${existing.phase.replaceAll('_',' ')}` : 'No run created for this session yet'}</p></div><button disabled={busy || !sessionId || (!missionId && !existing)} onClick={launch} className="min-h-14 rounded-2xl bg-[#d8a94e] px-6 font-black text-[#17363a] transition active:scale-[.985] disabled:opacity-60">{busy ? 'Opening…' : existing ? 'Open control room →' : 'Make session live →'}</button></div>
+      <div className="p-6 sm:p-8"><p className="text-xs font-black tracking-[.18em] text-[#f2d99b]">FACILITATOR CONTROL ROOM</p><h2 className="mt-3 font-serif text-3xl sm:text-4xl">The four missions are already prepared.</h2><p className="mt-4 max-w-2xl leading-7 text-[#d8e7e2]">Choose the signal you are teaching and press one button. The platform marks its prepared session live, creates the synchronized room, and opens the facilitator controls. Learners see it in Baghdad automatically after their Entry Baseline.</p></div>
     </section>
 
     <section className="grid gap-4 md:grid-cols-2">
-      {studio.missions.map(mission => <article key={mission.id} className="rounded-[1.5rem] border border-[#d8ccb6] bg-[#fffdf8] p-5"><div className="flex items-center justify-between gap-3"><span className="rounded-full bg-[#17363a] px-3 py-1 text-[10px] font-black tracking-[.14em] text-[#f2d99b]">{mission.id}</span><span className={`rounded-full px-3 py-1 text-[10px] font-black ${mission.published ? 'bg-[#edf7f4] text-[#2f8a72]' : 'bg-[#fcefed] text-[#8c403a]'}`}>{mission.published ? 'PUBLISHED' : 'NOT PUBLISHED'}</span></div><h3 className="mt-3 font-serif text-2xl">{String(mission.content.title ?? mission.id)}</h3><p className="mt-1 text-sm font-bold text-[#1f6668]">{String(mission.content.mentor ?? '')}</p><p className="mt-3 line-clamp-3 text-sm leading-6 text-[#526c6e]">{String(mission.content.focus ?? mission.content.premise ?? '')}</p></article>)}
+      {prepared.map(({ session, missionId }) => {
+        const mission = studio.missions.find(item => item.id === missionId)
+        const existing = catalog.runs.find(run => run.session_id === session.id)
+        const isBusy = busySession === session.id
+        return <article key={session.id} className="rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8] p-5 shadow-[0_16px_45px_rgba(23,54,58,.06)] sm:p-6">
+          <div className="flex items-center justify-between gap-3"><span className="rounded-full bg-[#17363a] px-3 py-1 text-[10px] font-black tracking-[.14em] text-[#f2d99b]">{missionId}</span><span className={`rounded-full px-3 py-1 text-[10px] font-black ${existing && existing.phase !== 'completed' ? 'bg-[#46b9bd] text-[#17363a]' : existing?.phase === 'completed' ? 'bg-[#edf7f4] text-[#2f8a72]' : 'bg-[#f7f0df] text-[#526c6e]'}`}>{existing ? existing.phase.replaceAll('_',' ').toUpperCase() : 'READY'}</span></div>
+          <h3 className="mt-4 font-serif text-2xl">{String(mission?.content.title ?? session.title)}</h3>
+          <p className="mt-1 text-sm font-bold text-[#1f6668]">{String(mission?.content.mentor ?? '')}</p>
+          <p className="mt-3 text-sm leading-6 text-[#526c6e]">{String(mission?.content.focus ?? session.title)}</p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#526c6e]"><span className="rounded-full bg-[#f7f0df] px-3 py-2">90 min</span><span className="rounded-full bg-[#f7f0df] px-3 py-2">{session.join_code}</span></div>
+          <button disabled={Boolean(busySession) || !mission?.published} onClick={() => launch(session.id, missionId)} className="mt-5 min-h-14 w-full rounded-2xl bg-[#d8a94e] px-5 font-black text-[#17363a] transition active:scale-[.985] disabled:opacity-60">{isBusy ? 'Opening signal…' : existing ? 'Open control room →' : 'Make session live →'}</button>
+        </article>
+      })}
     </section>
 
-    <section className="rounded-[1.5rem] border border-[#d8ccb6] bg-[#fffdf8] p-5"><h2 className="font-serif text-2xl">During the session</h2><p className="mt-2 max-w-3xl leading-7 text-[#526c6e]">Once inside the room, the facilitator advances: Commit → Lock → Discussion → Revote → Reveal → Next. No Zoom, meeting link, or video dependency exists in the platform.</p><Link href="/dashboard" className="ten-text-link mt-3">Back to SEIP workspace →</Link></section>
+    {!prepared.length && <section className="rounded-[1.5rem] border border-dashed border-[#d8ccb6] bg-[#fffdf8] p-6"><h2 className="font-serif text-2xl">Prepared mission sessions are missing.</h2><p className="mt-2 text-[#526c6e]">Canonical sessions use join codes TEN-M01 through TEN-M04. They must be seeded before First Activation.</p></section>}
+
+    <section className="rounded-[1.5rem] border border-[#d8ccb6] bg-[#fffdf8] p-5"><h2 className="font-serif text-2xl">During the session</h2><p className="mt-2 max-w-3xl leading-7 text-[#526c6e]">Inside the room, you control: Commit → Lock → Discussion → Revote → Reveal → Next → Complete. No Zoom, meeting link, or video dependency exists in the platform.</p><Link href="/dashboard" className="ten-text-link mt-3">Back to SEIP workspace →</Link></section>
   </div>
 }
