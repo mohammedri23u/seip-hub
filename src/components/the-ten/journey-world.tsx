@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { DecorSprite, MissionSystemIcon } from '@/components/the-ten/art-sprite'
 import { brandAssets, characterAssets, worldAssets } from '@/lib/the-ten/assets'
 import type { JourneySummary, TenCatalog } from '@/lib/the-ten/runtime'
 
@@ -29,6 +30,14 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
         <Image src={worldAssets.baghdad} alt="Illustrated Baghdad world for THE TEN journey" fill priority sizes="100vw" className="object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#102f32]/15 via-transparent to-[#0d2e31]/92" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(70,185,189,.12),transparent_24rem)]" />
+        <div className="pointer-events-none absolute inset-0 z-[5] hidden overflow-hidden sm:block" aria-hidden="true">
+          <DecorSprite name="lantern" size={88} className="absolute left-[5%] top-[24%] rotate-[-5deg] opacity-80 drop-shadow-xl" />
+          <DecorSprite name="astrolabe" size={94} className="absolute right-[6%] top-[49%] rotate-[8deg] opacity-70 drop-shadow-xl" />
+          <DecorSprite name="palm" size={126} className="absolute bottom-[5%] left-[2%] opacity-75" />
+          <DecorSprite name="baghdad-arch" size={122} className="absolute bottom-[4%] right-[2%] opacity-70" />
+          <DecorSprite name="waves" size={108} className="absolute bottom-[2%] left-[43%] opacity-55" />
+          <DecorSprite name="geometric-star" size={72} className="absolute right-[27%] top-[17%] opacity-55" />
+        </div>
 
         <div className="absolute left-4 right-4 top-4 z-20 sm:left-7 sm:right-auto sm:top-7 sm:max-w-[33rem]">
           <div className="rounded-3xl border border-white/20 bg-[#17363a]/82 p-5 shadow-2xl backdrop-blur-md sm:p-7">
@@ -65,7 +74,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
             const character = characterByMission[mission.id as keyof typeof characterByMission]
             if (!character) return null
             const image = characterAssets[character.key].neutral
-            const content = <><div className={`relative mx-auto h-20 w-20 overflow-hidden rounded-full border-4 bg-[#f7f0df] shadow-[0_12px_35px_rgba(0,0,0,.28)] transition duration-200 ${mission.completed ? 'border-[#f2d99b] shadow-[0_0_34px_rgba(216,169,78,.60)]' : run ? 'border-[#80c8c4] group-hover:-translate-y-1 group-hover:scale-[1.03]' : 'border-white/30 grayscale-[.25]'}`}>{image && <Image src={image} alt="" fill sizes="80px" className="object-cover" />}{!run && !mission.completed && <div className="absolute inset-0 grid place-items-center bg-[#17363a]/38 text-xl" aria-hidden="true">◈</div>}</div><div className="mt-2 rounded-2xl border border-white/15 bg-[#102f32]/88 px-3 py-2 text-center shadow-lg backdrop-blur-md"><span className="block text-[9px] font-black tracking-[.16em] text-[#f2d99b]">SIGNAL {mission.position}</span><span className="mt-0.5 block max-w-40 text-xs font-black">{mission.title}</span><span className="mt-0.5 block text-[10px] text-[#cfe1dc]">{mission.completed ? 'Activated' : run?.phase === 'waiting' ? 'Waiting room open' : run ? `Live · ${run.phase.replaceAll('_',' ')}` : 'Awaiting facilitator'}</span></div></>
+            const content = <><div className={`relative mx-auto h-20 w-20 overflow-visible rounded-full border-4 bg-[#f7f0df] shadow-[0_12px_35px_rgba(0,0,0,.28)] transition duration-200 ${mission.completed ? 'border-[#f2d99b] shadow-[0_0_34px_rgba(216,169,78,.60)]' : run ? 'border-[#80c8c4] group-hover:-translate-y-1 group-hover:scale-[1.03]' : 'border-white/30 grayscale-[.25]'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="80px" className="object-cover" />}{!run && !mission.completed && <div className="absolute inset-0 grid place-items-center bg-[#17363a]/38 text-xl" aria-hidden="true">◈</div>}</div><span className="absolute -bottom-2 -right-2 grid h-9 w-9 place-items-center rounded-full border-2 border-[#f2d99b]/80 bg-[#fffdf8] shadow-lg"><MissionSystemIcon missionId={mission.id} size={29} label={`${mission.title} clinical system`} /></span></div><div className="mt-3 rounded-2xl border border-white/15 bg-[#102f32]/88 px-3 py-2 text-center shadow-lg backdrop-blur-md"><span className="block text-[9px] font-black tracking-[.16em] text-[#f2d99b]">SIGNAL {mission.position}</span><span className="mt-0.5 block max-w-40 text-xs font-black">{mission.title}</span><span className="mt-0.5 block text-[10px] text-[#cfe1dc]">{mission.completed ? 'Activated' : run?.phase === 'waiting' ? 'Waiting room open' : run ? `Live · ${run.phase.replaceAll('_',' ')}` : 'Awaiting facilitator'}</span></div></>
             return <div key={mission.id} className="absolute w-44 -translate-x-1/2 -translate-y-1/2" style={{left:character.x,top:character.y}}>{run ? <Link href={`/learner/mission/${run.id}`} className="group block rounded-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#f2d99b]" aria-label={`${mission.title}. ${mission.completed ? 'Completed' : `Room ${run.phase}`}`}>{content}</Link> : <div aria-label={`${mission.title}. Awaiting facilitator`} role="status">{content}</div>}</div>
           })}
         </div>
@@ -77,7 +86,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
               const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
               const character = characterByMission[mission.id as keyof typeof characterByMission]
               const image = character ? characterAssets[character.key].neutral : null
-              const content = <><div className={`relative mx-auto h-12 w-12 overflow-hidden rounded-full border-2 bg-[#f7f0df] ${mission.completed ? 'border-[#f2d99b]' : run ? 'border-[#80c8c4]' : 'border-white/25 opacity-65'}`}>{image && <Image src={image} alt="" fill sizes="48px" className="object-cover" />}</div><span className="mt-1 block text-[9px] font-black text-[#f2d99b]">{mission.id}</span></>
+              const content = <><div className={`relative mx-auto h-12 w-12 overflow-visible rounded-full border-2 bg-[#f7f0df] ${mission.completed ? 'border-[#f2d99b]' : run ? 'border-[#80c8c4]' : 'border-white/25 opacity-65'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="48px" className="object-cover" />}</div><span className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border border-[#f2d99b]/80 bg-[#fffdf8]"><MissionSystemIcon missionId={mission.id} size={20} label={`${mission.title} clinical system`} /></span></div><span className="mt-2 block text-[9px] font-black text-[#f2d99b]">{mission.id}</span></>
               return run ? <Link key={mission.id} href={`/learner/mission/${run.id}`} className="min-h-16 rounded-xl p-1 text-center">{content}</Link> : <div key={mission.id} className="min-h-16 rounded-xl p-1 text-center" aria-label={`${mission.title}, awaiting facilitator`}>{content}</div>
             })}</div>
           </div>
@@ -99,7 +108,7 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
             <div className="relative flex gap-4 sm:gap-6">
               {image && <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-[1.25rem] bg-[#efe1c7] sm:h-36 sm:w-32"><Image src={image} alt={`${character?.label ?? mission.mentor} mentor portrait`} fill sizes="128px" className="object-cover" /></div>}
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#17363a] px-3 py-1 text-[10px] font-black tracking-[.15em] text-[#f2d99b]">SIGNAL {mission.position}</span>{mission.completed && <span className="rounded-full bg-[#2f8a72] px-3 py-1 text-[10px] font-black text-white">ACTIVATED</span>}{run?.phase === 'waiting' && <span className="rounded-full border border-[#1f6668]/30 bg-white/70 px-3 py-1 text-[10px] font-black text-[#1f6668]">WAITING ROOM</span>}{run && run.phase !== 'waiting' && run.phase !== 'completed' && <span className="rounded-full bg-[#46b9bd] px-3 py-1 text-[10px] font-black text-[#17363a]">LIVE · {run.phase.replaceAll('_', ' ')}</span>}</div>
+                <div className="flex flex-wrap items-center gap-2"><span className="grid h-12 w-12 place-items-center rounded-full border border-[#d8a94e]/40 bg-[#fffdf8]/80"><MissionSystemIcon missionId={mission.id} size={42} /></span><span className="rounded-full bg-[#17363a] px-3 py-1 text-[10px] font-black tracking-[.15em] text-[#f2d99b]">SIGNAL {mission.position}</span>{mission.completed && <span className="rounded-full bg-[#2f8a72] px-3 py-1 text-[10px] font-black text-white">ACTIVATED</span>}{run?.phase === 'waiting' && <span className="rounded-full border border-[#1f6668]/30 bg-white/70 px-3 py-1 text-[10px] font-black text-[#1f6668]">WAITING ROOM</span>}{run && run.phase !== 'waiting' && run.phase !== 'completed' && <span className="rounded-full bg-[#46b9bd] px-3 py-1 text-[10px] font-black text-[#17363a]">LIVE · {run.phase.replaceAll('_', ' ')}</span>}</div>
                 <h3 className="mt-3 font-serif text-2xl leading-tight text-[#17363a]">{mission.title}</h3>
                 <p className="mt-1 text-sm font-bold text-[#1f6668]">{catalogMission?.mentor ?? mission.mentor}</p>
                 <p className="mt-3 text-sm leading-6 text-[#526c6e]">{catalogMission?.premise ?? catalogMission?.focus ?? 'A live reasoning mission inside Baghdad Nexus.'}</p>
