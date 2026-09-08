@@ -15,7 +15,7 @@ const percItems = [
   'Oxygen saturation below 95%',
   'Unilateral leg swelling',
   'Hemoptysis',
-  'Recent surgery or trauma',
+  'Surgery or trauma requiring hospitalisation in the past 4 weeks',
   'Previous DVT or PE',
   'Estrogen / hormone use',
 ] as const
@@ -27,7 +27,7 @@ const wellsItems = [
   { label: 'Immobilisation ≥3 days or surgery in previous 4 weeks', points: 1.5 },
   { label: 'Previous DVT or PE', points: 1.5 },
   { label: 'Hemoptysis', points: 1 },
-  { label: 'Malignancy', points: 1 },
+  { label: 'Malignancy on treatment, treated in the last 6 months, or palliative', points: 1 },
 ] as const
 
 const targetSequence = ['Suspicion', 'Clinical probability', 'D-dimer when indicated', 'Definitive imaging', 'Management'] as const
@@ -41,10 +41,11 @@ export function MissionReasoningTool({ initial }: { initial: Snapshot }) {
   const [sequence, setSequence] = useState<string[]>(['Definitive imaging', 'Suspicion', 'Management', 'D-dimer when indicated', 'Clinical probability'])
   const [checked, setChecked] = useState(false)
 
-  const relevant = !snapshot.manager && snapshot.mission_id === 'M03' && (snapshot.stage_index === 1 || snapshot.stage_index === 2 || snapshot.phase === 'debrief' || snapshot.phase === 'completed')
+  const activeMission = !snapshot.manager && snapshot.mission_id === 'M03'
+  const relevant = activeMission && (snapshot.stage_index === 1 || snapshot.stage_index === 2 || snapshot.phase === 'debrief' || snapshot.phase === 'completed')
 
   useEffect(() => {
-    if (!relevant && !open) return
+    if (!activeMission) return
     let channel: ReturnType<typeof supabase.channel> | null = null
     let cancelled = false
     const refresh = async () => {
@@ -55,12 +56,16 @@ export function MissionReasoningTool({ initial }: { initial: Snapshot }) {
       const { data } = await supabase.auth.getSession()
       if (data.session?.access_token) supabase.realtime.setAuth(data.session.access_token)
       if (cancelled) return
-      channel = supabase.channel(`ten-tool:${initial.id}`, { config: { private: true } })
+      channel = supabase.channel(`ten:${initial.id}`, { config: { private: true } })
         .on('broadcast', { event: 'state' }, () => { void refresh() })
         .subscribe()
     })()
     return () => { cancelled = true; if (channel) void supabase.removeChannel(channel) }
-  }, [initial.id, open, relevant, supabase])
+  }, [activeMission, initial.id, supabase])
+
+  useEffect(() => {
+    if (!relevant) setOpen(false)
+  }, [relevant])
 
   if (!relevant) return null
 
@@ -99,7 +104,7 @@ export function MissionReasoningTool({ initial }: { initial: Snapshot }) {
         {mode === 'wells' ? <>
           <p className="text-sm leading-6 text-[#526c6e]">Build the two-level PE Wells score from the evidence already on screen. The total is a reasoning aid; your mission answer remains a separate private commit.</p>
           <div className="mt-4 space-y-2">{wellsItems.map((item,index) => <button key={item.label} type="button" aria-pressed={Boolean(wells[index])} onClick={() => setWells(current => ({...current,[index]:!current[index]}))} className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border p-3 text-left text-sm font-bold ${wells[index] ? 'border-[#c8794d] bg-[#f9ece3]' : 'border-[#d8ccb6] bg-white'}`}><span>{item.label}</span><span className="shrink-0 rounded-full bg-[#17363a] px-2.5 py-1 text-xs text-[#f2d99b]">+{item.points}</span></button>)}</div>
-          <div className="mt-4 flex items-end justify-between rounded-xl bg-[#17363a] p-4 text-white"><div><p className="text-[9px] font-black tracking-[.14em] text-[#f2d99b]">YOUR WORKING TOTAL</p><p className="mt-1 text-sm text-[#d8e7e2]">Use the canonical two-level threshold in your reasoning.</p></div><strong className="font-serif text-4xl">{wellsTotal}</strong></div>
+          <div className="mt-4 flex items-end justify-between rounded-xl bg-[#17363a] p-4 text-white"><div><p className="text-[9px] font-black tracking-[.14em] text-[#f2d99b]">YOUR WORKING TOTAL</p><p className="mt-1 text-sm text-[#d8e7e2]">Two-level Wells: ≤4 = PE unlikely; &gt;4 = PE likely.</p></div><strong className="font-serif text-4xl">{wellsTotal}</strong></div>
         </> : null}
 
         {mode === 'sequence' ? <>
