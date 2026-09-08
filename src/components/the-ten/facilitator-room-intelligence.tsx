@@ -11,7 +11,11 @@ type Metrics = {
   completion_incomplete: number
   initial_distribution: Record<string, number>
   revote_distribution: Record<string, number>
+  initial_confidence_distribution: Record<string, number>
+  revote_confidence_distribution: Record<string, number>
   changed_count: number
+  revote_count: number
+  changed_percent: number
   initial_confidence: number | null
   revote_confidence: number | null
 }
@@ -34,6 +38,7 @@ export function FacilitatorRoomIntelligence({
 }) {
   const supabase = useMemo(() => createClient(), [])
   const [phase, setPhase] = useState<Phase>(initialPhase)
+  const [expanded, setExpanded] = useState(initialPhase === 'debrief' || initialPhase === 'completed')
   const [closeoutSaved, setCloseoutSaved] = useState(initialCloseoutSaved)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [options, setOptions] = useState<string[]>([])
@@ -53,12 +58,17 @@ export function FacilitatorRoomIntelligence({
       setError(snapshotResult.error.message)
       return
     }
+    setError(null)
     setMetrics(metricResult.data as Metrics)
     const snapshot = snapshotResult.data as SnapshotLite
     setPhase(snapshot.phase)
     setCloseoutSaved(Boolean(snapshot.closeout_saved))
     setOptions(snapshot.stage?.options ?? snapshot.notes?.options ?? [])
   }, [runId, supabase])
+
+  useEffect(() => {
+    if (phase === 'debrief' || phase === 'completed') setExpanded(true)
+  }, [phase])
 
   useEffect(() => {
     void refresh()
@@ -110,10 +120,11 @@ export function FacilitatorRoomIntelligence({
 
   const initialEntries = Object.entries(metrics?.initial_distribution ?? {})
   const revoteEntries = Object.entries(metrics?.revote_distribution ?? {})
-  const shouldOpen = phase === 'debrief' || phase === 'completed'
+  const initialConfidenceEntries = orderedConfidence(metrics?.initial_confidence_distribution ?? {})
+  const revoteConfidenceEntries = orderedConfidence(metrics?.revote_confidence_distribution ?? {})
 
   return <aside className="fixed bottom-4 right-4 z-[70] w-[min(27rem,calc(100vw-2rem))] rounded-[1.5rem] border-2 border-[#d8a94e] bg-[#fff8df]/98 shadow-[0_24px_75px_rgba(23,54,58,.24)] backdrop-blur-md" aria-label="Facilitator room intelligence">
-    <details open={shouldOpen}>
+    <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold marker:hidden">
         <span><span className="block text-[10px] font-black tracking-[.14em] text-[#8b6a2b]">ROOM INTELLIGENCE</span><span className="font-serif text-lg capitalize">{phase.replaceAll('_',' ')}</span></span>
         <span className="rounded-full bg-[#17363a] px-3 py-2 text-xs font-black text-[#f2d99b]">{metrics?.participants ?? 0} joined</span>
@@ -125,7 +136,7 @@ export function FacilitatorRoomIntelligence({
         <div className="grid grid-cols-3 gap-2">
           <Metric label="Ready" value={String(metrics?.completion_ready ?? 0)} />
           <Metric label="Incomplete" value={String(metrics?.completion_incomplete ?? 0)} />
-          <Metric label="Changed" value={String(metrics?.changed_count ?? 0)} />
+          <Metric label="Changed" value={metrics?.revote_count ? `${metrics.changed_percent}%` : '—'} />
         </div>
 
         {(metrics?.initial_confidence != null || metrics?.revote_confidence != null) && <div className="mt-2 grid grid-cols-2 gap-2">
@@ -136,6 +147,11 @@ export function FacilitatorRoomIntelligence({
         {(initialEntries.length > 0 || revoteEntries.length > 0) && <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <Distribution title="Initial vote" entries={initialEntries} options={options} />
           <Distribution title="Revote" entries={revoteEntries} options={options} />
+        </div>}
+
+        {(initialConfidenceEntries.length > 0 || revoteConfidenceEntries.length > 0) && <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <ConfidenceDistribution title="Initial confidence" entries={initialConfidenceEntries} />
+          <ConfidenceDistribution title="Revote confidence" entries={revoteConfidenceEntries} />
         </div>}
 
         {phase === 'debrief' && <div className={`mt-4 rounded-xl border p-3 text-sm leading-6 ${metrics?.completion_incomplete ? 'border-[#c58a3e] bg-[#fff1cf]' : 'border-[#9bc9b9] bg-[#edf7f4]'}`}>
@@ -170,6 +186,11 @@ function Distribution({ title, entries, options }: { title:string; entries:[stri
   return <section className="rounded-xl border border-[#e6d9bd] bg-white/80 p-3"><p className="text-[10px] font-black tracking-[.1em] text-[#8b6a2b]">{title.toUpperCase()}</p>{entries.length ? <div className="mt-2 space-y-1">{entries.map(([key,value]) => <div key={key} className="flex items-center justify-between gap-3 text-xs"><span className="min-w-0 truncate">{labelChoice(key,options)}</span><strong>{value}</strong></div>)}</div> : <p className="mt-2 text-xs text-[#526c6e]">No recorded vote yet.</p>}</section>
 }
 
+function ConfidenceDistribution({ title, entries }: { title:string; entries:[string,number][] }) {
+  const total = entries.reduce((sum,[,count]) => sum + count,0)
+  return <section className="rounded-xl border border-[#e6d9bd] bg-white/80 p-3"><p className="text-[10px] font-black tracking-[.1em] text-[#8b6a2b]">{title.toUpperCase()}</p>{entries.length ? <div className="mt-2 space-y-2">{entries.map(([key,value]) => <div key={key}><div className="flex justify-between text-[11px] font-bold"><span>{key}%</span><span>{value}</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#ead9b8]"><div className="h-full bg-[#1f6668]" style={{width:`${total ? Math.round(value/total*100) : 0}%`}} /></div></div>)}</div> : <p className="mt-2 text-xs text-[#526c6e]">No confidence signal yet.</p>}</section>
+}
+
 function Check({ name, label }: { name:string; label:string }) {
   return <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-[#e6d9bd] bg-[#fffdf8] p-3 text-sm"><input className="mt-0.5 h-5 w-5" type="checkbox" name={name} /><span>{label}</span></label>
 }
@@ -179,4 +200,8 @@ function labelChoice(key: string, options: string[]) {
   if (key === 'false') return 'False'
   const index = Number(key)
   return Number.isInteger(index) && index >= 0 ? options[index] ?? `Choice ${index + 1}` : key
+}
+
+function orderedConfidence(distribution: Record<string, number>): [string,number][] {
+  return Object.entries(distribution).sort(([a],[b]) => Number(a)-Number(b))
 }
