@@ -13,30 +13,28 @@ export function CharacterGuide({
   character,
   reaction = 'neutral',
   message,
-  priority = false,
 }: {
   character: TheTenCharacter
   reaction?: CharacterReaction
   message?: string
-  priority?: boolean
 }) {
   const src = getCharacterAsset(character, reaction)
 
   return (
-    <aside className="flex items-end gap-3 rounded-[24px] border border-[#D8CCB6] bg-[#FFFDF8] p-4">
-      {src && <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-[18px] bg-[#F0E5D1]">
+    <aside className="ten-character-guide">
+      {src && <div className="ten-character-portrait">
         <Image
           src={src}
-          alt={names[character]}
+          alt=""
           fill
-          priority={priority}
-          sizes="96px"
-          className="object-contain object-bottom"
+          sizes="(max-width: 520px) 104px, 144px"
+          loading="lazy"
+          className="object-cover object-center"
         />
       </div>}
-      <div className="min-w-0 pb-1">
-        <p className="text-xs font-black tracking-[0.13em] text-[#1F6668]">{names[character]}</p>
-        {message ? <p className="mt-1 text-sm leading-6 text-[#425F62]">{message}</p> : null}
+      <div className="ten-character-copy">
+        <p>{names[character]}</p>
+        {message ? <blockquote>{message}</blockquote> : null}
       </div>
     </aside>
   )

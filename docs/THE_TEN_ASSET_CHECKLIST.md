@@ -3,17 +3,18 @@
 The implementation intentionally does not fabricate or redraw approved artwork. Before `CharacterGuide` or world artwork is enabled on production learner screens, stage the approved files under the paths below.
 
 ## Brand
-- `public/the-ten/brand/the-ten-baghdad-nexus.png`
+- [x] `public/the-ten/brand/the-ten-baghdad-nexus.png`
+- [x] `public/the-ten/brand/the-ten-baghdad-nexus-crest.png`
 
 ## World
-- `public/the-ten/world/baghdad.png`
-- `public/the-ten/world/nexus.png`
+- [x] `public/the-ten/world/baghdad.png`
+- [x] `public/the-ten/world/nexus.png`
 
 ## Characters — required neutral poses
-- `public/the-ten/characters/ibn-sina/neutral.png`
-- `public/the-ten/characters/jabir/neutral.png`
-- `public/the-ten/characters/hippocrates/neutral.png`
-- `public/the-ten/characters/al-razi/neutral.png`
+- [x] `public/the-ten/characters/ibn-sina/neutral.png`
+- [x] `public/the-ten/characters/jabir/neutral.png`
+- [x] `public/the-ten/characters/hippocrates/neutral.png`
+- [x] `public/the-ten/characters/al-razi/neutral.png`
 
 ## Recommended reaction pose set for each character
 Do not create these in code. Add approved transparent PNG/WebP assets only.
@@ -49,8 +50,8 @@ Use semantic filenames (for example `nexus-spark.png`, `baghdad-arch.png`, `medi
 
 ## 2026-09-08 staging status
 
-No approved image files are available in the current branch. `assets.ts` therefore uses `null` for the brand/world paths and all character poses. The previous branch's safety stash has not been used as an asset source.
+Stage 1 is staged from the eight production-candidate Drive IDs documented in `THE_TEN_DRIVE_ASSET_MAP.md`. Every file is a verified PNG at the mapped semantic path. The package's `references/` directory is excluded from `public/` and the reference compositions are not part of the production bundle. The previous branch's safety stash was not used or modified.
 
-The learner world renders accessible text navigation while world art is absent. Character guidance renders the character name and message while neutral art is absent; a missing reaction falls back to neutral only after an approved neutral file has been staged. There is no fabricated placeholder character and no request to a nonexistent image.
+The learner shell uses the clean lockup. Learner home uses Baghdad as its LCP narrative illustration and Nexus as a smaller progression focal element while preserving accessible text navigation. `CharacterGuide` uses all four neutral portraits; every missing reaction continues to fall back to that character's neutral image.
 
-`missingCharacterAssets` lists the exact expected neutral/reaction filenames for all four identities. Stage the files above, then change only the matching manifest entries.
+`missingCharacterAssets` now lists only the nine unavailable reaction filenames for each identity. Decorative/vector exports and medical-system icon exports also remain unavailable; do not crop them from the reference sheets.

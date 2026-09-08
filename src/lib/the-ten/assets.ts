@@ -6,7 +6,7 @@ type CharacterAssetMap = Record<CharacterReaction, string | null>
 
 export const characterAssets: Record<TheTenCharacter, CharacterAssetMap> = {
   'ibn-sina': {
-    neutral: null, // TODO approved: /the-ten/characters/ibn-sina/neutral.png
+    neutral: '/the-ten/characters/ibn-sina/neutral.png',
     introduce: null,
     guide: null,
     thinking: null,
@@ -18,7 +18,7 @@ export const characterAssets: Record<TheTenCharacter, CharacterAssetMap> = {
     locked: null,
   },
   jabir: {
-    neutral: null, // TODO approved: /the-ten/characters/jabir/neutral.png
+    neutral: '/the-ten/characters/jabir/neutral.png',
     introduce: null,
     guide: null,
     thinking: null,
@@ -30,7 +30,7 @@ export const characterAssets: Record<TheTenCharacter, CharacterAssetMap> = {
     locked: null,
   },
   hippocrates: {
-    neutral: null, // TODO approved: /the-ten/characters/hippocrates/neutral.png
+    neutral: '/the-ten/characters/hippocrates/neutral.png',
     introduce: null,
     guide: null,
     thinking: null,
@@ -42,7 +42,7 @@ export const characterAssets: Record<TheTenCharacter, CharacterAssetMap> = {
     locked: null,
   },
   'al-razi': {
-    neutral: null, // TODO approved: /the-ten/characters/al-razi/neutral.png
+    neutral: '/the-ten/characters/al-razi/neutral.png',
     introduce: null,
     guide: null,
     thinking: null,
@@ -59,10 +59,14 @@ export function getCharacterAsset(character: TheTenCharacter, reaction: Characte
   return characterAssets[character][reaction] ?? characterAssets[character].neutral
 }
 
-export const worldAssets: Record<'baghdad' | 'nexus' | 'logo', string | null> = {
-  baghdad: null, // TODO approved: /the-ten/world/baghdad.png
-  nexus: null, // TODO approved: /the-ten/world/nexus.png
-  logo: null, // TODO approved: /the-ten/brand/the-ten-baghdad-nexus.png
+export const brandAssets = {
+  lockup: '/the-ten/brand/the-ten-baghdad-nexus.png',
+  crest: '/the-ten/brand/the-ten-baghdad-nexus-crest.png',
+} as const
+
+export const worldAssets = {
+  baghdad: '/the-ten/world/baghdad.png',
+  nexus: '/the-ten/world/nexus.png',
 }
 
 export const missingCharacterAssets = Object.entries(characterAssets).flatMap(([character, poses]) =>

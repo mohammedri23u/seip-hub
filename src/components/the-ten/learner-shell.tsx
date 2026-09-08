@@ -1,5 +1,7 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { brandAssets } from '@/lib/the-ten/assets'
 import { motionStyles } from '@/lib/the-ten/motion'
 
 const navigation = [['/learner', 'Journey'], ['/learner/sessions', 'Sessions'], ['/learner/assessments', 'Checkpoints'], ['/learner/progress', 'Progress']] as const
@@ -9,7 +11,9 @@ export function LearnerShell({ title, intro, active = '/learner', children, acti
     <a href="#learner-content" className="ten-skip">Skip to learning content</a>
     <header className="ten-header">
       <div className="ten-header-inner">
-        <Link className="ten-wordmark" href="/learner"><strong>THE TEN</strong><span>BAGHDAD NEXUS</span></Link>
+        <Link className="ten-wordmark" href="/learner" aria-label="THE TEN — Baghdad Nexus learner home">
+          <Image src={brandAssets.lockup} alt="" fill sizes="(max-width: 720px) 132px, 164px" loading="lazy" className="object-cover object-center" />
+        </Link>
         <nav aria-label="Learner navigation">{navigation.map(([href, label]) => <Link key={href} href={href} aria-current={href === active ? 'page' : undefined}>{label}</Link>)}</nav>
         <details className="ten-account"><summary>Account</summary><div><Link href="/learner/orientation">Orientation</Link><Link href="/dashboard">SEIP workspace</Link><form action="/auth/signout" method="post"><button type="submit">Sign out</button></form></div></details>
       </div>

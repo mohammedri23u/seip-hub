@@ -10,7 +10,7 @@ No stash content was applied or copied into this branch. This learner-experience
 
 ## Implemented learner journey slice
 
-- `/learner`: Baghdad/Nexus home with accessible text world navigation, next action, recorded participation, session cards, and checkpoint cards.
+- `/learner`: approved Baghdad hero and focused Nexus progression art with accessible text world navigation, next action, recorded participation, session cards, and checkpoint cards.
 - `/learner/orientation`: four concise orientation steps with links into the journey.
 - `/learner/sessions` and `/learner/sessions/[sessionId]`: scheduled/live/ended/cancelled sessions, briefings, learning objectives, and the learner's recorded attendance.
 - `/learner/assessments`: available, in-progress, upcoming, closed, submitted, released, and invalidated checkpoint states; visible opening/lock reasons and start-failure feedback.
@@ -29,7 +29,7 @@ No stash content was applied or copied into this branch. This learner-experience
 
 The adapter supplies published sections, completion/lock state, and confirmed feedback. The answer state machine supports idle, selected, submitting, locked review, correct, incorrect, partial, and retry after a failed confirmation. It rejects mismatched feedback, prevents duplicate submissions, preserves the reviewed selection across section navigation, and does not advance persisted completion based on clicks. Formative feedback now has one owning `aria-live` region; `FeedbackPanel` no longer nests a second announcement region.
 
-`CharacterGuide` reactions resolve through the typed asset manifest. Missing reaction art falls back to approved neutral art when present; missing neutral art renders the character name and guidance without an image request. No pose is invented.
+`CharacterGuide` reactions resolve through the typed asset manifest. The four approved neutral portraits are staged and every unavailable reaction pose falls back to the matching neutral identity. No pose is invented.
 
 Motion uses the existing centralized timing tokens, short directional section exit/entry, a single feedback pulse/nudge, delayed explanation, and reduced-motion fallbacks. The page shell remains still.
 
@@ -51,20 +51,20 @@ The case flow is tested with synthetic fixtures only. It is **not connected to a
 - Initial typecheck found stale `.next` generated types from the prior branch. The old cache was preserved at `/tmp/the-ten-previous-build.PjxVig`; regenerated types/build passed without changing backend source.
 - Final pre-push validation (2026-09-08): `npm run typecheck`, `npm run build`, and the state tests below all passed. The build also passed with build-only Supabase placeholders, without requiring live project credentials.
 - `node --experimental-strip-types scripts/test-the-ten.mjs`: passed. Covers active/completed membership retention, current-mission separation, checkpoint windows, historical released-result access, zero/one/multiple selection payloads, delivery-ID rejection, incompatible-field clearing, complete-payload validation, feedback identity checks, retry, duplicate submission, locked answers, and released-score bounds.
-- Isolated Chromium component harness with synthetic data: desktop 1440px, tablet 768px, mobile 390px and 320px; no page overflow or missing-image requests. Checked skip link/account menu, keyboard radio/checkbox selection and focus, all feedback outcomes, one feedback live region, locked steps, selection review, failed submission/retry, reduced motion, answered/unanswered confirmation, and multiple-response FormData during pending submission.
+- Browser-rendered route/component harness with synthetic data: desktop 1440px, tablet 768px, mobile 390px and 320px; no page overflow, browser errors, failed requests, missing images, or image 404s. Captured learner home, orientation, sessions, checkpoints, assessment taking, progress, results, and mobile learner home. Checked skip link/account menu, keyboard radio/checkbox selection and focus, reduced motion, answered/unanswered confirmation, one Baghdad image preload, and lazy secondary artwork.
 - Production runtime: signed-out visits to learner home, progress, certificate, sessions, checkpoints, and a result route redirected to `/login`.
 - Local QA harness and screenshots: `/tmp/the-ten-browser-qa/` (not deployed).
 - Authenticated learner reads against the connected database and multi-device behavior were not exercised. Synthetic component checks do not establish production data integration.
 
-## Missing visual assets
+## Staged and missing visual assets
 
-No approved artwork exists in this branch or was supplied separately during this run. All unavailable manifest entries are now `null` instead of pointing to nonexistent files.
+Stage 1 includes the clean and crest brand marks, Baghdad and Nexus world art, and neutral portraits for Ibn Sina, Jabir ibn Hayyan, Hippocrates, and Al-Razi. The two composed reference screenshots remain outside `public/` and are not shipped.
 
-See `THE_TEN_ASSET_CHECKLIST.md`: brand lockup; Baghdad/Nexus world art; four neutral portraits; nine additional reactions per character; decorative and medical-system exports. Missing character paths can also be enumerated via `missingCharacterAssets` in `src/lib/the-ten/assets.ts`.
+Remaining dependencies are the nine approved reaction poses per character, isolated decorative/vector exports, and medical-system icon exports. `missingCharacterAssets` enumerates only unavailable reaction paths.
 
 ## Next recommended slice
 
-1. Stage independently supplied approved artwork, verify its provenance, and update manifest paths only after files exist.
+1. Export and approve reaction poses, decorative elements, and medical-system icons as isolated production assets; do not derive them from composed references.
 2. Supply the published formative case content/feedback contract and connect it to `CaseExperience`; authoritative feedback and completion must remain outside the UI.
 3. Supply the authoritative certificate requirements/eligibility/issued-certificate contract, then replace the explicit unavailable state with a linked checklist and view/download action.
 4. Run authenticated integration QA for active and completed learner memberships, multiple-response scoring, released results, case delivery, and certificate states.
@@ -98,3 +98,11 @@ See `THE_TEN_ASSET_CHECKLIST.md`: brand lockup; Baghdad/Nexus world art; four ne
 - Formative feedback has a single live announcement owner.
 - Formal assessment locking requires an explicit confirmation that names answered and unanswered counts and lists unanswered question numbers.
 - No artwork was staged while addressing the review. Existing `null` asset entries and text fallbacks remain unchanged.
+
+## Stage 1 approved visual integration (2026-09-08)
+
+- Fast-forwarded to approved asset-map commit `4b180fdba6c2123287a08f2ed340221813ffed25` before staging.
+- Verified and staged only the eight mapped production PNGs under `public/the-ten/`; `references/` was not copied into production.
+- Enabled the clean brand lockup, Baghdad learner-home illustration, focused Nexus progression element, and all four neutral character portraits.
+- Preserved textual journey navigation and all learner-data, assessment, grading, RLS, certificate, and formative-case contracts.
+- Image loading uses `next/image`: Baghdad alone is preloaded as the learner-home LCP candidate; lockup, Nexus, and portraits remain lazy with responsive `sizes`.

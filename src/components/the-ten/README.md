@@ -26,4 +26,4 @@ Formal `multiple_response` fields render native checkboxes with a shared `q_<que
 
 `completed` and each section's `completed`/`lockedReason` come from the adapter. The component never marks a case complete or unlocks a section because a learner clicked Continue. Supply refreshed props after authoritative state changes. Do not use this API to expose protected formal assessment keys.
 
-Approved artwork is optional at render time: missing manifest entries are `null`, neutral poses are the only fallback for missing reactions, and missing neutral poses produce text guidance. See the asset checklist for staging requirements.
+Stage 1 approved art is registered in the typed manifest: the clean brand lockup, Baghdad, Nexus, and all four neutral portraits. Baghdad is the learner-home LCP image; the lockup, Nexus, and portraits load lazily. Neutral poses remain the only fallback for missing reactions. See the asset checklist for the remaining approved-export requirements.
