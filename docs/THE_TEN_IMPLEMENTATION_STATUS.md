@@ -1,74 +1,86 @@
 # THE TEN — BAGHDAD NEXUS Implementation Status
 
-Updated: 2026-09-08
+Updated: 2026-09-09
 Branch: `codex/the-ten-interaction-system`
-PR: #3 (Draft, not merged)
+PR: #3 — Draft, open, not merged
 
-## Preservation and safety
+## Safety / preservation
 
-- `main` remains unchanged by this work.
-- The existing safety stash remains untouched: `safety/main-before-the-ten-interaction-system-2026-09-08` (`7f41c60a9efdee77be5fe874d0d14a6da5f4a210`).
-- No stash apply/pop/drop, hard reset, or merge to `main` is part of this implementation.
-- Learner, facilitator, assessment, grading, and certificate authority remains server/database-backed; page visits never fabricate completion.
+- `main` remains unchanged by this implementation.
+- Safety ref remains untouched: `safety/main-before-the-ten-interaction-system-2026-09-08` / `7f41c60a9efdee77be5fe874d0d14a6da5f4a210`.
+- No stash apply/pop/drop, hard reset or merge is part of this work.
+- Learner progression, grading and certificate state remain server/database authoritative; page visits cannot fabricate completion.
 
-## Product direction now implemented
+## Final learner journey implemented
 
-The learner-facing product is no longer organized primarily as an LMS dashboard. The primary journey is:
+Primary journey:
 
 `Sign in → Orientation → Entry Baseline → Baghdad World → M01 → M02 → M03 → M04 → My Codex / Nexus Echo → Exit Transfer Check → Final Feedback → Completion Certificate`
 
-The website is a mobile-first interactive reasoning companion. It contains no Zoom SDK, meeting link, embedded video room, or dependency on a specific conferencing platform. Peer discussion occurs in the teaching space around the learner; the phone is used for private commit, optional confidence, revote, structured reasoning interactions, transfer and reflection.
+Primary learner navigation is now only:
+- Baghdad
+- My Codex
+- Completion
+
+The learner home is world-first/immersive rather than dashboard-first. Once the Entry Baseline is submitted, the visible page heading is removed and Baghdad itself leads the experience while the accessible document title remains available to assistive technology.
+
+No Zoom/meeting/video integration exists. The website is a mobile-first reasoning controller used alongside whatever teaching environment the facilitator chooses.
 
 ## Canonical content
 
-`THE_TEN_FIRST_ACTIVATION_CONTENT_v1.0` is the educational source of truth. The four published missions in `ten_content` are loaded from the canonical structured package:
+Source of truth: Drive package `THE_TEN_FIRST_ACTIVATION_CONTENT_v1.0`, including `website_content_v1.json`.
 
-- `M01 — SEE THE PATTERN` · Ibn Sina · 6 stages
-- `M02 — QUESTION THE EVIDENCE` · Al-Razi · 6 stages
-- `M03 — TEST THE HYPOTHESIS` · Jabir ibn Hayyan · 6 stages
-- `M04 — TREAT THE PATIENT` · Hippocrates · 7 stages
+Published mission content:
+- M01 — SEE THE PATTERN · Ibn Sina · 6 stages
+- M02 — QUESTION THE EVIDENCE · Al-Razi · 6 stages
+- M03 — TEST THE HYPOTHESIS · Jabir ibn Hayyan · 6 stages
+- M04 — TREAT THE PATIENT · Hippocrates · 7 stages
 
-The runtime preserves the supplied sequence, options, answer keys, expected reasoning, mentor lenses, error tags, transfer cases, clinical references and Nexus Echo content. It does not invent missing `promptIfStuck` or dedicated PPT cue fields; the canonical stage ID is used as the presenter cue where needed.
+The runtime preserves the supplied sequence, options, keys, expected reasoning, mentor lenses, error tags, transfer cases, references and Nexus Echo items. Full interaction parity is documented in `THE_TEN_CONTENT_FIDELITY_AUDIT.md`.
 
-The Entry Baseline and Exit Transfer Check each contain the canonical 12-item low-stakes reasoning bank. The source-truth correction migration fixed an earlier 0-based answer-index interpretation before any attempts existed. Database verification confirms the canonical keys: B, C, B, B, A, B, B, B, B, B, B, B.
+Entry/Exit checkpoints are matched 12-item assessments using `TEN-CR-01` through `TEN-CR-12`. The earlier answer-index interpretation error was corrected before production attempts existed for this bank.
 
-Assessment language remains formative: these records do not independently certify clinical competence, confidence is not a mark multiplier, and no public learner ranking is exposed.
+## Baghdad / visual product layer
 
-## Baghdad learner journey
+Production assets now include:
+- approved THE TEN — BAGHDAD NEXUS lockup and crest
+- approved Baghdad artwork
+- approved Nexus artwork
+- approved neutral portraits for all four First Activation mentors
+- approved-source medical-system sprite atlas
+- approved-source Baghdad decorative sprite atlases
 
-`/learner` is now a journey gate and world, not a sessions/checkpoints dashboard:
+World/interaction surfaces now use those assets directly:
+- illustrated Baghdad Signal map with central Nexus
+- four mentor Signal locations and live/waiting/completed states
+- mission medical iconography
+- Baghdad decorative details
+- illustrated live-mission atmosphere
+- visual My Codex Signal records
+- Nexus-based Entry/Exit assessment gates
+- Nexus-based Completion/certificate pathway
+- illustrated Facilitator Control Room
 
-- Before orientation: Baghdad remains narratively closed.
-- After orientation but before baseline: illustrated Nexus Entry Gate.
-- After baseline: full Baghdad World with a central Nexus and four Signal locations.
-- Each Signal visibly represents locked/waiting/live/completed state and links directly into the synchronized mission when available.
-- Desktop uses a world map with four mentor Signal hotspots and Nexus connections; mobile uses a compact four-Signal mission dock over the world art.
-- Accessible Signal Dossiers remain below the visual world as a conventional text/navigation path.
-- Completed Signals remain visible as persistent world progression.
+Reference screenshots are not shipped as raster UI.
 
-Primary learner navigation is now `Baghdad`, `My Codex`, and `Completion`. Historical sessions/checkpoints routes remain available as supporting/fallback records rather than the product's primary mental model.
+The only remaining art dependency is the identity-locked reaction-pose pack. Typed reaction states already exist and currently fall back safely to each approved neutral portrait.
 
 ## Live Mission Engine
 
-Learner mission route: `/learner/mission/[runId]`
+Learner route: `/learner/mission/[runId]`
+Facilitator route: `/facilitator/the-ten`
 
-The synchronized room supports:
+Authoritative state flow:
 
-- Waiting
-- Commit Open
-- Commit Locked
-- Peer Discussion only on canonical peer-instruction stages
-- Revote Open
-- Reveal
-- next-stage progression
-- Transfer micro-case
-- Debrief
-- Completed
+`Waiting → Commit Open → Commit Locked → Discussion → Revote Open → Reveal → Next`
 
-Server-side command validation prevents invalid transitions. Non-peer stages correctly skip Discussion/Revote. Learner answer writes are accepted only during the permitted room state.
+Discussion/Revote are present only on canonical Peer Instruction stages. Non-peer stages move directly from locked commit to Reveal.
 
-Supported canonical interaction patterns include:
+After the final stage:
 
+`Transfer → Debrief → Completed`
+
+Supported recorded interactions:
 - single choice
 - true/false
 - multiselect
@@ -80,98 +92,80 @@ Supported canonical interaction patterns include:
 - team commit
 - transfer response
 
-Revote preloads the learner's initial response so changing or retaining an answer is deliberate. Initial and revote records remain separate. Required confidence must be selected before submission at marked stages. Future clues, answer keys and feedback remain excluded from learner snapshots until Reveal.
+Additional canonical activity fidelity now exists as supplemental, unscored reasoning tools:
+- M02 Framing Challenge scratchpad
+- M03 PERC Rule Builder
+- M03 two-level PE Wells score builder
+- M03 accessible Sequence Reconstruction
+- M04 Parallel Priorities organizer
 
-Mission-specific color atmosphere differentiates Pattern, Evidence, Hypothesis and Treatment while keeping one franchise language. Character reaction requests use the typed asset manifest and safely fall back to each approved neutral portrait until approved pose files exist.
+These tools use only already-released clues, do not read answer keys, and cannot grant progress themselves. Persisted canonical mission responses remain authoritative.
 
-## Realtime, attendance and completion safety
+## Realtime / facilitator operation
 
-Realtime broadcasts are separated into room-state events and response-count events so learner submissions do not create unnecessary whole-room state storms. Polling remains a resilience fallback.
+Four prepared 90-minute sessions exist with join codes `TEN-M01` through `TEN-M04`.
 
-Live-response inserts create/update attendance records for actual participating learners. A waiting-room page visit by itself does not grant mission completion.
+Creating a room marks its prepared session live through the database trigger. Normal facilitator operation is:
 
-Mission Signal / My Codex credit is guarded at the database layer: a learner must have a recorded response for every required stage index plus the transfer response. Completing the room cannot fabricate credit for a passive or incomplete learner.
+`Make session live → Commit → Lock → Discussion/Revote when canonical → Reveal → Next → Transfer → Debrief → Complete`
 
-A facilitator-only metrics RPC exposes:
+The facilitator sees:
+- connected/responded counts
+- initial and revote distributions
+- initial/revote confidence distributions and mean confidence
+- changed-answer count / percentage
+- expected reasoning
+- mentor lens
+- common errors
+- completion-ready/incomplete counts
+- fidelity closeout
 
-- joined learners
-- completion-ready learners
-- incomplete learners
-- initial vote distribution
-- revote distribution
-- initial confidence mean
-- revote confidence mean
-- changed-answer count
+Realtime broadcasts drive learner state; polling remains a resilience fallback.
 
-These are process/learning signals, not competence labels.
+## Completion integrity
 
-## Facilitator experience
+Mission Signal / My Codex credit requires, at database level:
+- one initial response for every required stage
+- every required Peer Instruction revote
+- the transfer response
+- room phase `completed`
 
-Facilitator route: `/facilitator/the-ten`
+The `ten_codex` trigger calls the same strict completion helper, so direct/inadvertent inserts cannot bypass this rule.
 
-Four prepared 90-minute First Activation sessions are seeded once with join codes `TEN-M01` through `TEN-M04`. The facilitator does not rebuild content per delivery.
+Transactional database rehearsals were run for all four missions and rolled back after verification:
+- complete response set → completion ready = true
+- any required revote missing → false
+- any required stage missing → false
+- transfer missing → false
 
-Normal use is:
+This prevents passive attendees from receiving Signal credit simply because the facilitator completed the room.
 
-`Make session live → Commit → Lock → (Discussion → Revote when canonical) → Reveal → Next → Transfer → Debrief → Complete`
+## Content leakage / assessment integrity
 
-Room creation is the authoritative launch path and atomically marks the prepared session live. It does not rely on a broad direct session-update permission.
+Learner snapshot projection was verified:
+- pre-Reveal: no answer key, expected reasoning or facilitator stage cue
+- Reveal: permitted answer/feedback/expected reasoning only
+- facilitator-only stage ID remains excluded from learner payload
 
-The live facilitator UI exposes response progress, presenter stage ID, expected reasoning, mentor lens, common errors, confidence shift, initial/revote distributions, changed-answer count, and completion-readiness warnings.
+Formal assessment delivery continues to exclude correctness fields. Written-response AI grading remains optional/advisory; human review/moderation remains authoritative for final written grading.
 
-After completion, the facilitator records a fidelity closeout covering:
+## My Codex / Nexus Echo
 
-- individual commit before discussion
-- answer withheld until Reveal
-- rationale elicited
-- debrief completed
-- optional delivery notes
+My Codex is a visual Signal record, not a progress-score dashboard. Each valid mission completion records the transferable reasoning principle, reflection and completion time.
 
-Fidelity data is explicitly a delivery/process record, not a one-session teacher-quality score.
+Nexus Echo uses the canonical 60-hour unlocks. The answer anchor remains hidden until the learner first submits a retrieval response.
 
-## My Codex and Nexus Echo
+## Certificate pathway
 
-`/learner/progress` is presented as `My Codex`.
-
-Each eligible completed Signal stores its reasoning principle, completion time and learner reflection. Nexus Echo items remain locked until their canonical delayed-retrieval time; the current structured package uses 60 hours, within the intended 48–72 hour interval. The answer anchor remains hidden until the learner first submits a retrieval response.
-
-## Pre-test, post-test and completion
-
-Journey configuration links:
-
-- `THE TEN — Entry Baseline` (`diagnostic`, 12 items)
-- `THE TEN — Exit Transfer Check` (`final`, 12 items)
-
-The pre-test is gated by orientation. Mission access is gated by the submitted Entry Baseline. The post-test is gated by completion of all four required Signals.
-
-`/learner/certificate` reads persisted backend records for:
-
+Completion requires persisted records for:
 - orientation
 - Entry Baseline
-- four required mission Signals
+- M01–M04 completion
 - Exit Transfer Check
 - configured attendance requirement
-- final program feedback
+- final feedback when required
 
-Only an eligible journey can issue a completion certificate. The certificate stores a verification code and eligibility snapshot. It is described as a completion record, not a validated clinical-competence credential.
-
-## AI boundary
-
-The existing server-only OpenAI grading integration remains optional and advisory for written-response rubric support. It is not required for mission progression and is not exposed as a learner chatbot. Human review/moderation remains authoritative for final written grading decisions.
-
-The core First Activation journey remains functional when `OPENAI_API_KEY` is absent.
-
-## Visual assets
-
-Production currently includes:
-
-- clean THE TEN — BAGHDAD NEXUS lockup
-- crest
-- Baghdad world artwork
-- Nexus artwork
-- approved neutral portraits for Ibn Sina, Al-Razi, Jabir ibn Hayyan and Hippocrates
-
-Approved reaction-pose PNGs, isolated decorative/vector exports and medical-system icon exports are not yet physically present. Missing reaction states intentionally fall back to the corresponding neutral portrait; no character likeness is fabricated in code.
+Certificate issuance creates a verification code and eligibility snapshot. It is presented as a completion certificate, not a claim of independent clinical competence.
 
 ## Database migrations added for First Activation
 
@@ -182,30 +176,38 @@ Approved reaction-pose PNGs, isolated decorative/vector exports and medical-syst
 - `20260908215612_ten_runtime_live_hardening`
 - `20260908220213_ten_journey_fk_indexes`
 - `20260908220542_ten_facilitator_metrics`
+- `20260908220948_ten_api_command_delegate`
+- `20260908221033_ten_snapshot_projection_hardening`
+- `20260908221519_ten_facilitator_confidence_metrics`
+- `20260908223026_ten_completion_credit_hardening`
+- `20260908223623_ten_codex_trigger_completion_hardening`
 
-The remote Supabase project contains matching applied migrations.
+Remote Supabase has the matching applied migration sequence.
 
 ## Validation
 
-The GitHub Quality Gate runs:
-
+PR Quality Gate runs:
 - `npm ci`
 - `npm run typecheck`
 - `node --experimental-strip-types scripts/test-the-ten.mjs`
 - `npm run build`
 
-The latest fully checked implementation before this status update passed typecheck, learner regression tests and production build in GitHub Actions. Each subsequent implementation commit remains subject to the same PR Quality Gate before review/merge.
+Visual/interaction commits are not considered acceptable until this gate is green.
 
-The existing browser QA covered 1440, 768, 390 and 320 px layouts, keyboard interaction and reduced motion. A final authenticated multi-device rehearsal remains the last meaningful operational QA: one facilitator device plus at least two learner phones traversing a full mission in realtime.
+Database rehearsals additionally covered all four completion contracts and learner Reveal projection without retaining synthetic rows.
 
-## Deployment/security notes still requiring account-level action
+Final operational sign-off still requires a real authenticated multi-device rehearsal with one facilitator device and at least two learner phones. That is the remaining reliability test that cannot be substituted by a database transaction or static build.
 
-Supabase database advisors were reviewed. New journey foreign-key index findings were addressed. TEN/journey tables intentionally expose no direct RLS policies because they are RPC-only surfaces; SECURITY DEFINER RPCs perform their own user/session/role checks before accessing those tables.
+## Account-level security item
 
-One account-level Auth setting remains outside the repository migration surface: Supabase **Leaked Password Protection** is currently disabled and should be enabled in Auth settings before production launch.
+Supabase Leaked Password Protection is currently disabled. This is an Auth project setting, not a migration, and should be enabled before production launch.
 
-Public certificate verification is intentionally callable without learner authentication; all other journey actions remain authenticated and internally authorized.
+TEN/journey tables intentionally use RLS deny-by-default with access through authorized RPCs. Public certificate verification is intentionally anonymous; other journey actions remain authenticated and internally authorized.
 
-## Review status
+## Merge status
 
-The implementation remains on Draft PR #3 and is not merged to `main`. Do not merge until the user has reviewed the final visual/interaction experience and an authenticated live-room rehearsal has passed.
+Do not merge PR #3 to `main` until:
+1. latest Quality Gate is green
+2. identity-locked reaction art is reviewed/staged or explicitly deferred with neutral fallback accepted
+3. authenticated multi-device live-room rehearsal passes
+4. user visually signs off on the actual phone experience
