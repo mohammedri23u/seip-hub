@@ -26,7 +26,7 @@ The learner home is world-first/immersive rather than dashboard-first. Once the 
 
 No Zoom/meeting/video integration exists. The website is a mobile-first reasoning controller used alongside whatever teaching environment the facilitator chooses.
 
-## Canonical content
+## Canonical mission content
 
 Source of truth: Drive package `THE_TEN_FIRST_ACTIVATION_CONTENT_v1.0`, including `website_content_v1.json`.
 
@@ -38,11 +38,52 @@ Published mission content:
 
 The runtime preserves the supplied sequence, options, keys, expected reasoning, mentor lenses, error tags, transfer cases, references and Nexus Echo items. Full interaction parity is documented in `THE_TEN_CONTENT_FIDELITY_AUDIT.md`.
 
-Entry/Exit checkpoints are matched 12-item assessments using `TEN-CR-01` through `TEN-CR-12`. The earlier answer-index interpretation error was corrected before production attempts existed for this bank.
+## Assessment Architecture v2
+
+The original source bank remains intact:
+- canonical `TEN-CR-01` through `TEN-CR-12`
+- same source stems/options/keys/rationales
+- positions 1–12 in both Entry and Exit
+
+A documented evidence-informed extension now adds four brief constructed-response mini-cases to each checkpoint. These new written items are not represented as canonical Drive-bank content.
+
+Current Entry and Exit structure:
+- 12 single-best-answer items × 1 mark
+- 4 brief constructed-response mini-cases × 4 marks
+- 16 items
+- 28 marks
+- 30 minutes
+- Entry/Exit use parallel written cases rather than identical stems
+
+Ten active `TEN-LO-*` Clinical Reasoning Learning Objectives now cover:
+- Problem Representation
+- Differential Diagnosis / Red Flags
+- Evidence Interpretation
+- Diagnostic Updating / Bias
+- Pretest Probability
+- Investigation Strategy
+- Management / Patient Safety
+- Reassessment
+- Confidence Calibration
+- Transfer
+
+They are mapped to prepared M01–M04 sessions, all canonical SBA items, all new written items, and both Entry/Exit blueprints.
+
+Four approved analytic rubric families are linked to the written questions:
+- `TEN-RUB-REP` — Representation & Prioritization
+- `TEN-RUB-EVID` — Evidence Interpretation & Updating
+- `TEN-RUB-TEST` — Probability & Test Strategy
+- `TEN-RUB-SAFE` — Management, Safety & Reassessment
+
+Each rubric has four criteria and a 4-point total. Written responses use independent human rubric review. Optional AI grading can generate a criterion-level proposal, but it remains advisory; human review/moderation remains authoritative.
+
+The existing result pipeline can aggregate finalized scores through the objective mappings into `learner_objective_results`, enabling released Entry/Exit performance by reasoning objective. These results remain formative educational signals and are not competence diagnoses.
+
+Full design, mappings and evidence boundary: `docs/THE_TEN_ASSESSMENT_ARCHITECTURE.md`.
 
 ## Baghdad / visual product layer
 
-Production assets now include:
+Production assets include:
 - approved THE TEN — BAGHDAD NEXUS lockup and crest
 - approved Baghdad artwork
 - approved Nexus artwork
@@ -50,7 +91,7 @@ Production assets now include:
 - approved-source medical-system sprite atlas
 - approved-source Baghdad decorative sprite atlases
 
-World/interaction surfaces now use those assets directly:
+World/interaction surfaces use those assets directly:
 - illustrated Baghdad Signal map with central Nexus
 - four mentor Signal locations and live/waiting/completed states
 - mission medical iconography
@@ -63,7 +104,7 @@ World/interaction surfaces now use those assets directly:
 
 Reference screenshots are not shipped as raster UI.
 
-The only remaining art dependency is the identity-locked reaction-pose pack. Typed reaction states already exist and currently fall back safely to each approved neutral portrait.
+The only remaining art dependency is the identity-locked reaction-pose pack. Typed reaction states already exist and fall back safely to each approved neutral portrait.
 
 ## Live Mission Engine
 
@@ -92,7 +133,7 @@ Supported recorded interactions:
 - team commit
 - transfer response
 
-Additional canonical activity fidelity now exists as supplemental, unscored reasoning tools:
+Additional canonical activity fidelity exists as supplemental, unscored reasoning tools:
 - M02 Framing Challenge scratchpad
 - M03 PERC Rule Builder
 - M03 two-level PE Wells score builder
@@ -120,7 +161,7 @@ The facilitator sees:
 - completion-ready/incomplete counts
 - fidelity closeout
 
-Realtime broadcasts drive learner state; polling remains a resilience fallback.
+Realtime broadcasts drive learner state; polling remains a resilience fallback. Supplemental reasoning tools use the isolated `ten-tool:<runId>` realtime channel so they do not interfere with the primary mission room subscription.
 
 ## Completion integrity
 
@@ -147,7 +188,9 @@ Learner snapshot projection was verified:
 - Reveal: permitted answer/feedback/expected reasoning only
 - facilitator-only stage ID remains excluded from learner payload
 
-Formal assessment delivery continues to exclude correctness fields. Written-response AI grading remains optional/advisory; human review/moderation remains authoritative for final written grading.
+Formal assessment delivery excludes correctness fields and explanations. The current learner assessment component supports the new short-answer items as text responses without exposing linked rubrics/reference answers.
+
+Written-response AI grading is optional/advisory. The human-review screen is intentionally independent and is not prefilled from AI; AI comparison becomes available only after independent human review. Moderation can be triggered by material AI–human disagreement. Final written grading remains human-governed.
 
 ## My Codex / Nexus Echo
 
@@ -181,8 +224,18 @@ Certificate issuance creates a verification code and eligibility snapshot. It is
 - `20260908221519_ten_facilitator_confidence_metrics`
 - `20260908223026_ten_completion_credit_hardening`
 - `20260908223623_ten_codex_trigger_completion_hardening`
+- `20260908232400_ten_tool_realtime_channel`
+- `20260909072000_ten_assessment_architecture_v2`
 
-Remote Supabase has the matching applied migration sequence.
+Remote Supabase has the assessment v2 data applied and verified:
+- 10 THE TEN Learning Objectives
+- M01/M02/M03/M04 objective map counts 3/4/4/4
+- 12 canonical SBA objective mappings
+- 4 new analytic rubrics / 16 rubric criteria
+- 8 new written questions / 8 rubric links
+- Entry and Exit = 16 items, 28 marks, 30 minutes
+- 10 blueprint rows / 100% blueprint weight on each checkpoint
+- no Entry/Exit attempts existed when the assessment structure was changed
 
 ## Validation
 
@@ -192,22 +245,40 @@ PR Quality Gate runs:
 - `node --experimental-strip-types scripts/test-the-ten.mjs`
 - `npm run build`
 
-Visual/interaction commits are not considered acceptable until this gate is green.
+Visual/interaction commits are not acceptable until the latest branch head passes this gate.
 
-Database rehearsals additionally covered all four completion contracts and learner Reveal projection without retaining synthetic rows.
+Database rehearsals additionally covered all four mission completion contracts and learner Reveal projection without retaining synthetic rows.
 
-Final operational sign-off still requires a real authenticated multi-device rehearsal with one facilitator device and at least two learner phones. That is the remaining reliability test that cannot be substituted by a database transaction or static build.
+A real authenticated facilitator + learner M01 walkthrough was completed during QA. The QA mission/run data was then cleaned and the prepared session returned to a clean scheduled state. A higher-load simultaneous multi-learner rehearsal remains optional resilience testing rather than evidence already claimed.
 
-## Account-level security item
+Assessment v2 still requires a fresh browser smoke test of:
+- 16-item Entry delivery
+- four written-response text submissions
+- grading queue visibility
+- one independent human rubric review
+- optional AI proposal only if a server-side provider key is intentionally configured
+- released objective-result generation after final written scores
 
-Supabase Leaked Password Protection is currently disabled. This is an Auth project setting, not a migration, and should be enabled before production launch.
+## Security / performance advisors
 
-TEN/journey tables intentionally use RLS deny-by-default with access through authorized RPCs. Public certificate verification is intentionally anonymous; other journey actions remain authenticated and internally authorized.
+Latest Supabase advisor review after Assessment Architecture v2 reports:
+- intentional RLS-enabled/no-direct-policy notices for RPC-governed journey/TEN tables
+- SECURITY DEFINER RPC warnings that require function-by-function intent review; existing public certificate verification is intentionally anonymous and other exposed gateways rely on internal authorization checks
+- Leaked Password Protection remains disabled at the Auth project level and should be enabled before production
+- performance advisor currently reports only unused-index informational notices; do not remove indexes merely because a fresh/low-traffic environment has not used them yet
+
+Remediation references:
+- RLS linter: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+- Security-definer linter: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable
+- Password protection: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Unused indexes: https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
 
 ## Merge status
 
-Do not merge PR #3 to `main` until:
-1. latest Quality Gate is green
-2. identity-locked reaction art is reviewed/staged or explicitly deferred with neutral fallback accepted
-3. authenticated multi-device live-room rehearsal passes
-4. user visually signs off on the actual phone experience
+Keep PR #3 Draft until:
+1. latest Quality Gate on Assessment Architecture v2 is green
+2. revised Entry/Exit written-response flow passes browser/grading smoke QA
+3. user visually signs off on the revised checkpoint experience
+4. identity-locked reaction art is either reviewed/staged or explicitly deferred with neutral fallback accepted
+
+Do not claim validated competence measurement or autonomous AI grading from this First Activation implementation.
