@@ -202,7 +202,22 @@ Interpretation must remain appropriately bounded. Objective results are educatio
 
 ## Blueprint
 
-Both Entry and Exit assessments contain ten blueprint rows, one per Learning Objective, with a current target weight of 10% each. The blueprint is intended as an explicit coverage contract and analytic organizing layer; it should not be mistaken for psychometric validation.
+Both Entry and Exit assessments contain ten blueprint rows, one per Learning Objective. Blueprint marks and weights now mirror the actual mapped evidence in the 28-mark form rather than assigning artificial equal weights.
+
+| Objective | Target marks | Target weight |
+|---|---:|---:|
+| TEN-LO-01 | 3.4 | 12.143% |
+| TEN-LO-02 | 2.6 | 9.286% |
+| TEN-LO-03 | 4.4 | 15.714% |
+| TEN-LO-04 | 2.6 | 9.286% |
+| TEN-LO-05 | 4.0 | 14.286% |
+| TEN-LO-06 | 3.0 | 10.714% |
+| TEN-LO-07 | 2.8 | 10.000% |
+| TEN-LO-08 | 2.4 | 8.571% |
+| TEN-LO-09 | 1.0 | 3.571% |
+| TEN-LO-10 | 1.8 | 6.429% |
+
+The weights sum to 100% and target marks sum to 28. TEN-LO-09 is intentionally lightly represented in the formal checkpoint because confidence calibration is also sampled repeatedly in the live mission telemetry. The blueprint is an explicit coverage contract and analytic organizing layer; it is not psychometric validation.
 
 ## Evidence rationale for the extension
 
