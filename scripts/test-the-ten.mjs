@@ -87,6 +87,13 @@ assert.deepEqual(assessmentResponseValues({ question_version_id: 'written', ques
   selected_option_ids: null,
   text_response: 'Clinical reasoning',
 })
+formData = new FormData()
+formData.append('q_short', '  Probability first, then test.  ')
+assert.deepEqual(assessmentResponseValues({ question_version_id: 'short', question_type: 'short_answer', options: [] }, formData), {
+  selected_option_id: null,
+  selected_option_ids: null,
+  text_response: 'Probability first, then test.',
+})
 const mixedForm = new FormData()
 mixedForm.append('q_single', 'a')
 mixedForm.append('q_multiple', 'c')
@@ -120,11 +127,15 @@ for (const [score, max, expected] of [[0, 2, 'incorrect'], [1, 2, 'partial'], [2
   assert.equal(releasedScoreOutcome(score, max), expected)
 }
 
-const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigration] = await Promise.all([
+const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigration, assessmentV2Migration, analyticsMigration, assessmentExperienceSource, analyticsPageSource] = await Promise.all([
   readFile(new URL('../src/components/the-ten/mission-scratchpad.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/mission-reasoning-tool.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/live-mission.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../supabase/migrations/20260908232400_ten_tool_realtime_channel.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260909072000_ten_assessment_architecture_v2.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260909074500_ten_program_analytics_v1.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/the-ten/assessment-experience.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/app/programs/[programId]/analytics/page.tsx', import.meta.url), 'utf8'),
 ])
 assert.match(scratchpadSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
 assert.doesNotMatch(scratchpadSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
@@ -134,4 +145,17 @@ assert.match(liveMissionSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
 assert.doesNotMatch(liveMissionSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
 assert.match(toolChannelMigration, /realtime\.send\(state_payload, 'state', 'ten-tool:' \|\| new\.id::text, true\)/)
 
-console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, multiple-response normalization, incompatible-field clearing, feedback integrity, retry, duplicate-submit, released-score and isolated supplemental realtime-channel checks passed.')
+for (const code of ['TEN-LO-01','TEN-LO-10','TEN-RUB-REP','TEN-RUB-EVID','TEN-RUB-TEST','TEN-RUB-SAFE','TEN-CRQ-PRE-01','TEN-CRQ-PRE-04','TEN-CRQ-POST-01','TEN-CRQ-POST-04']) {
+  assert.match(assessmentV2Migration, new RegExp(code))
+}
+assert.match(assessmentV2Migration, /duration_minutes=30/)
+assert.match(assessmentV2Migration, /'short_answer'/)
+assert.match(assessmentExperienceSource, /PART II · GENERATE, DON’T RECOGNIZE/)
+assert.match(assessmentExperienceSource, /Human-reviewed rubrics/)
+assert.match(analyticsMigration, /create or replace function public\.ten_program_analytics/)
+assert.match(analyticsMigration, /revoke all on function public\.ten_program_analytics\(uuid\) from public, anon/)
+assert.match(analyticsMigration, /private\.has_program_role\(target_program_id, array\['program_director','assessment_lead'\]\)/)
+assert.match(analyticsPageSource, /Reasoning Signals/)
+assert.match(analyticsPageSource, /Interpretation boundary/)
+
+console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, mixed-format assessment normalization, assessment-v2/rubric wiring, feedback integrity, retry, duplicate-submit, released-score, analytics authorization scaffolding and isolated supplemental realtime-channel checks passed.')
