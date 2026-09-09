@@ -1,6 +1,6 @@
 # THE TEN — BAGHDAD NEXUS Implementation Status
 
-Updated: 2026-09-09
+Updated: 2026-09-10
 Branch: `codex/the-ten-interaction-system`
 PR: #3 — Draft, open, not merged
 
@@ -15,7 +15,7 @@ PR: #3 — Draft, open, not merged
 
 Primary journey:
 
-`Sign in → Orientation → Entry Baseline → Baghdad World → M01 → M02 → M03 → M04 → My Codex / Nexus Echo → Exit Transfer Check → Final Feedback → Completion Certificate`
+`Sign in → Orientation → Entry Baseline → The Arrival → Choose Your Guide → Living Baghdad → Mission Prelude → Live Reasoning → Signal Activation → Epilogue → My Codex / Nexus Echo → Exit Transfer Check → Final Feedback → Completion Certificate`
 
 Primary learner navigation is now only:
 - Baghdad
@@ -109,6 +109,33 @@ World/interaction surfaces use those assets directly:
 Reference screenshots are not shipped as raster UI.
 
 The only remaining art dependency is the identity-locked reaction-pose pack. Typed reaction states already exist and fall back safely to each approved neutral portrait.
+
+## Experience Layer
+
+The learner world now has a typed, content-agnostic Experience architecture under `src/lib/the-ten/experience/`:
+- story scene, layout, atmosphere, motion, character-reaction and progression contracts
+- canonical Guide definitions and deterministic ability policy
+- Arrival story data
+- configurable mission Prelude and Epilogue factories
+- authoritative Baghdad world-state calculation for states 0–4
+
+Reusable UI lives under `src/components/the-ten/experience/`:
+- learner-paced `StoryPlayer` / `StoryScene`
+- selected `GuidePresence`
+- inline, non-answering `GuideAbility` workspace
+- state-driven `WorldAtmosphere`
+- replay-safe `SignalActivation`
+- mission Prelude / Epilogue wrappers
+
+Story scenes support server-side resume, first-view timestamps, explicit completion, optional replay, keyboard arrows, semantic buttons, touch-first controls and reduced-motion fallbacks. Mission stories are assembled from runtime title/mentor/lens/focus data and do not encode the current clinical diagnoses, answer keys, stage count or response format.
+
+Selected Guides persist across the learner world and mission experience. A Guide invocation records one idempotent server event per run, but the workspace is private/temporary, unscored and never receives answers, expected reasoning or unrevealed stage data.
+
+Living Baghdad derives five visible states from authoritative completed Signal records. Active pathways, Nexus energy, atmosphere, state copy and the selected Guide presence change with progress without creating a second completion counter.
+
+For eligible learners, authoritative mission completion now wraps the existing runtime with:
+`Prelude → Live Mission → Signal Activation → Epilogue → changed Baghdad`.
+The activation is keyed by Signal rather than room, so replaying the same prepared mission cannot falsely activate the same Signal twice. Learners who do not satisfy strict Codex eligibility receive the existing completion-integrity explanation rather than an activation sequence.
 
 ## Live Mission Engine
 
@@ -231,6 +258,8 @@ Certificate issuance creates a verification code and eligibility snapshot. It is
 - `20260908232400_ten_tool_realtime_channel`
 - `20260909072000_ten_assessment_architecture_v2`
 - `20260909072800_ten_assessment_blueprint_alignment`
+- `20260910021500_ten_experience_arrival_and_guides`
+- `20260910023000_ten_experience_story_and_guide_state`
 
 Remote Supabase has the assessment v2 data applied and verified:
 - 10 THE TEN Learning Objectives

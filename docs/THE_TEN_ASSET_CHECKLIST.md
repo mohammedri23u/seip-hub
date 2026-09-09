@@ -77,7 +77,10 @@ The visual integration now includes:
 - illustrated live-mission overlays and Baghdad atmosphere
 - visual Signal records in My Codex
 - Nexus-based Facilitator Control Room and Completion pathway
+- data-driven Arrival, mission Prelude and mission Epilogue compositions
+- selected-Guide presence in Baghdad and the live mission scaffold
+- a reusable Signal Activation sequence and world-state atmosphere layers
 
-Remaining art dependency: the nine identity-locked reaction poses per character. Their absence is explicit and safe; no production request points to a missing reaction file because neutral fallback remains authoritative.
+Remaining art dependency: the nine identity-locked reaction poses per character. Their absence is explicit and safe; all new Story, Guide and Signal Activation slots use `getCharacterAsset()` so the approved neutral portrait remains authoritative until a pose is staged.
 
 The previous branch safety stash remains untouched and is not a source of production artwork.
