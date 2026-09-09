@@ -77,7 +77,11 @@ Four approved analytic rubric families are linked to the written questions:
 
 Each rubric has four criteria and a 4-point total. Written responses use independent human rubric review. Optional AI grading can generate a criterion-level proposal, but it remains advisory; human review/moderation remains authoritative.
 
-The existing result pipeline can aggregate finalized scores through the objective mappings into `learner_objective_results`, enabling released Entry/Exit performance by reasoning objective. These results remain formative educational signals and are not competence diagnoses.
+The Entry/Exit blueprint now mirrors the actual objective-attributed evidence in the 28-mark form rather than assigning artificial equal weights. Blueprint marks sum to 28 and target weights sum to 100%.
+
+The existing result pipeline can aggregate finalized scores through the objective mappings into `learner_objective_results`, enabling released Entry/Exit performance by reasoning objective. The learner results page now exposes these released objective-level “Reasoning Signals” with evidence counts and an explicit formative/competence boundary.
+
+Question detail pages now show both mapped Learning Objectives and the linked analytic rubric for written items.
 
 Full design, mappings and evidence boundary: `docs/THE_TEN_ASSESSMENT_ARCHITECTURE.md`.
 
@@ -226,6 +230,7 @@ Certificate issuance creates a verification code and eligibility snapshot. It is
 - `20260908223623_ten_codex_trigger_completion_hardening`
 - `20260908232400_ten_tool_realtime_channel`
 - `20260909072000_ten_assessment_architecture_v2`
+- `20260909072800_ten_assessment_blueprint_alignment`
 
 Remote Supabase has the assessment v2 data applied and verified:
 - 10 THE TEN Learning Objectives
@@ -234,7 +239,7 @@ Remote Supabase has the assessment v2 data applied and verified:
 - 4 new analytic rubrics / 16 rubric criteria
 - 8 new written questions / 8 rubric links
 - Entry and Exit = 16 items, 28 marks, 30 minutes
-- 10 blueprint rows / 100% blueprint weight on each checkpoint
+- 10 blueprint rows on each checkpoint with objective-attributed marks totaling 28 and weights totaling 100%
 - no Entry/Exit attempts existed when the assessment structure was changed
 
 ## Validation
@@ -245,7 +250,7 @@ PR Quality Gate runs:
 - `node --experimental-strip-types scripts/test-the-ten.mjs`
 - `npm run build`
 
-Visual/interaction commits are not acceptable until the latest branch head passes this gate.
+Assessment Architecture v2 reached a green Quality Gate after the migration/docs/UI integration. Any subsequent branch-head change must be rechecked before merge.
 
 Database rehearsals additionally covered all four mission completion contracts and learner Reveal projection without retaining synthetic rows.
 
@@ -276,7 +281,7 @@ Remediation references:
 ## Merge status
 
 Keep PR #3 Draft until:
-1. latest Quality Gate on Assessment Architecture v2 is green
+1. latest Quality Gate on the final Assessment Architecture v2 branch head is green
 2. revised Entry/Exit written-response flow passes browser/grading smoke QA
 3. user visually signs off on the revised checkpoint experience
 4. identity-locked reaction art is either reviewed/staged or explicitly deferred with neutral fallback accepted
