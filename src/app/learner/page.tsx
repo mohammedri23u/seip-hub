@@ -1,12 +1,17 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { LearnerShell } from '@/components/the-ten/learner-shell'
 import { JourneyWorld } from '@/components/the-ten/journey-world'
 import { worldAssets } from '@/lib/the-ten/assets'
-import { getJourneySummary, getTenCatalog } from '@/lib/the-ten/runtime'
+import { getJourneySummary, getTenCatalog, getTenExperienceState } from '@/lib/the-ten/runtime'
 
 export default async function LearnerHome() {
-  const [summary, catalog] = await Promise.all([getJourneySummary(), getTenCatalog()])
+  const [summary, catalog, experience] = await Promise.all([
+    getJourneySummary(),
+    getTenCatalog(),
+    getTenExperienceState(),
+  ])
   const name = summary.profile?.name?.trim()
 
   if (!summary.enrolled) {
@@ -30,6 +35,9 @@ export default async function LearnerHome() {
       </section>
     </LearnerShell>
   }
+
+  if (!experience.arrival_complete) redirect('/learner/arrival')
+  if (!experience.guide_key) redirect('/learner/guide')
 
   return <LearnerShell immersive title={name ? `Baghdad is open, ${name}` : 'Baghdad is open'} intro="This is your world, not a dashboard. Live missions appear as your facilitator activates them; completed signals stay part of the city.">
     <JourneyWorld summary={summary} catalog={catalog} />
