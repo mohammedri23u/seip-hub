@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { attachLearnerMembershipStatus, checkpointState, nextJourneyAction, isSubmitted, retainedLearnerMembershipStatuses } from '../src/lib/the-ten/journey.ts'
 import { formativeAnswerReducer as reduce, initialAnswerState, validFormativeFeedback } from '../src/lib/the-ten/case-flow.ts'
 import { releasedScoreOutcome } from '../src/lib/the-ten/feedback.ts'
@@ -118,4 +119,19 @@ assert.equal(reduce(state, { type: 'fail' }), state)
 for (const [score, max, expected] of [[0, 2, 'incorrect'], [1, 2, 'partial'], [2, 2, 'correct'], [3, 2, null], [-1, 2, null], [0, 0, null], [NaN, 2, null]]) {
   assert.equal(releasedScoreOutcome(score, max), expected)
 }
-console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, multiple-response normalization, incompatible-field clearing, feedback integrity, retry, duplicate-submit and released-score checks passed.')
+
+const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigration] = await Promise.all([
+  readFile(new URL('../src/components/the-ten/mission-scratchpad.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/the-ten/mission-reasoning-tool.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/the-ten/live-mission.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260908232400_ten_tool_realtime_channel.sql', import.meta.url), 'utf8'),
+])
+assert.match(scratchpadSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
+assert.doesNotMatch(scratchpadSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
+assert.match(reasoningToolSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
+assert.doesNotMatch(reasoningToolSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
+assert.match(liveMissionSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
+assert.doesNotMatch(liveMissionSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
+assert.match(toolChannelMigration, /realtime\.send\(state_payload, 'state', 'ten-tool:' \|\| new\.id::text, true\)/)
+
+console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, multiple-response normalization, incompatible-field clearing, feedback integrity, retry, duplicate-submit, released-score and isolated supplemental realtime-channel checks passed.')
