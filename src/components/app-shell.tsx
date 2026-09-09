@@ -22,6 +22,7 @@ export function AppShell({
             </Link>
             <nav className="hidden gap-4 text-sm text-slate-600 sm:flex">
               <Link href="/dashboard" className="hover:text-slate-950">Dashboard</Link>
+              <Link href="/learner" className="hover:text-slate-950">Learning journey</Link>
             </nav>
           </div>
           <form action="/auth/signout" method="post">
