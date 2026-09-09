@@ -14,6 +14,27 @@
   background-color: rgba(247, 240, 223, .78) !important;
 }
 
+.root:has(> :global(.ten-story-player)),
+.root:has(> :global(.ten-signal-activation)) {
+  background: #0b272a;
+}
+
+.root:has(> :global(.ten-story-player))::before,
+.root:has(> :global(.ten-signal-activation))::before {
+  display: none;
+}
+
+.root > :global(main.ten-story-player),
+.root > :global(main.ten-signal-activation) {
+  background-color: #0b272a !important;
+}
+
+/* Supplemental reasoning tools and mission decoration stay out of Story/Activation mode. */
+.root:has(> :global(.ten-story-player)) > :global(.fixed),
+.root:has(> :global(.ten-signal-activation)) > :global(.fixed) {
+  display: none !important;
+}
+
 .root::before {
   content: '';
   position: fixed;

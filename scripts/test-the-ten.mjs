@@ -4,6 +4,9 @@ import { attachLearnerMembershipStatus, checkpointState, nextJourneyAction, isSu
 import { formativeAnswerReducer as reduce, initialAnswerState, validFormativeFeedback } from '../src/lib/the-ten/case-flow.ts'
 import { releasedScoreOutcome } from '../src/lib/the-ten/feedback.ts'
 import { assessmentResponseRows, assessmentResponseValues, InvalidAssessmentResponse } from '../src/lib/assessment/submission.ts'
+import { arrivalStory, createMissionEpilogue, createMissionPrelude } from '../src/lib/the-ten/experience/story.ts'
+import { computeWorldState } from '../src/lib/the-ten/experience/world-state.ts'
+import { guides } from '../src/lib/the-ten/experience/guides.ts'
 
 const now = Date.parse('2026-09-08T12:00:00Z')
 const assessment = { id: 'a', title: 'Baseline', cohort_id: 'c', assessment_type: 'diagnostic', status: 'live', opens_at: null, closes_at: null, duration_minutes: null }
@@ -127,7 +130,23 @@ for (const [score, max, expected] of [[0, 2, 'incorrect'], [1, 2, 'partial'], [2
   assert.equal(releasedScoreOutcome(score, max), expected)
 }
 
-const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigration, assessmentV2Migration, analyticsMigration, assessmentExperienceSource, analyticsPageSource] = await Promise.all([
+assert.equal(arrivalStory.scenes.length, 7)
+assert.equal(new Set(arrivalStory.scenes.map(scene => scene.id)).size, arrivalStory.scenes.length)
+assert.equal(arrivalStory.scenes.at(-1)?.ctaLabel, 'Enter the Nexus')
+assert.deepEqual([0, 1, 2, 3, 4].map(completed => computeWorldState(completed, 4).level), [0, 1, 2, 3, 4])
+assert.equal(computeWorldState(99, 4).level, 4)
+for (const guide of guides) {
+  assert.ok(guide.ability.prompts.length >= 3)
+  assert.doesNotMatch(JSON.stringify(guide.ability), /correct answer|diagnosis is|eliminate/i)
+}
+const episodeInput = { runId: '11111111-1111-1111-1111-111111111111', missionId: 'FUTURE-17', title: 'A future mission', mentor: 'A future mentor', lens: 'A configurable reasoning lens', focus: null, guide: 'ibn-sina' }
+const prelude = createMissionPrelude(episodeInput)
+const epilogue = createMissionEpilogue(episodeInput)
+assert.equal(prelude.id, `mission:${episodeInput.runId}:prelude`)
+assert.equal(epilogue.id, `mission:${episodeInput.runId}:epilogue`)
+assert.doesNotMatch(JSON.stringify([prelude, epilogue]), /SAH|NSTEMI|pulmonary embol|sepsis/i)
+
+const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigration, assessmentV2Migration, analyticsMigration, assessmentExperienceSource, analyticsPageSource, experienceMigration, guideAbilitySource] = await Promise.all([
   readFile(new URL('../src/components/the-ten/mission-scratchpad.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/mission-reasoning-tool.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/live-mission.tsx', import.meta.url), 'utf8'),
@@ -136,6 +155,8 @@ const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigr
   readFile(new URL('../supabase/migrations/20260909074500_ten_program_analytics_v1.sql', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/assessment-experience.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/app/programs/[programId]/analytics/page.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260910023000_ten_experience_story_and_guide_state.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../src/components/the-ten/experience/guide-ability.tsx', import.meta.url), 'utf8'),
 ])
 assert.match(scratchpadSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)
 assert.doesNotMatch(scratchpadSource, /supabase\.channel\(`ten:\$\{initial\.id\}`/)
@@ -157,5 +178,14 @@ assert.match(analyticsMigration, /revoke all on function public\.ten_program_ana
 assert.match(analyticsMigration, /private\.has_program_role\(target_program_id, array\['program_director','assessment_lead'\]\)/)
 assert.match(analyticsPageSource, /Reasoning Signals/)
 assert.match(analyticsPageSource, /Interpretation boundary/)
+assert.match(experienceMigration, /operation = 'save_story_progress'/)
+assert.match(experienceMigration, /operation = 'use_guide'/)
+assert.match(experienceMigration, /private\.ten_can_view\(rid\)/)
+assert.match(experienceMigration, /public\.ten_codex c where c\.run_id = rid and c\.user_id = uid/)
+assert.match(experienceMigration, /story_id like 'signal:%:activation'/)
+assert.match(experienceMigration, /lower\(r\.mission_id\) = mission_key/)
+assert.match(experienceMigration, /'earned_signal_ids'/)
+assert.match(experienceMigration, /revoke all on function public\.ten_experience_command\(text, jsonb, uuid\) from public, anon/)
+assert.doesNotMatch(guideAbilitySource, /stage\.answer|expectedReasoning|future/i)
 
-console.log('THE TEN: cohort-history/current-mission separation, checkpoint gates, mixed-format assessment normalization, assessment-v2/rubric wiring, feedback integrity, retry, duplicate-submit, released-score, analytics authorization scaffolding and isolated supplemental realtime-channel checks passed.')
+console.log('THE TEN: journey gates, content-agnostic story/world contracts, safe Guide scaffolds, persistent Experience RPC authorization, assessment integrity, analytics authorization and isolated supplemental realtime-channel checks passed.')

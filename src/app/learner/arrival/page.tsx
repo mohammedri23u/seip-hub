@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { ArrivalExperience } from '@/components/the-ten/arrival-experience'
 import { LearnerShell } from '@/components/the-ten/learner-shell'
 import { getJourneySummary, getTenExperienceState } from '@/lib/the-ten/runtime'
-import { completeArrival } from './actions'
+import { completeArrival, recordStoryProgress } from './actions'
 
 export default async function ArrivalPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const [summary, experience, query] = await Promise.all([
@@ -31,5 +31,5 @@ export default async function ArrivalPage({ searchParams }: { searchParams: Prom
     </LearnerShell>
   }
 
-  return <ArrivalExperience completeAction={completeArrival} />
+  return <ArrivalExperience completeAction={completeArrival} progressAction={recordStoryProgress} initialSceneId={experience.story_progress?.arrival?.last_scene_id} />
 }

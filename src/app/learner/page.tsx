@@ -40,6 +40,6 @@ export default async function LearnerHome() {
   if (!experience.guide_key) redirect('/learner/guide')
 
   return <LearnerShell immersive title={name ? `Baghdad is open, ${name}` : 'Baghdad is open'} intro="This is your world, not a dashboard. Live missions appear as your facilitator activates them; completed signals stay part of the city.">
-    <JourneyWorld summary={summary} catalog={catalog} />
+    <JourneyWorld summary={summary} catalog={catalog} experience={experience} />
   </LearnerShell>
 }

@@ -4,7 +4,7 @@ import { LiveMission } from '@/components/the-ten/live-mission'
 import { MissionReasoningTool } from '@/components/the-ten/mission-reasoning-tool'
 import { MissionScratchpad } from '@/components/the-ten/mission-scratchpad'
 import { MissionVisualOverlay } from '@/components/the-ten/mission-visual-overlay'
-import { getTenSnapshot } from '@/lib/the-ten/runtime'
+import { getTenExperienceState, getTenSnapshot } from '@/lib/the-ten/runtime'
 import styles from './mission-world.module.css'
 
 type MissionPhase = 'waiting' | 'commit_open' | 'commit_locked' | 'discussion' | 'revote_open' | 'reveal' | 'transfer' | 'debrief' | 'completed'
@@ -32,8 +32,10 @@ export default async function LearnerMissionPage({ params }: { params: Promise<{
     ? { id: snapshot.id ?? runId, mission_id: snapshot.mission_id, stage_index: snapshot.stage_index, phase: snapshot.phase, manager: false }
     : null
 
+  const experience = await getTenExperienceState()
+
   return <div className={styles.root} data-mission={snapshot.mission_id ?? 'unknown'}>
-    <LiveMission initial={snapshot as never} />
+    <LiveMission initial={snapshot as never} initialExperience={experience} />
     <MissionVisualOverlay missionId={snapshot.mission_id} phase={snapshot.phase} />
     {reasoningToolInitial ? <MissionReasoningTool initial={reasoningToolInitial} /> : null}
     {reasoningToolInitial ? <MissionScratchpad initial={reasoningToolInitial} /> : null}

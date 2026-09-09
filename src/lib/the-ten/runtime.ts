@@ -1,5 +1,6 @@
 import 'server-only'
 import { requireUser } from '@/lib/auth/require-user'
+import type { GuideKey, GuideUseRecord, StoryProgressRecord } from './experience'
 
 export type JourneySummary = {
   enrolled: boolean
@@ -25,9 +26,13 @@ export type TenExperienceState = {
   enrolled: boolean
   arrival_complete?: boolean
   arrival_completed_at?: string | null
-  guide_key?: 'ibn-sina' | 'al-razi' | 'jabir' | 'hippocrates' | null
+  guide_key?: GuideKey | null
   guide_selected_at?: string | null
   experience_version?: string | null
+  story_progress?: Record<string, StoryProgressRecord>
+  guide_uses?: Record<string, GuideUseRecord>
+  earned_run_ids?: string[]
+  earned_signal_ids?: string[]
 }
 
 export type MissionCatalogEntry = {

@@ -1,15 +1,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { DecorSprite, MissionSystemIcon } from '@/components/the-ten/art-sprite'
+import { GuidePresence } from '@/components/the-ten/experience/guide-presence'
+import { WorldAtmosphere } from '@/components/the-ten/experience/world-atmosphere'
 import { brandAssets, characterAssets, worldAssets } from '@/lib/the-ten/assets'
-import type { JourneySummary, TenCatalog } from '@/lib/the-ten/runtime'
+import { computeWorldState, guideKeyFromName } from '@/lib/the-ten/experience'
+import type { JourneySummary, TenCatalog, TenExperienceState } from '@/lib/the-ten/runtime'
 
-const characterByMission = {
-  M01: { key: 'ibn-sina', label: 'Ibn Sina', x: '18%', y: '61%' },
-  M02: { key: 'al-razi', label: 'Al-Razi', x: '37%', y: '39%' },
-  M03: { key: 'jabir', label: 'Jabir ibn Hayyan', x: '67%', y: '58%' },
-  M04: { key: 'hippocrates', label: 'Hippocrates', x: '82%', y: '33%' },
-} as const
+const worldSlots = [
+  { x: '18%', y: '61%' }, { x: '37%', y: '39%' }, { x: '67%', y: '58%' }, { x: '82%', y: '33%' },
+] as const
 
 const signalTone = {
   M01: 'from-[#e7c46c]/35 via-[#f7f0df]/95 to-[#fffdf8]',
@@ -18,16 +18,19 @@ const signalTone = {
   M04: 'from-[#3c7c72]/25 via-[#f7f0df]/95 to-[#fffdf8]',
 } as const
 
-export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; catalog: TenCatalog }) {
+export function JourneyWorld({ summary, catalog, experience }: { summary: JourneySummary; catalog: TenCatalog; experience: TenExperienceState }) {
   const missions = summary.missions ?? []
   const completed = summary.mission_completed_count ?? 0
   const revealedTotal = summary.mission_required_count ?? 4
   const programSignalsTotal = 10
+  const worldState = computeWorldState(completed, revealedTotal)
+  const guideLine = worldState.level === 0 ? 'The first reachable Signal is still quiet.' : worldState.level === 4 ? 'The First Activation holds. The wider Nexus remains ahead.' : `${worldState.name}. The city is responding.`
 
   return <div className="space-y-7">
     <section className="relative isolate overflow-hidden rounded-[2.25rem] border border-[#315b5d] bg-[#15383b] text-[#fffdf8] shadow-[0_30px_90px_rgba(23,54,58,.22)]" aria-labelledby="baghdad-world-title">
       <div className="relative min-h-[540px] sm:min-h-[660px]">
         <Image src={worldAssets.baghdad} alt="Illustrated Baghdad world for THE TEN journey" fill priority sizes="100vw" className="object-cover object-center" />
+        <WorldAtmosphere state={worldState} />
         <div className="absolute inset-0 bg-gradient-to-b from-[#102f32]/15 via-transparent to-[#0d2e31]/92" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(70,185,189,.12),transparent_24rem)]" />
         <div className="pointer-events-none absolute inset-0 z-[5] hidden overflow-hidden sm:block" aria-hidden="true">
@@ -44,7 +47,9 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
             <p className="text-[10px] font-black tracking-[.22em] text-[#f2d99b] sm:text-xs">BAGHDAD NEXUS · FIRST ACTIVATION</p>
             <h2 id="baghdad-world-title" className="mt-2 font-serif text-3xl leading-tight sm:text-5xl">The city is your journey.</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[#d8e7e2] sm:text-base">Four of THE TEN Signals are revealed in First Activation. Each live mission appears in Baghdad; complete its reasoning sequence and that Signal remains active in your world.</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#79c7c3]/35 bg-[#102f32]/65 px-3 py-1.5 text-[10px] font-black tracking-[.12em] text-[#9ddbd6]">WORLD STATE {worldState.level}</span><span className="text-xs font-bold text-[#d8e7e2]">{worldState.name}</span></div>
           </div>
+          {experience.guide_key && <div className="mt-3 max-w-md"><GuidePresence guideKey={experience.guide_key} context="world" reaction={worldState.level ? 'guide' : 'neutral'} line={guideLine} /></div>}
         </div>
 
         <div className="absolute right-5 top-5 z-20 hidden rounded-full border border-[#f2d99b]/60 bg-[#17363a]/88 px-4 py-3 text-center sm:block">
@@ -54,28 +59,26 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
 
         <div className="absolute inset-0 z-10 hidden sm:block" aria-hidden="true">
           <svg className="h-full w-full" viewBox="0 0 1000 660" preserveAspectRatio="none">
-            <path d="M500 330 L180 405" stroke="rgba(242,217,155,.40)" strokeWidth="2" strokeDasharray="8 10" />
-            <path d="M500 330 L370 260" stroke="rgba(70,185,189,.42)" strokeWidth="2" strokeDasharray="8 10" />
-            <path d="M500 330 L670 385" stroke="rgba(200,121,77,.42)" strokeWidth="2" strokeDasharray="8 10" />
-            <path d="M500 330 L820 220" stroke="rgba(47,138,114,.42)" strokeWidth="2" strokeDasharray="8 10" />
+            {['M500 330 L180 405','M500 330 L370 260','M500 330 L670 385','M500 330 L820 220'].map((path, index) => <path key={path} d={path} className="ten-world-path" data-active={index < worldState.pathLayers || undefined} />)}
           </svg>
         </div>
 
         <div className="absolute left-1/2 top-[48%] z-20 hidden -translate-x-1/2 -translate-y-1/2 sm:block">
-          <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-[#f2d99b]/70 bg-[#fffdf8] shadow-[0_0_0_12px_rgba(23,54,58,.35),0_0_55px_rgba(70,185,189,.35)]">
+          <div data-active={worldState.nexusActive || undefined} className="ten-world-nexus relative h-32 w-32 overflow-hidden rounded-full border-4 border-[#f2d99b]/70 bg-[#fffdf8] shadow-[0_0_0_12px_rgba(23,54,58,.35),0_0_55px_rgba(70,185,189,.35)]">
             <Image src={brandAssets.crest} alt="" fill sizes="128px" className="object-cover" />
           </div>
           <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#17363a]/88 px-3 py-2 text-[10px] font-black tracking-[.14em] text-[#f2d99b] backdrop-blur">NEXUS · {completed}/{programSignalsTotal} SIGNALS</div>
         </div>
 
         <div className="absolute inset-0 z-30 hidden sm:block">
-          {missions.map((mission) => {
+          {missions.map((mission, missionIndex) => {
             const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
-            const character = characterByMission[mission.id as keyof typeof characterByMission]
-            if (!character) return null
-            const image = characterAssets[character.key].neutral
+            const catalogMission = catalog.missions.find(item => item.id === mission.id)
+            const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
+            const slot = worldSlots[missionIndex % worldSlots.length]
+            const image = characterKey ? characterAssets[characterKey].neutral : null
             const content = <><div className={`relative mx-auto h-20 w-20 overflow-visible rounded-full border-4 bg-[#f7f0df] shadow-[0_12px_35px_rgba(0,0,0,.28)] transition duration-200 ${mission.completed ? 'border-[#f2d99b] shadow-[0_0_34px_rgba(216,169,78,.60)]' : run ? 'border-[#80c8c4] group-hover:-translate-y-1 group-hover:scale-[1.03]' : 'border-white/30 grayscale-[.25]'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="80px" className="object-cover" />}{!run && !mission.completed && <div className="absolute inset-0 grid place-items-center bg-[#17363a]/38 text-xl" aria-hidden="true">◈</div>}</div><span className="absolute -bottom-2 -right-2 grid h-9 w-9 place-items-center rounded-full border-2 border-[#f2d99b]/80 bg-[#fffdf8] shadow-lg"><MissionSystemIcon missionId={mission.id} size={29} label={`${mission.title} clinical system`} /></span></div><div className="mt-3 rounded-2xl border border-white/15 bg-[#102f32]/88 px-3 py-2 text-center shadow-lg backdrop-blur-md"><span className="block text-[9px] font-black tracking-[.16em] text-[#f2d99b]">SIGNAL {mission.position}</span><span className="mt-0.5 block max-w-40 text-xs font-black">{mission.title}</span><span className="mt-0.5 block text-[10px] text-[#cfe1dc]">{mission.completed ? 'Activated' : run?.phase === 'waiting' ? 'Waiting room open' : run ? `Live · ${run.phase.replaceAll('_',' ')}` : 'Awaiting facilitator'}</span></div></>
-            return <div key={mission.id} className="absolute w-44 -translate-x-1/2 -translate-y-1/2" style={{left:character.x,top:character.y}}>{run ? <Link href={`/learner/mission/${run.id}`} className="group block rounded-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#f2d99b]" aria-label={`${mission.title}. ${mission.completed ? 'Completed' : `Room ${run.phase}`}`}>{content}</Link> : <div aria-label={`${mission.title}. Awaiting facilitator`} role="status">{content}</div>}</div>
+            return <div key={mission.id} className="absolute w-44 -translate-x-1/2 -translate-y-1/2" style={{left:slot.x,top:slot.y}}>{run ? <Link href={`/learner/mission/${run.id}`} className="group block rounded-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#f2d99b]" aria-label={`${mission.title}. ${mission.completed ? 'Completed' : `Room ${run.phase}`}`}>{content}</Link> : <div aria-label={`${mission.title}. Awaiting facilitator`} role="status">{content}</div>}</div>
           })}
         </div>
 
@@ -84,8 +87,9 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
             <div className="mb-2 flex items-center justify-between px-1"><span className="text-[10px] font-black tracking-[.14em] text-[#f2d99b]">REVEALED SIGNALS</span><span className="text-[10px] font-bold text-[#d8e7e2]">{completed}/{programSignalsTotal} active</span></div>
             <div className="grid grid-cols-4 gap-2">{missions.map(mission => {
               const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
-              const character = characterByMission[mission.id as keyof typeof characterByMission]
-              const image = character ? characterAssets[character.key].neutral : null
+              const catalogMission = catalog.missions.find(item => item.id === mission.id)
+              const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
+              const image = characterKey ? characterAssets[characterKey].neutral : null
               const content = <><div className={`relative mx-auto h-12 w-12 overflow-visible rounded-full border-2 bg-[#f7f0df] ${mission.completed ? 'border-[#f2d99b]' : run ? 'border-[#80c8c4]' : 'border-white/25 opacity-65'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="48px" className="object-cover" />}</div><span className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border border-[#f2d99b]/80 bg-[#fffdf8]"><MissionSystemIcon missionId={mission.id} size={20} label={`${mission.title} clinical system`} /></span></div><span className="mt-2 block text-[9px] font-black text-[#f2d99b]">{mission.id}</span></>
               return run ? <Link key={mission.id} href={`/learner/mission/${run.id}`} className="min-h-16 rounded-xl p-1 text-center">{content}</Link> : <div key={mission.id} className="min-h-16 rounded-xl p-1 text-center" aria-label={`${mission.title}, awaiting facilitator`}>{content}</div>
             })}</div>
@@ -100,13 +104,13 @@ export function JourneyWorld({ summary, catalog }: { summary: JourneySummary; ca
         {missions.map((mission) => {
           const catalogMission = catalog.missions.find(item => item.id === mission.id)
           const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
-          const character = characterByMission[mission.id as keyof typeof characterByMission]
-          const image = character ? characterAssets[character.key].neutral : null
+          const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
+          const image = characterKey ? characterAssets[characterKey].neutral : null
           const tone = signalTone[mission.id as keyof typeof signalTone] ?? 'from-[#f7f0df] to-[#fffdf8]'
           return <article key={mission.id} className={`relative overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-gradient-to-br ${tone} p-5 shadow-[0_16px_45px_rgba(23,54,58,.07)] sm:p-7`}>
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border-[18px] border-[#1f6668]/5" aria-hidden="true" />
             <div className="relative flex gap-4 sm:gap-6">
-              {image && <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-[1.25rem] bg-[#efe1c7] sm:h-36 sm:w-32"><Image src={image} alt={`${character?.label ?? mission.mentor} mentor portrait`} fill sizes="128px" className="object-cover" /></div>}
+              {image && <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-[1.25rem] bg-[#efe1c7] sm:h-36 sm:w-32"><Image src={image} alt={`${catalogMission?.mentor ?? mission.mentor} mentor portrait`} fill sizes="128px" className="object-cover" /></div>}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2"><span className="grid h-12 w-12 place-items-center rounded-full border border-[#d8a94e]/40 bg-[#fffdf8]/80"><MissionSystemIcon missionId={mission.id} size={42} /></span><span className="rounded-full bg-[#17363a] px-3 py-1 text-[10px] font-black tracking-[.15em] text-[#f2d99b]">SIGNAL {mission.position}</span>{mission.completed && <span className="rounded-full bg-[#2f8a72] px-3 py-1 text-[10px] font-black text-white">ACTIVATED</span>}{run?.phase === 'waiting' && <span className="rounded-full border border-[#1f6668]/30 bg-white/70 px-3 py-1 text-[10px] font-black text-[#1f6668]">WAITING ROOM</span>}{run && run.phase !== 'waiting' && run.phase !== 'completed' && <span className="rounded-full bg-[#46b9bd] px-3 py-1 text-[10px] font-black text-[#17363a]">LIVE · {run.phase.replaceAll('_', ' ')}</span>}</div>
                 <h3 className="mt-3 font-serif text-2xl leading-tight text-[#17363a]">{mission.title}</h3>

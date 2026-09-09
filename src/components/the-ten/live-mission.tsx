@@ -5,6 +5,11 @@ import Link from 'next/link'
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCharacterAsset } from '@/lib/the-ten/assets'
+import { GuideAbility } from '@/components/the-ten/experience/guide-ability'
+import { MissionEpilogue } from '@/components/the-ten/experience/mission-epilogue'
+import { MissionPrelude } from '@/components/the-ten/experience/mission-prelude'
+import { SignalActivation } from '@/components/the-ten/experience/signal-activation'
+import { createMissionEpilogue, createMissionPrelude, guideKeyFromName, type GuideKey, type GuideUseRecord, type StoryProgressRecord } from '@/lib/the-ten/experience'
 
 type Stage = {
   id?: string
@@ -61,7 +66,6 @@ type Snapshot = {
   stability?: number
 }
 
-const characterByMission = { M01: 'ibn-sina', M02: 'al-razi', M03: 'jabir', M04: 'hippocrates' } as const
 const missionTheme = {
   M01: { accent: '#d8a94e', soft: '#fff4cf', label: 'PATTERN' },
   M02: { accent: '#46b9bd', soft: '#e7f7f6', label: 'EVIDENCE' },
@@ -69,10 +73,21 @@ const missionTheme = {
   M04: { accent: '#2f8a72', soft: '#e8f5ef', label: 'TREATMENT' },
 } as const
 
-export function LiveMission({ initial }: { initial: Snapshot }) {
+type ExperienceState = {
+  guide_key?: GuideKey | null
+  story_progress?: Record<string, StoryProgressRecord>
+  guide_uses?: Record<string, GuideUseRecord>
+  earned_run_ids?: string[]
+  earned_signal_ids?: string[]
+}
+
+export function LiveMission({ initial, initialExperience }: { initial: Snapshot; initialExperience: ExperienceState }) {
   const [snapshot, setSnapshot] = useState(initial)
+  const [experience, setExperience] = useState(initialExperience)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [replayingPrelude, setReplayingPrelude] = useState(false)
+  const [replayingEpilogue, setReplayingEpilogue] = useState(false)
   const supabase = useMemo(() => createClient(), [])
 
   const refresh = useCallback(async () => {
@@ -81,7 +96,12 @@ export function LiveMission({ initial }: { initial: Snapshot }) {
       setError(rpcError.message)
       return
     }
-    setSnapshot(data as Snapshot)
+    const nextSnapshot = data as Snapshot
+    setSnapshot(nextSnapshot)
+    if (!initial.manager && nextSnapshot.phase === 'completed') {
+      const { data: experienceData } = await supabase.rpc('ten_experience_state', { target_cohort_id: null })
+      if (experienceData) setExperience(experienceData as ExperienceState)
+    }
   }, [initial.id, supabase])
 
   useEffect(() => {
@@ -136,7 +156,43 @@ export function LiveMission({ initial }: { initial: Snapshot }) {
     await refresh()
   }
 
-  const character = characterByMission[snapshot.mission_id]
+  const saveStoryProgress = useCallback(async (storyId: string, sceneId: string, completed: boolean) => {
+    const { data, error: progressError } = await supabase.rpc('ten_experience_command', {
+      operation: 'save_story_progress', payload: { story_id: storyId, scene_id: sceneId, completed }, target_cohort_id: null,
+    })
+    if (progressError) { setError(progressError.message); throw new Error(progressError.message) }
+    if (data) setExperience(data as ExperienceState)
+  }, [supabase])
+
+  const episodeInput = useMemo(() => ({
+    runId: snapshot.id, missionId: snapshot.mission_id, title: snapshot.title, mentor: snapshot.mentor,
+    lens: snapshot.lens, focus: snapshot.focus, guide: experience.guide_key,
+  }), [experience.guide_key, snapshot.focus, snapshot.id, snapshot.lens, snapshot.mentor, snapshot.mission_id, snapshot.title])
+  const prelude = useMemo(() => createMissionPrelude(episodeInput), [episodeInput])
+  const epilogue = useMemo(() => createMissionEpilogue(episodeInput), [episodeInput])
+  const activationId = `signal:${snapshot.mission_id.toLowerCase()}:activation`
+  const preludeProgress = experience.story_progress?.[prelude.id]
+  const activationComplete = Boolean(experience.story_progress?.[activationId]?.completed_at)
+  const epilogueProgress = experience.story_progress?.[epilogue.id]
+  const signalEarned = experience.earned_run_ids?.includes(snapshot.id) ?? false
+
+  if (!snapshot.manager && snapshot.phase === 'waiting' && replayingPrelude) {
+    return <MissionPrelude story={prelude} onProgress={saveStoryProgress} onComplete={() => setReplayingPrelude(false)} replaying onDismiss={() => setReplayingPrelude(false)} />
+  }
+  if (!snapshot.manager && snapshot.phase === 'waiting' && !preludeProgress?.completed_at) {
+    return <MissionPrelude story={prelude} initialSceneId={preludeProgress?.last_scene_id} onProgress={saveStoryProgress} onComplete={() => undefined} />
+  }
+  if (!snapshot.manager && snapshot.phase === 'completed' && signalEarned && !activationComplete) {
+    return <SignalActivation signalNumber={Math.max(1, experience.earned_signal_ids?.length ?? 1)} guideKey={experience.guide_key} onContinue={() => saveStoryProgress(activationId, 'restored', true)} />
+  }
+  if (!snapshot.manager && snapshot.phase === 'completed' && signalEarned && !epilogueProgress?.completed_at) {
+    return <MissionEpilogue story={epilogue} initialSceneId={epilogueProgress?.last_scene_id} onProgress={saveStoryProgress} onComplete={() => undefined} />
+  }
+  if (!snapshot.manager && snapshot.phase === 'completed' && replayingEpilogue) {
+    return <MissionEpilogue story={epilogue} onProgress={saveStoryProgress} onComplete={() => setReplayingEpilogue(false)} replaying onDismiss={() => setReplayingEpilogue(false)} />
+  }
+
+  const character = guideKeyFromName(snapshot.mentor) ?? 'ibn-sina'
   const reaction = snapshot.phase === 'waiting' ? 'locked' : snapshot.phase === 'discussion' ? 'thinking' : snapshot.phase === 'completed' ? 'celebrate' : 'guide'
   const portrait = getCharacterAsset(character, reaction)
   const progress = Math.max(0, Math.min(100, snapshot.stability ?? 0))
@@ -175,7 +231,9 @@ export function LiveMission({ initial }: { initial: Snapshot }) {
         </div>
       </section>
 
-      {snapshot.phase === 'waiting' && <Waiting snapshot={snapshot} />}
+      {!snapshot.manager && experience.guide_key && !['waiting','completed'].includes(snapshot.phase) ? <GuideAbility guideKey={experience.guide_key} runId={snapshot.id} previouslyUsed={Boolean(experience.guide_uses?.[snapshot.id])} /> : null}
+
+      {snapshot.phase === 'waiting' && <Waiting snapshot={snapshot} onReplay={preludeProgress?.completed_at ? () => setReplayingPrelude(true) : undefined} />}
       {snapshot.stage && ['commit_open','commit_locked','discussion','revote_open','reveal'].includes(snapshot.phase) && <StageScene snapshot={snapshot} />}
       {['commit_open','revote_open'].includes(snapshot.phase) && snapshot.stage && !snapshot.manager && <ResponseComposer snapshot={snapshot} busy={busy} submit={rpc} />}
       {snapshot.phase === 'transfer' && !snapshot.manager && <TransferComposer snapshot={snapshot} busy={busy} submit={rpc} />}
@@ -184,7 +242,7 @@ export function LiveMission({ initial }: { initial: Snapshot }) {
       {snapshot.phase === 'discussion' && !snapshot.manager && <DiscussionPanel endsAt={snapshot.discussion_ends_at ?? null} />}
       {snapshot.phase === 'reveal' && snapshot.stage && <RevealPanel stage={snapshot.stage} distribution={snapshot.distribution} />}
       {snapshot.phase === 'debrief' && <Debrief snapshot={snapshot} />}
-      {snapshot.phase === 'completed' && <Completed snapshot={snapshot} rpc={rpc} busy={busy} />}
+      {snapshot.phase === 'completed' && <Completed snapshot={snapshot} rpc={rpc} busy={busy} signalEarned={signalEarned} onReplay={signalEarned && epilogueProgress?.completed_at ? () => setReplayingEpilogue(true) : undefined} />}
 
       {snapshot.manager && <FacilitatorControls snapshot={snapshot} busy={busy} command={command} />}
     </div>
@@ -200,12 +258,13 @@ function MissionAtmosphere({ mission }: { mission: Snapshot['mission_id'] }) {
   </div>
 }
 
-function Waiting({ snapshot }: { snapshot: Snapshot }) {
+function Waiting({ snapshot, onReplay }: { snapshot: Snapshot; onReplay?: () => void }) {
   return <section className="rounded-[1.75rem] border border-[#315b5d] bg-[#17363a] p-6 text-white shadow-[0_20px_70px_rgba(23,54,58,.18)] sm:p-8">
     <p className="text-xs font-black tracking-[.18em] text-[#f2d99b]">SIGNAL DETECTED</p>
     <h2 className="mt-3 font-serif text-3xl">Waiting for the facilitator.</h2>
     <p className="mt-3 leading-7 text-[#d8e7e2]">The mission is loaded, but no clinical clue has been released. Keep this screen open; the first stage appears automatically when the facilitator opens the commit.</p>
     <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold"><span className="rounded-full border border-white/20 px-3 py-2">{snapshot.participants} connected</span><span className="rounded-full border border-white/20 px-3 py-2">Mission {snapshot.mission_id}</span></div>
+    {onReplay && <button type="button" onClick={onReplay} className="mt-5 min-h-11 rounded-full border border-white/20 px-4 text-xs font-black text-[#f2d99b]">Replay mission prelude</button>}
   </section>
 }
 
@@ -333,7 +392,7 @@ function Debrief({ snapshot }: { snapshot: Snapshot }) {
   return <section className="rounded-[1.75rem] border border-[#d8a94e] bg-[#fff8df] p-6 shadow-[0_16px_45px_rgba(23,54,58,.06)]"><p className="text-xs font-black tracking-[.16em] text-[#8b6a2b]">DEBRIEF</p><h2 className="mt-2 font-serif text-3xl">Close the reasoning loop.</h2><p className="mt-4 leading-7">{snapshot.completion?.principle}</p>{snapshot.transfer?.answer && <div className="mt-5 rounded-2xl border border-[#d8ccb6] bg-white/70 p-4"><strong>Transfer anchor</strong><p className="mt-2 leading-6">{snapshot.transfer.answer}</p></div>}</section>
 }
 
-function Completed({ snapshot, rpc, busy }: { snapshot: Snapshot; rpc: (operation:string,payload:Record<string,unknown>)=>Promise<boolean>; busy:boolean }) {
+function Completed({ snapshot, rpc, busy, signalEarned, onReplay }: { snapshot: Snapshot; rpc: (operation:string,payload:Record<string,unknown>)=>Promise<boolean>; busy:boolean; signalEarned:boolean; onReplay?: () => void }) {
   const [reflection,setReflection] = useState('')
   const [saved,setSaved] = useState(false)
 
@@ -343,10 +402,13 @@ function Completed({ snapshot, rpc, busy }: { snapshot: Snapshot; rpc: (operatio
   }
 
   return <section className="rounded-[1.75rem] border border-[#2f8a72] bg-[#edf7f4] p-6 shadow-[0_18px_55px_rgba(47,138,114,.10)]">
-    <p className="text-xs font-black tracking-[.16em] text-[#2f8a72]">SIGNAL ACTIVATED</p>
-    <h2 className="mt-2 font-serif text-3xl">{snapshot.title} has reached completion.</h2>
+    <p className="text-xs font-black tracking-[.16em] text-[#2f8a72]">{snapshot.manager ? 'MISSION ROOM COMPLETE' : signalEarned ? 'SIGNAL RESTORED' : 'ROOM COMPLETED'}</p>
+    <h2 className="mt-2 font-serif text-3xl">{snapshot.manager ? `${snapshot.title} is closed.` : signalEarned ? `${snapshot.title} now lives in Baghdad.` : 'The room closed before your Signal requirements were complete.'}</h2>
     <p className="mt-4 leading-7">{snapshot.completion?.principle}</p>
-    {!snapshot.manager && <div className="mt-5"><TextArea label="One thing I will carry into the next case" value={reflection} setValue={setReflection} /><button disabled={busy || reflection.trim().length<3 || saved} onClick={saveReflection} className="ten-action mt-4">{saved ? 'Reflection saved' : 'Save reflection'}</button><p className="mt-3 text-sm leading-6 text-[#526c6e]">Signal credit is recorded only when every required mission stage and the transfer response were completed. If this signal does not appear in My Codex, contact the facilitator.</p></div>}
+    {!snapshot.manager && signalEarned && <div className="mt-5"><TextArea label="One thing I will carry into the next case" value={reflection} setValue={setReflection} /><button disabled={busy || reflection.trim().length<3 || saved} onClick={saveReflection} className="ten-action mt-4">{saved ? 'Reflection saved' : 'Save reflection'}</button></div>}
+    {!snapshot.manager && !signalEarned && <p className="mt-4 rounded-2xl border border-[#c58a3e]/35 bg-[#fff8df] p-4 text-sm leading-6">Signal credit requires every required initial response, each required revote, the transfer response, and authoritative room completion. Contact the facilitator if you believe your record is incomplete.</p>}
+    {onReplay && <button type="button" onClick={onReplay} className="ten-action ten-action-secondary mt-4">Replay epilogue</button>}
+    <p className="mt-3 text-sm leading-6 text-[#526c6e]">Signal credit is recorded only from the authoritative mission response and completion checks.</p>
     <Link className="ten-text-link mt-5" href={snapshot.manager ? '/facilitator/the-ten' : '/learner'}>{snapshot.manager ? 'Return to facilitator studio' : 'Return to the evolved Baghdad world'} →</Link>
   </section>
 }
