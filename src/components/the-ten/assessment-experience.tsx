@@ -61,6 +61,10 @@ export function AssessmentExperience({
     }),
     [answers, items],
   )
+  const firstWrittenIndex = useMemo(
+    () => items.findIndex((item) => !['single_best_answer', 'true_false', 'multiple_response'].includes(item.question_type)),
+    [items],
+  )
 
   useEffect(() => {
     if (confirming) confirmationRef.current?.focus()
@@ -79,74 +83,92 @@ export function AssessmentExperience({
         <ProgressTracker total={items.length} answered={answered} />
       </div>
 
-      {items.map((item) => {
+      {items.map((item, index) => {
         const fieldName = `q_${item.question_version_id}`
         const value = answers[item.question_version_id] ?? (item.question_type === 'multiple_response' ? [] : '')
         const isChoice = item.question_type === 'single_best_answer' || item.question_type === 'true_false'
         const isMultipleResponse = item.question_type === 'multiple_response'
+        const isWritten = !isChoice && !isMultipleResponse
+        const writtenText = typeof value === 'string' ? value : ''
 
         return (
-          <QuestionCard key={item.question_version_id} number={item.position} marks={item.marks} stem={item.stem}>
-            {isChoice ? (
-              <div className="space-y-3" role="radiogroup" aria-label={`Question ${item.position} options`}>
-                {item.options.map((option) => {
-                  const selected = value === option.id
-                  return (
-                    <AnswerOption
+          <div key={item.question_version_id} className="space-y-5">
+            {index === firstWrittenIndex ? (
+              <section className="overflow-hidden rounded-[28px] border border-[#D8A94E] bg-[#17363A] text-white shadow-[0_18px_55px_rgba(23,54,58,0.16)]">
+                <div className="h-1.5 bg-[#D8A94E]" />
+                <div className="p-5 sm:p-6">
+                  <p className="text-xs font-black tracking-[.16em] text-[#F2D99B]">PART II · GENERATE, DON’T RECOGNIZE</p>
+                  <h2 className="mt-2 font-serif text-2xl font-bold">Brief clinical-reasoning responses</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#D9E6E3]">The next cases ask you to produce the reasoning yourself. Write the key discriminating features, probability update, next step or safety priorities requested by the prompt. Concise reasoning is better than a long unfocused answer.</p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#F2D99B]"><span className="rounded-full border border-white/15 px-3 py-2">4 short cases</span><span className="rounded-full border border-white/15 px-3 py-2">Human-reviewed rubrics</span><span className="rounded-full border border-white/15 px-3 py-2">AI, if used, is advisory only</span></div>
+                </div>
+              </section>
+            ) : null}
+
+            <QuestionCard number={item.position} marks={item.marks} stem={item.stem}>
+              {isChoice ? (
+                <div className="space-y-3" role="radiogroup" aria-label={`Question ${item.position} options`}>
+                  {item.options.map((option) => {
+                    const selected = value === option.id
+                    return (
+                      <AnswerOption
+                        key={option.id}
+                        name={fieldName}
+                        value={option.id}
+                        label={String.fromCharCode(64 + option.position)}
+                        text={option.text}
+                        checked={selected}
+                        state={selected ? 'selected' : 'idle'}
+                        onChange={() => setAnswers((current) => ({ ...current, [item.question_version_id]: option.id }))}
+                      />
+                    )
+                  })}
+                </div>
+              ) : isMultipleResponse ? (
+                <fieldset className="space-y-3" aria-describedby={`multiple-help-${item.question_version_id}`}>
+                  <legend className="sr-only">Question {item.position} options</legend>
+                  <p id={`multiple-help-${item.question_version_id}`} className="text-sm font-semibold text-[#426064]">Select all options that apply.</p>
+                  {item.options.map((option) => {
+                    const selectedIds = Array.isArray(value) ? value : []
+                    const selected = selectedIds.includes(option.id)
+                    return <AnswerOption
                       key={option.id}
+                      type="checkbox"
                       name={fieldName}
                       value={option.id}
                       label={String.fromCharCode(64 + option.position)}
                       text={option.text}
                       checked={selected}
                       state={selected ? 'selected' : 'idle'}
-                      onChange={() => setAnswers((current) => ({ ...current, [item.question_version_id]: option.id }))}
+                      onChange={() => setAnswers((current) => ({
+                        ...current,
+                        [item.question_version_id]: selected
+                          ? selectedIds.filter((id) => id !== option.id)
+                          : [...selectedIds, option.id],
+                      }))}
                     />
-                  )
-                })}
-              </div>
-            ) : isMultipleResponse ? (
-              <fieldset className="space-y-3" aria-describedby={`multiple-help-${item.question_version_id}`}>
-                <legend className="sr-only">Question {item.position} options</legend>
-                <p id={`multiple-help-${item.question_version_id}`} className="text-sm font-semibold text-[#426064]">Select all options that apply.</p>
-                {item.options.map((option) => {
-                  const selectedIds = Array.isArray(value) ? value : []
-                  const selected = selectedIds.includes(option.id)
-                  return <AnswerOption
-                    key={option.id}
-                    type="checkbox"
+                  })}
+                </fieldset>
+              ) : isWritten ? (
+                <div>
+                  <div className="mb-2 flex items-end justify-between gap-3">
+                    <label htmlFor={fieldName} className="block text-xs font-black tracking-[0.12em] text-[#426064]">YOUR REASONING</label>
+                    <span className="text-xs font-semibold text-[#7A837F]" aria-live="polite">{countWords(writtenText)} words</span>
+                  </div>
+                  <textarea
+                    id={fieldName}
                     name={fieldName}
-                    value={option.id}
-                    label={String.fromCharCode(64 + option.position)}
-                    text={option.text}
-                    checked={selected}
-                    state={selected ? 'selected' : 'idle'}
-                    onChange={() => setAnswers((current) => ({
-                      ...current,
-                      [item.question_version_id]: selected
-                        ? selectedIds.filter((id) => id !== option.id)
-                        : [...selectedIds, option.id],
-                    }))}
+                    rows={6}
+                    value={writtenText}
+                    onChange={(event) => setAnswers((current) => ({ ...current, [item.question_version_id]: event.target.value }))}
+                    className="w-full rounded-[18px] border border-[#CFC2AA] bg-[#FFFDF8] p-4 text-[15px] leading-7 text-[#17363A] outline-none transition placeholder:text-[#8A918C] focus:border-[#1F6668] focus:ring-2 focus:ring-[#1F6668]/15 motion-reduce:transition-none"
+                    placeholder="Answer the reasoning task directly. Aim for a few focused sentences, not an essay."
                   />
-                })}
-              </fieldset>
-            ) : (
-              <div>
-                <label htmlFor={fieldName} className="mb-2 block text-xs font-black tracking-[0.12em] text-[#426064]">
-                  YOUR REASONING
-                </label>
-                <textarea
-                  id={fieldName}
-                  name={fieldName}
-                  rows={6}
-                  value={typeof value === 'string' ? value : ''}
-                  onChange={(event) => setAnswers((current) => ({ ...current, [item.question_version_id]: event.target.value }))}
-                  className="w-full rounded-[18px] border border-[#CFC2AA] bg-[#FFFDF8] p-4 text-[15px] leading-7 text-[#17363A] outline-none transition placeholder:text-[#8A918C] focus:border-[#1F6668] focus:ring-2 focus:ring-[#1F6668]/15 motion-reduce:transition-none"
-                  placeholder="Write your clinical reasoning…"
-                />
-              </div>
-            )}
-          </QuestionCard>
+                  <p className="mt-2 text-xs leading-5 text-[#6B7774]">There is no speed bonus. Use the clinical information given and make your reasoning explicit.</p>
+                </div>
+              ) : null}
+            </QuestionCard>
+          </div>
         )
       })}
 
@@ -178,4 +200,9 @@ export function AssessmentExperience({
       </AssessmentFields>
     </form>
   )
+}
+
+function countWords(value: string) {
+  const trimmed = value.trim()
+  return trimmed ? trimmed.split(/\s+/).length : 0
 }
