@@ -21,6 +21,15 @@ export type JourneySummary = {
   certificate?: { id: string; code: string; title: string; status: string; issued_at: string } | null
 }
 
+export type TenExperienceState = {
+  enrolled: boolean
+  arrival_complete?: boolean
+  arrival_completed_at?: string | null
+  guide_key?: 'ibn-sina' | 'al-razi' | 'jabir' | 'hippocrates' | null
+  guide_selected_at?: string | null
+  experience_version?: string | null
+}
+
 export type MissionCatalogEntry = {
   id: string
   title: string
@@ -63,6 +72,13 @@ export async function getJourneySummary(): Promise<JourneySummary> {
   const { data, error } = await supabase.rpc('journey_summary', { target_cohort_id: null })
   if (error) throw new Error(`Could not load THE TEN journey: ${error.message}`)
   return (data ?? { enrolled: false }) as JourneySummary
+}
+
+export async function getTenExperienceState(): Promise<TenExperienceState> {
+  const { supabase } = await requireUser()
+  const { data, error } = await supabase.rpc('ten_experience_state', { target_cohort_id: null })
+  if (error) throw new Error(`Could not load THE TEN experience state: ${error.message}`)
+  return (data ?? { enrolled: false }) as TenExperienceState
 }
 
 export async function getTenCatalog(): Promise<TenCatalog> {
