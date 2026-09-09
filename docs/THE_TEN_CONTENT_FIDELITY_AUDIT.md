@@ -47,7 +47,7 @@ Canonical activities:
 
 Runtime mapping:
 - the recorded canonical initial framing decision remains the authoritative stage response.
-- a supplemental `Framing Challenge` scratchpad now lets the learner strip away the patient-provided label and build a neutral symptom/context/high-value-feature frame before committing. It is intentionally unscored and does not reveal an answer.
+- a supplemental `Framing Challenge` scratchpad lets the learner strip away the patient-provided label and build a neutral symptom/context/high-value-feature frame before committing. It is intentionally unscored and does not reveal an answer.
 - ECG and early hs-cTn stages preserve Peer Instruction and separate revote records.
 - confidence is captured at canonical marked stages on the 20/40/60/80/100 scale and is never a mark multiplier.
 - Evidence Board is a structured Supports / Opposes / Missing / Final judgment interaction.
@@ -65,7 +65,7 @@ Canonical activities:
 
 Runtime mapping:
 - Stage 1 requires ranked differential + explicit low/intermediate/high probability before investigation stages.
-- the live M03 experience now includes an accessible, mobile Rule Builder synchronized to the room:
+- the live M03 experience includes an accessible, mobile Rule Builder synchronized to the room:
   - Stage 2: learner works through all eight PERC features from already-released clues; the tool does not label the correct mission answer before Reveal.
   - Stage 3: learner builds the two-level PE Wells score using the canonical criteria/weights and sees the ≤4 / >4 threshold while the separate mission commit remains authoritative.
 - PERC and Wells remain progressive separate canonical stages with their original peer cycles.
@@ -84,7 +84,7 @@ Canonical activities:
 
 Runtime mapping:
 - initial free-text reasoning remains the authoritative response before downstream evidence.
-- a supplemental two-column `Parallel Priorities` scratchpad now separates `STABILIZE NOW` from `DIAGNOSE SAFELY`, helping learners prepare the recorded response without auto-supplying clinical actions.
+- a supplemental two-column `Parallel Priorities` scratchpad separates `STABILIZE NOW` from `DIAGNOSE SAFELY`, helping learners prepare the recorded response without auto-supplying clinical actions.
 - allergy/renal/medication/local-guidance safety actions use canonical multiselect.
 - treatment is followed by mandatory reassessment stages before further action.
 - final team commit stores the short synthesis/rationale.
@@ -92,15 +92,52 @@ Runtime mapping:
 
 The organizer is intentionally a local reasoning aid; it cannot grant completion and does not replace the canonical free-text record.
 
-## Assessment parity
+## Assessment fidelity and extension boundary
 
-Database verification confirms both journey checkpoints contain 12 distinct items in positions 1–12:
+### Canonical source retained
+
+The source Assessment / Retrieval / Transfer Bank defines a **12-item Baseline / Post Mini-Assessment** and the master content specifies an 8–12 item low-stakes baseline using novel mini-cases. The canonical `TEN-CR-01` through `TEN-CR-12` bank remains unchanged and occupies positions 1–12 in both:
 - `THE TEN — Entry Baseline`
 - `THE TEN — Exit Transfer Check`
 
-The pair uses the matched `TEN-CR-01` through `TEN-CR-12` bank. The corrected source keys are preserved. The post-test remains inaccessible until all four mission Signals have valid completion credit.
+The corrected source answer keys remain preserved. The post-test remains gated until all four mission Signals have valid completion credit.
 
-Entry and Exit assessment start screens now use the Nexus gate visual language, while the actual question-taking surface remains deliberately focused and conventional for accessibility and assessment integrity.
+### Evidence-informed Assessment Architecture v2
+
+The production checkpoint has been deliberately extended beyond the original 12-item bank with **four brief constructed-response mini-cases** at positions 13–16. These eight Entry/Exit CRQ prompts are **not canonical Drive-bank content** and must not be represented as such. They are a documented evidence-informed extension intended to sample learner-generated reasoning in addition to selected-response recognition.
+
+Current checkpoint structure:
+- 12 canonical single-best-answer items × 1 mark
+- 4 constructed responses × 4 marks
+- 16 items
+- 28 marks
+- 30 minutes
+
+Entry and Exit use parallel novel written cases, not identical stems.
+
+The new written domains are:
+1. Problem Representation + urgency-focused prioritization
+2. Evidence interpretation + diagnostic updating
+3. Pretest probability + test sequencing
+4. Management + patient safety + reassessment
+
+Detailed mappings, rubrics and evidence boundary are documented in `THE_TEN_ASSESSMENT_ARCHITECTURE.md`.
+
+## Learning Objective / rubric integration
+
+Assessment Architecture v2 adds ten active `TEN-LO-*` Clinical Reasoning objectives and maps them to:
+- M01–M04 prepared sessions
+- all twelve canonical SBA items
+- all eight new constructed-response items
+- Entry and Exit assessment blueprint rows
+
+Four approved analytic rubric families (`TEN-RUB-REP`, `TEN-RUB-EVID`, `TEN-RUB-TEST`, `TEN-RUB-SAFE`) contain four 0–1 criteria each and are linked to the corresponding written questions.
+
+The existing result pipeline can aggregate released final item scores through `question_learning_objectives` into `learner_objective_results`. These are formative learning signals, not competence diagnoses.
+
+Written-response AI grading remains optional/advisory. Human review and moderation remain authoritative for final written scores. The system remains fully functional when no AI provider key is configured.
+
+Entry and Exit start screens use the Nexus gate visual language, while the actual question-taking surface remains deliberately focused and conventional for accessibility and assessment integrity.
 
 ## Completion integrity rehearsal
 
@@ -123,9 +160,10 @@ Supplemental reasoning tools use only rule structures and clues already released
 
 ## Remaining fidelity work before final sign-off
 
-The remaining gaps are operational/art-production items, not missing First Activation educational content:
-1. identity-locked character reaction pose assets (`introduce`, `guide`, `thinking`, `hint`, `correct`, `incorrect`, `partial`, `celebrate`, `locked`)
-2. final authenticated multi-device live-room rehearsal on real phones
-3. final visual sign-off on actual devices after reaction art is staged
+Mission-content parity is intact. Remaining work should not alter the canonical mission sequence:
+1. browser QA of the revised 16-item Entry/Exit assessment, including written-response submission and grading queue
+2. one human-governed written grading smoke test; AI proposal smoke test only if a server-side provider key is intentionally configured
+3. identity-locked character reaction pose assets may be staged later; approved neutral portraits remain the safe fallback
+4. optional higher-load simultaneous-learner Realtime rehearsal if concurrency assurance is desired beyond the completed single-learner live walkthrough and existing database/state-machine tests
 
-No remaining item should alter the canonical educational sequence. If a richer interaction threatens accessibility, realtime reliability or the source content contract, the persisted structured response remains authoritative.
+Any further assessment extension must remain explicitly labeled as evidence-informed rather than canonical-source content.
