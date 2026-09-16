@@ -13,21 +13,23 @@ Status: approved production art set prepared in Google Drive; runtime integratio
 
 ## Runtime asset destinations
 
+Production derivatives are stored in the public Supabase Storage bucket `the-ten-assets` under immutable runtime prefix `runtime-v1/`. The manifest in `src/lib/the-ten/assets.ts` is the single runtime source of truth. Existing neutral portraits and legacy decorative sprites remain local repository assets.
+
 ### World
-- `WORLD_BAGHDAD_HERO.png` -> `/the-ten/world/baghdad-hero.png`
-- `WORLD_BAGHDAD_BLUE_HOUR_NEXUS_REVEAL.png` -> `/the-ten/world/baghdad-blue-hour-nexus-reveal.png`
+- `WORLD_BAGHDAD_HERO.png` -> `runtime-v1/world/baghdad-hero.webp`
+- `WORLD_BAGHDAD_BLUE_HOUR_NEXUS_REVEAL.png` -> `runtime-v1/world/baghdad-blue-hour-nexus-reveal.webp`
 
 ### First Activation Nexus states
-- `NEXUS_STATE_0_DORMANT.png` -> `/the-ten/world/nexus-state-0-dormant.png`
-- `NEXUS_STATE_1_SIGNAL_1.png` -> `/the-ten/world/nexus-state-1-signal-1.png`
-- `NEXUS_STATE_2_SIGNAL_2.png` -> `/the-ten/world/nexus-state-2-signal-2.png`
-- `NEXUS_STATE_3_SIGNAL_3.png` -> `/the-ten/world/nexus-state-3-signal-3.png`
-- `NEXUS_STATE_4_FIRST_ACTIVATION.png` -> `/the-ten/world/nexus-state-4-first-activation.png`
+- `NEXUS_STATE_0_DORMANT.png` -> `runtime-v1/world/nexus-state-0-dormant.webp`
+- `NEXUS_STATE_1_SIGNAL_1.png` -> `runtime-v1/world/nexus-state-1-signal-1.webp`
+- `NEXUS_STATE_2_SIGNAL_2.png` -> `runtime-v1/world/nexus-state-2-signal-2.webp`
+- `NEXUS_STATE_3_SIGNAL_3.png` -> `runtime-v1/world/nexus-state-3-signal-3.webp`
+- `NEXUS_STATE_4_FIRST_ACTIVATION.png` -> `runtime-v1/world/nexus-state-4-first-activation.webp`
 
 ### Story environments
-- `GUIDE_SELECTION_HALL_EMPTY.png` -> `/the-ten/world/guide-selection-hall-empty.png`
-- `CHRONICLER_DESK.png` -> `/the-ten/world/chronicler-desk.png`
-- `SIGNAL_ACTIVATION_BACKGROUND.png` -> `/the-ten/world/signal-activation-background.png`
+- `GUIDE_SELECTION_HALL_EMPTY.png` -> `runtime-v1/world/guide-selection-hall-empty.webp`
+- `CHRONICLER_DESK.png` -> `runtime-v1/world/chronicler-desk.webp`
+- `SIGNAL_ACTIVATION_BACKGROUND.png` -> `runtime-v1/world/signal-activation-background.webp`
 
 ### Characters
 Use the existing canonical runtime keys:
@@ -36,12 +38,12 @@ Use the existing canonical runtime keys:
 - `jabir`
 - `hippocrates`
 
-For each key, provide these authored states:
-- `introduce.png`
-- `guide.png`
-- `thinking.png`
-- `celebrate.png`
-- `locked.png`
+For each key, the production derivatives live at `runtime-v1/characters/<guide-key>/` with these authored states:
+- `introduce.webp`
+- `guide.webp`
+- `thinking.webp`
+- `celebrate.webp`
+- `locked.webp`
 
 Keep existing `neutral.png` as a safe fallback. Keep `hint`, `correct`, `incorrect`, and `partial` unset for v1 rather than inventing art.
 
@@ -52,13 +54,13 @@ Keep existing `neutral.png` as a safe fallback. Keep `hint`, `correct`, `incorre
 2. Beneath the city / Nexus -> `nexus-state-0-dormant`
 3. The Ten / Signal concept -> use native HTML progress language over `nexus-state-0-dormant`; do not depend on a raster containing ten countable objects.
 4. Fracture -> use restrained CSS fracture/connection-loss treatment over the dormant Nexus or dark atmosphere; do not invent a new raster.
-5. Guardians -> use four approved `introduce` character PNGs.
+5. Guardians -> use four approved `introduce` character derivatives from Storage.
 6. Seeker -> `chronicler-desk` or dormant Nexus depending on authored scene composition; avoid showing a fake player avatar.
 7. First Activation invitation -> `nexus-state-0-dormant` with four reachable Signals described in native UI.
 
 ### Guide selection
 Background: `guide-selection-hall-empty`.
-Composite the four `introduce` PNGs as independent transparent layers. Selection focus may change scale, opacity, saturation, and camera crop only; do not redraw or recolor characters.
+Composite the four `introduce` transparent character derivatives as independent layers. Selection focus may change scale, opacity, saturation, and camera crop only; do not redraw or recolor characters.
 
 ### Living Baghdad
 Use `baghdad-hero` as the authoritative day/world image.
@@ -90,7 +92,7 @@ Use the newly reached Nexus state and then Baghdad hero. Guide `celebrate` may a
 ## Motion / performance
 - Use `next/image`.
 - Preload only current hero/LCP and immediate next scene.
-- Character PNGs load on demand; do not preload all poses.
+- Character derivatives load on demand; do not preload all poses.
 - Keep CSS transitions subtle and deterministic.
 - Honor `prefers-reduced-motion` by disabling camera drift, pulse, and activation movement while preserving state changes.
 - Avoid video, canvas, WebGL, Three.js, or runtime generative AI.
