@@ -8,7 +8,7 @@ export function GuidePresence({ guideKey, reaction = 'neutral', context = 'world
   const image = getCharacterAsset(guideKey, reaction)
   if (!guide) return null
   return <aside className="ten-guide-presence" data-context={context} aria-label={`Your Guide, ${guide.name}`}>
-    {image && <div className="ten-guide-presence-portrait"><Image src={image} alt="" fill sizes={context === 'world' ? '120px' : '72px'} className="object-cover object-top" /></div>}
+    {image && <div className="ten-guide-presence-portrait"><Image src={image} alt="" fill sizes={context === 'world' ? '120px' : '72px'} className="object-contain object-bottom" /></div>}
     <div><p>YOUR GUIDE · {guide.title.toUpperCase()}</p><h3>{guide.name}</h3>{line && <blockquote>“{line}”</blockquote>}</div>
   </aside>
 }
