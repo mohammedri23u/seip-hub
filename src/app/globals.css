@@ -348,6 +348,14 @@ a {
 .ten-activation-guide > span { position: relative; width: 70px; height: 76px; flex: 0 0 70px; overflow: hidden; background: #efe1c7; }
 .ten-activation-guide blockquote { padding: .6rem .8rem; color: #e8f0ed; font-family: Georgia, serif; font-size: .86rem; line-height: 1.5; }
 .ten-activation-guide small { display: block; margin-top: .25rem; color: #f2d99b; font-family: Arial, sans-serif; font-size: .58rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.ten-activation-art { position: absolute; inset: 0; z-index: -3; }
+.ten-activation-art-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,30,33,.52), rgba(7,30,33,.82)); }
+.ten-activation-state { position: relative; width: min(88vw, 540px); aspect-ratio: 16 / 9; margin: 1.3rem auto 1.5rem; overflow: hidden; border: 2px solid rgba(242,217,155,.62); border-radius: 1.6rem; box-shadow: 0 24px 70px rgba(0,0,0,.32), 0 0 46px rgba(70,185,189,.22); animation: tenActivation 700ms ease-out both; }
+.ten-activation-state::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(7,30,33,.24)); pointer-events: none; }
+.ten-activation-state-ring { position: absolute; inset: 12%; border: 1px solid rgba(121,199,195,.22); border-radius: 50%; pointer-events: none; }
+.ten-activation-progress { display: flex; justify-content: center; gap: .55rem; margin: 1rem auto .25rem; }
+.ten-activation-progress span { width: 2.15rem; height: .35rem; border-radius: 999px; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.12); transition: background 220ms ease, box-shadow 220ms ease; }
+.ten-activation-progress span[data-active] { background: #f2d99b; box-shadow: 0 0 18px rgba(242,217,155,.42); }
 
 @keyframes tenStoryIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
 @keyframes tenStoryBack { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
