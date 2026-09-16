@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { DecorSprite, MissionSystemIcon } from '@/components/the-ten/art-sprite'
 import { GuidePresence } from '@/components/the-ten/experience/guide-presence'
 import { WorldAtmosphere } from '@/components/the-ten/experience/world-atmosphere'
-import { brandAssets, characterAssets, worldAssets } from '@/lib/the-ten/assets'
+import { brandAssets, characterAssets, getNexusStateAsset, worldAssets } from '@/lib/the-ten/assets'
 import { computeWorldState, guideKeyFromName } from '@/lib/the-ten/experience'
 import type { JourneySummary, TenCatalog, TenExperienceState } from '@/lib/the-ten/runtime'
 
@@ -11,12 +11,12 @@ const worldSlots = [
   { x: '18%', y: '61%' }, { x: '37%', y: '39%' }, { x: '67%', y: '58%' }, { x: '82%', y: '33%' },
 ] as const
 
-const signalTone = {
-  M01: 'from-[#e7c46c]/35 via-[#f7f0df]/95 to-[#fffdf8]',
-  M02: 'from-[#47aeb1]/25 via-[#f7f0df]/95 to-[#fffdf8]',
-  M03: 'from-[#c8794d]/25 via-[#f7f0df]/95 to-[#fffdf8]',
-  M04: 'from-[#3c7c72]/25 via-[#f7f0df]/95 to-[#fffdf8]',
-} as const
+const signalTones = [
+  'from-[#e7c46c]/28 via-[#f7f0df]/95 to-[#fffdf8]',
+  'from-[#47aeb1]/20 via-[#f7f0df]/95 to-[#fffdf8]',
+  'from-[#c8794d]/18 via-[#f7f0df]/95 to-[#fffdf8]',
+  'from-[#3c7c72]/20 via-[#f7f0df]/95 to-[#fffdf8]',
+] as const
 
 export function JourneyWorld({ summary, catalog, experience }: { summary: JourneySummary; catalog: TenCatalog; experience: TenExperienceState }) {
   const missions = summary.missions ?? []
@@ -29,7 +29,7 @@ export function JourneyWorld({ summary, catalog, experience }: { summary: Journe
   return <div className="space-y-7">
     <section className="relative isolate overflow-hidden rounded-[2.25rem] border border-[#315b5d] bg-[#15383b] text-[#fffdf8] shadow-[0_30px_90px_rgba(23,54,58,.22)]" aria-labelledby="baghdad-world-title">
       <div className="relative min-h-[540px] sm:min-h-[660px]">
-        <Image src={worldAssets.baghdad} alt="Illustrated Baghdad world for THE TEN journey" fill priority sizes="100vw" className="object-cover object-center" />
+        <Image src={worldAssets.baghdadHero} alt="Illustrated Baghdad world for THE TEN journey" fill priority sizes="100vw" className="object-cover object-center" />
         <WorldAtmosphere state={worldState} />
         <div className="absolute inset-0 bg-gradient-to-b from-[#102f32]/15 via-transparent to-[#0d2e31]/92" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(70,185,189,.12),transparent_24rem)]" />
@@ -76,7 +76,7 @@ export function JourneyWorld({ summary, catalog, experience }: { summary: Journe
             const catalogMission = catalog.missions.find(item => item.id === mission.id)
             const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
             const slot = worldSlots[missionIndex % worldSlots.length]
-            const image = characterKey ? characterAssets[characterKey].neutral : null
+            const image = characterKey ? (characterAssets[characterKey].guide ?? characterAssets[characterKey].neutral) : null
             const content = <><div className={`relative mx-auto h-20 w-20 overflow-visible rounded-full border-4 bg-[#f7f0df] shadow-[0_12px_35px_rgba(0,0,0,.28)] transition duration-200 ${mission.completed ? 'border-[#f2d99b] shadow-[0_0_34px_rgba(216,169,78,.60)]' : run ? 'border-[#80c8c4] group-hover:-translate-y-1 group-hover:scale-[1.03]' : 'border-white/30 grayscale-[.25]'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="80px" className="object-cover" />}{!run && !mission.completed && <div className="absolute inset-0 grid place-items-center bg-[#17363a]/38 text-xl" aria-hidden="true">◈</div>}</div><span className="absolute -bottom-2 -right-2 grid h-9 w-9 place-items-center rounded-full border-2 border-[#f2d99b]/80 bg-[#fffdf8] shadow-lg"><MissionSystemIcon missionId={mission.id} size={29} label={`${mission.title} clinical system`} /></span></div><div className="mt-3 rounded-2xl border border-white/15 bg-[#102f32]/88 px-3 py-2 text-center shadow-lg backdrop-blur-md"><span className="block text-[9px] font-black tracking-[.16em] text-[#f2d99b]">SIGNAL {mission.position}</span><span className="mt-0.5 block max-w-40 text-xs font-black">{mission.title}</span><span className="mt-0.5 block text-[10px] text-[#cfe1dc]">{mission.completed ? 'Activated' : run?.phase === 'waiting' ? 'Waiting room open' : run ? `Live · ${run.phase.replaceAll('_',' ')}` : 'Awaiting facilitator'}</span></div></>
             return <div key={mission.id} className="absolute w-44 -translate-x-1/2 -translate-y-1/2" style={{left:slot.x,top:slot.y}}>{run ? <Link href={`/learner/mission/${run.id}`} className="group block rounded-2xl focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#f2d99b]" aria-label={`${mission.title}. ${mission.completed ? 'Completed' : `Room ${run.phase}`}`}>{content}</Link> : <div aria-label={`${mission.title}. Awaiting facilitator`} role="status">{content}</div>}</div>
           })}
@@ -89,7 +89,7 @@ export function JourneyWorld({ summary, catalog, experience }: { summary: Journe
               const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
               const catalogMission = catalog.missions.find(item => item.id === mission.id)
               const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
-              const image = characterKey ? characterAssets[characterKey].neutral : null
+              const image = characterKey ? (characterAssets[characterKey].guide ?? characterAssets[characterKey].neutral) : null
               const content = <><div className={`relative mx-auto h-12 w-12 overflow-visible rounded-full border-2 bg-[#f7f0df] ${mission.completed ? 'border-[#f2d99b]' : run ? 'border-[#80c8c4]' : 'border-white/25 opacity-65'}`}><div className="absolute inset-0 overflow-hidden rounded-full">{image && <Image src={image} alt="" fill sizes="48px" className="object-cover" />}</div><span className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border border-[#f2d99b]/80 bg-[#fffdf8]"><MissionSystemIcon missionId={mission.id} size={20} label={`${mission.title} clinical system`} /></span></div><span className="mt-2 block text-[9px] font-black text-[#f2d99b]">{mission.id}</span></>
               return run ? <Link key={mission.id} href={`/learner/mission/${run.id}`} className="min-h-16 rounded-xl p-1 text-center">{content}</Link> : <div key={mission.id} className="min-h-16 rounded-xl p-1 text-center" aria-label={`${mission.title}, awaiting facilitator`}>{content}</div>
             })}</div>
@@ -101,12 +101,12 @@ export function JourneyWorld({ summary, catalog, experience }: { summary: Journe
     <section id="missions" aria-labelledby="mission-path-title">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4"><div><p className="ten-eyebrow">SIGNAL DOSSIERS · FIRST ACTIVATION</p><h2 id="mission-path-title" className="font-serif text-3xl">Four mentors. Four reasoning lenses.</h2></div><div className="text-sm font-bold text-[#526c6e]">{completed}/{revealedTotal} revealed Signals complete</div></div>
       <div className="grid gap-4 lg:grid-cols-2">
-        {missions.map((mission) => {
+        {missions.map((mission, missionIndex) => {
           const catalogMission = catalog.missions.find(item => item.id === mission.id)
           const run = catalog.runs.find(item => item.mission_id === mission.id && item.phase !== 'completed') ?? catalog.runs.find(item => item.mission_id === mission.id)
           const characterKey = guideKeyFromName(catalogMission?.mentor ?? mission.mentor)
-          const image = characterKey ? characterAssets[characterKey].neutral : null
-          const tone = signalTone[mission.id as keyof typeof signalTone] ?? 'from-[#f7f0df] to-[#fffdf8]'
+          const image = characterKey ? (characterAssets[characterKey].guide ?? characterAssets[characterKey].neutral) : null
+          const tone = signalTones[missionIndex % signalTones.length] ?? 'from-[#f7f0df] to-[#fffdf8]'
           return <article key={mission.id} className={`relative overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-gradient-to-br ${tone} p-5 shadow-[0_16px_45px_rgba(23,54,58,.07)] sm:p-7`}>
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full border-[18px] border-[#1f6668]/5" aria-hidden="true" />
             <div className="relative flex gap-4 sm:gap-6">
@@ -133,7 +133,7 @@ export function JourneyWorld({ summary, catalog, experience }: { summary: Journe
         {summary.next_stage === 'certificate' && <Link className="ten-action ten-spaced" href="/learner/certificate">Open completion pathway →</Link>}
         <Link className="ten-text-link ten-spaced" href="/learner/progress">Open My Codex →</Link>
       </div>
-      <div className="relative min-h-64 overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#f7f0df]"><Image src={worldAssets.nexus} alt="Illustrated Nexus progression landmark" fill sizes="(max-width:768px) 100vw, 40vw" className="object-cover" /></div>
+      <div className="relative min-h-64 overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#f7f0df]"><Image src={getNexusStateAsset(worldState.level)} alt={`Illustrated Nexus progression landmark, state ${worldState.level}`} fill sizes="(max-width:768px) 100vw, 40vw" className="object-cover" /></div>
     </section>
   </div>
 }
