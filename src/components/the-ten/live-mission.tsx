@@ -222,7 +222,7 @@ export function LiveMission({ initial, initialExperience }: { initial: Snapshot;
 
       <section className="mb-5 overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8]/96 shadow-[0_18px_50px_rgba(23,54,58,.08)] backdrop-blur-sm">
         <div className="flex items-center gap-4 p-4 sm:p-5">
-          {portrait && <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#efe1c7] sm:h-28 sm:w-24"><Image src={portrait} alt={`${snapshot.mentor} mentor`} fill sizes="96px" className="object-cover" priority /></div>}
+          {portrait && <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#efe1c7] sm:h-28 sm:w-24"><Image src={portrait} alt={`${snapshot.mentor} mentor`} fill sizes="96px" className="object-contain object-bottom" priority /></div>}
           <div className="min-w-0">
             <p className="text-[10px] font-black tracking-[.16em] text-[#1f6668]">MENTOR LENS · {snapshot.mentor}</p>
             <p className="mt-2 font-serif text-xl leading-snug sm:text-2xl">{snapshot.stage?.mentorLens || snapshot.lens}</p>
