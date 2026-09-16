@@ -38,5 +38,10 @@ Asset selection is not keyed to SAH, NSTEMI, PE, sepsis, answer text, question c
 - `git diff --check`: PASS.
 - No browser executable or Playwright installation was available in the execution environment, so authenticated rendered-device/E2E visual QA is not claimed.
 
+## Preview deployment gate
+- Vercel project import completed by the user on 2026-09-16.
+- This documentation-only commit intentionally triggers the Git-connected Preview deployment for `codex/the-ten-interaction-system`.
+- Do not promote the Preview deployment to Production before rendered visual QA and final approval.
+
 ## Remaining approval gate
 Keep PR #3 Draft until authenticated browser walkthrough and final visual approval are complete.
