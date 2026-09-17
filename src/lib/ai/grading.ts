@@ -44,7 +44,7 @@ const DEFAULT_MODEL = 'gpt-5.6-luna'
 const DEFAULT_PROMPT_VERSION = 'written_rubric_v1'
 
 export function aiGradingConfigured() {
-  return Boolean(process.env.OPENAI_API_KEY)
+  return process.env.SEIP_AI_GRADING_ENABLED === 'true' && Boolean(process.env.OPENAI_API_KEY)
 }
 
 export function aiGradingModel() {
@@ -53,7 +53,7 @@ export function aiGradingModel() {
 
 export async function gradeWrittenResponse(input: AIGradingInput): Promise<AIGradingResult> {
   const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) throw new Error('AI grading is not configured. Set OPENAI_API_KEY on the server.')
+  if (!aiGradingConfigured() || !apiKey) throw new Error('AI grading is disabled or not configured. Human grading remains available without it.')
 
   if (!input.learnerResponse.trim()) throw new Error('Cannot grade an empty written response.')
   if (!input.criteria.length) throw new Error('The rubric has no criteria.')
