@@ -29,16 +29,16 @@ export function GuideAbility({ guideKey, runId, previouslyUsed = false }: { guid
   }
 
   const portrait = getCharacterAsset(guideKey, open ? 'guide' : 'neutral')
-  return <section className="ten-guide-ability" data-open={open || undefined} aria-labelledby="guide-ability-title">
+  return <section className="ten-guide-ability" data-open={open || undefined} aria-label={`Your personal Guide, ${guide.name}`}>
     <div className="ten-guide-ability-summary">
-      {portrait && <div><Image src={portrait} alt="" fill sizes="64px" className="object-cover object-top" /></div>}
+      {portrait && <div><Image src={portrait} alt="" fill sizes="64px" className="object-contain object-bottom" /></div>}
       <span><small>{used ? 'GUIDE LENS RECORDED' : 'YOUR COMPANION IS NEAR'}</small><strong>{guide.name} · {guide.ability.name}</strong></span>
-      <button type="button" onClick={open ? () => setOpen(false) : callGuide} disabled={busy} aria-expanded={open}>
+      <button type="button" onClick={open ? () => setOpen(false) : callGuide} disabled={busy} aria-expanded={open} aria-controls="personal-guide-workspace">
         {busy ? 'Calling…' : open ? 'Return to mission' : used ? 'Review your Guide lens' : 'Call your Guide'}
       </button>
     </div>
     {error && <p role="alert" className="ten-guide-ability-error">{error}</p>}
-    {open && <div className="ten-guide-workspace">
+    {open && <div className="ten-guide-workspace" id="personal-guide-workspace">
       <div><p className="ten-eyebrow">{guide.title} · {guide.ability.name}</p><h2 id="guide-ability-title">Change how you think, never what the answer is.</h2><p>{guide.ability.description} Use only information the facilitator has already revealed.</p></div>
       <div className="ten-guide-prompts">{guide.ability.prompts.map((prompt, index) => <label key={prompt}><span>{String(index + 1).padStart(2, '0')}</span>{prompt}<textarea value={notes[index] ?? ''} onChange={event => setNotes(current => ({ ...current, [index]: event.target.value }))} placeholder="Your private thinking…" aria-label={prompt} /></label>)}</div>
       <p className="ten-guide-privacy">Private, temporary workspace. These notes are not submitted and cannot change mission completion or scoring.</p>

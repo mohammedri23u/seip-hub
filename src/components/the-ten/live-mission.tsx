@@ -2,14 +2,16 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getCharacterAsset } from '@/lib/the-ten/assets'
 import { GuideAbility } from '@/components/the-ten/experience/guide-ability'
 import { MissionEpilogue } from '@/components/the-ten/experience/mission-epilogue'
 import { MissionPrelude } from '@/components/the-ten/experience/mission-prelude'
+import { MissionEvidence, MissionReveal, MissionSteps } from '@/components/the-ten/experience/mission-reading'
 import { SignalActivation } from '@/components/the-ten/experience/signal-activation'
-import { createMissionEpilogue, createMissionPrelude, guideKeyFromName, type GuideKey, type GuideUseRecord, type StoryProgressRecord } from '@/lib/the-ten/experience'
+import { computeWorldState, createMissionEpilogue, createMissionPrelude, guideKeyFromName, type GuideKey, type GuideUseRecord, type StoryProgressRecord } from '@/lib/the-ten/experience'
 
 type Stage = {
   id?: string
@@ -45,7 +47,7 @@ type Snapshot = {
   stage_index: number
   stage_count: number
   title: string
-  mission_id: 'M01' | 'M02' | 'M03' | 'M04'
+  mission_id: string
   mentor: string
   lens: string
   focus: string
@@ -66,13 +68,6 @@ type Snapshot = {
   stability?: number
 }
 
-const missionTheme = {
-  M01: { accent: '#d8a94e', soft: '#fff4cf', label: 'PATTERN' },
-  M02: { accent: '#46b9bd', soft: '#e7f7f6', label: 'EVIDENCE' },
-  M03: { accent: '#c8794d', soft: '#f9ece3', label: 'HYPOTHESIS' },
-  M04: { accent: '#2f8a72', soft: '#e8f5ef', label: 'TREATMENT' },
-} as const
-
 type ExperienceState = {
   guide_key?: GuideKey | null
   story_progress?: Record<string, StoryProgressRecord>
@@ -82,6 +77,7 @@ type ExperienceState = {
 }
 
 export function LiveMission({ initial, initialExperience }: { initial: Snapshot; initialExperience: ExperienceState }) {
+  const router = useRouter()
   const [snapshot, setSnapshot] = useState(initial)
   const [experience, setExperience] = useState(initialExperience)
   const [busy, setBusy] = useState(false)
@@ -166,8 +162,8 @@ export function LiveMission({ initial, initialExperience }: { initial: Snapshot;
 
   const episodeInput = useMemo(() => ({
     runId: snapshot.id, missionId: snapshot.mission_id, title: snapshot.title, mentor: snapshot.mentor,
-    lens: snapshot.lens, focus: snapshot.focus, guide: experience.guide_key,
-  }), [experience.guide_key, snapshot.focus, snapshot.id, snapshot.lens, snapshot.mentor, snapshot.mission_id, snapshot.title])
+    lens: snapshot.lens, focus: snapshot.focus, guardian: guideKeyFromName(snapshot.mentor), guide: experience.guide_key, nexusLevel: computeWorldState(experience.earned_signal_ids?.length ?? 0).level,
+  }), [experience.guide_key, experience.earned_signal_ids?.length, snapshot.focus, snapshot.id, snapshot.lens, snapshot.mentor, snapshot.mission_id, snapshot.title])
   const prelude = useMemo(() => createMissionPrelude(episodeInput), [episodeInput])
   const epilogue = useMemo(() => createMissionEpilogue(episodeInput), [episodeInput])
   const activationId = `signal:${snapshot.mission_id.toLowerCase()}:activation`
@@ -186,7 +182,7 @@ export function LiveMission({ initial, initialExperience }: { initial: Snapshot;
     return <SignalActivation signalNumber={Math.max(1, experience.earned_signal_ids?.length ?? 1)} guideKey={experience.guide_key} onContinue={() => saveStoryProgress(activationId, 'restored', true)} />
   }
   if (!snapshot.manager && snapshot.phase === 'completed' && signalEarned && !epilogueProgress?.completed_at) {
-    return <MissionEpilogue story={epilogue} initialSceneId={epilogueProgress?.last_scene_id} onProgress={saveStoryProgress} onComplete={() => undefined} />
+    return <MissionEpilogue story={epilogue} initialSceneId={epilogueProgress?.last_scene_id} onProgress={saveStoryProgress} onComplete={() => router.push('/learner')} />
   }
   if (!snapshot.manager && snapshot.phase === 'completed' && replayingEpilogue) {
     return <MissionEpilogue story={epilogue} onProgress={saveStoryProgress} onComplete={() => setReplayingEpilogue(false)} replaying onDismiss={() => setReplayingEpilogue(false)} />
@@ -197,65 +193,47 @@ export function LiveMission({ initial, initialExperience }: { initial: Snapshot;
   const portrait = getCharacterAsset(character, reaction)
   const progress = Math.max(0, Math.min(100, snapshot.stability ?? 0))
   const phaseLabel = snapshot.phase.replaceAll('_', ' ')
-  const theme = missionTheme[snapshot.mission_id]
   const backHref = snapshot.manager ? '/facilitator/the-ten' : '/learner'
   const backLabel = snapshot.manager ? 'Control studio' : 'Baghdad'
+  const mode = ['reveal', 'debrief', 'completed'].includes(snapshot.phase) ? 'reveal' : 'reasoning'
 
-  return <main className="relative min-h-screen overflow-x-hidden bg-[#f7f0df] text-[#17363a]">
-    <MissionAtmosphere mission={snapshot.mission_id} />
-
-    <header className="sticky top-0 z-40 border-b border-[#d8ccb6] bg-[#fffdf8]/94 backdrop-blur-md">
-      <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-        <Link href={backHref} className="flex min-h-11 items-center rounded-xl px-2 text-sm font-black text-[#1f6668]">← {backLabel}</Link>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[10px] font-black tracking-[.16em] text-[#8b6a2b]">{snapshot.mission_id} · {theme.label} · {phaseLabel.toUpperCase()}</p>
-          <h1 className="truncate font-serif text-lg font-bold">{snapshot.title}</h1>
-        </div>
-        <div aria-label={`${progress}% mission stability`} className="rounded-full bg-[#17363a] px-3 py-2 text-xs font-black text-[#f2d99b]">{progress}%</div>
-      </div>
-      <div className="h-1 bg-[#ead9b8]"><div className="h-full transition-[width] duration-300" style={{ width: `${progress}%`, background: theme.accent }} /></div>
+  return <main className="ten-mission" data-experience={mode} data-phase={snapshot.phase}>
+    <a href="#mission-content" className="ten-skip">Skip to reasoning</a>
+    <header className="ten-mission-header">
+      <Link href={backHref}>← {backLabel}</Link>
+      <div><p className="ten-eyebrow">{snapshot.mission_id} / {phaseLabel}</p><h1>{snapshot.title}</h1></div>
+      <MissionSteps current={snapshot.stage_index} total={snapshot.stage_count}/>
     </header>
-
-    <div className="relative z-10 mx-auto max-w-3xl px-4 py-5 sm:py-8">
+    <div className="ten-mission-layout" id="mission-content" tabIndex={-1}>
       <p className="sr-only" aria-live="polite">Room state changed to {phaseLabel}.</p>
-      {error && <div role="alert" className="mb-4 rounded-2xl border border-[#c76057] bg-[#fcefed] p-4 text-sm font-bold text-[#8c403a]">{error}</div>}
-
-      <section className="mb-5 overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8]/96 shadow-[0_18px_50px_rgba(23,54,58,.08)] backdrop-blur-sm">
-        <div className="flex items-center gap-4 p-4 sm:p-5">
-          {portrait && <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#efe1c7] sm:h-28 sm:w-24"><Image src={portrait} alt={`${snapshot.mentor} mentor`} fill sizes="96px" className="object-contain object-bottom" priority /></div>}
-          <div className="min-w-0">
-            <p className="text-[10px] font-black tracking-[.16em] text-[#1f6668]">MENTOR LENS · {snapshot.mentor}</p>
-            <p className="mt-2 font-serif text-xl leading-snug sm:text-2xl">{snapshot.stage?.mentorLens || snapshot.lens}</p>
-            <p className="mt-2 text-xs font-bold text-[#526c6e]">{snapshot.phase === 'transfer' ? 'Transfer micro-case' : snapshot.phase === 'debrief' || snapshot.phase === 'completed' ? 'Mission closeout' : `Stage ${Math.min(snapshot.stage_index + 1, snapshot.stage_count)} of ${snapshot.stage_count}`}</p>
-          </div>
+      {error && <div role="alert" className="ten-mission-error">{error}</div>}
+      <aside className="ten-mission-margin">
+        <div className="ten-guardian-lens">
+          {portrait && ['waiting','debrief','completed'].includes(snapshot.phase) && <div className="ten-guardian-figure"><Image src={portrait} alt="" fill sizes="120px" className="object-contain" /></div>}
+          <p className="ten-eyebrow">MISSION GUARDIAN / {snapshot.mentor}</p>
+          <p>{snapshot.stage?.mentorLens || snapshot.lens}</p>
         </div>
-      </section>
-
-      {!snapshot.manager && experience.guide_key && !['waiting','completed'].includes(snapshot.phase) ? <GuideAbility guideKey={experience.guide_key} runId={snapshot.id} previouslyUsed={Boolean(experience.guide_uses?.[snapshot.id])} /> : null}
+        {!snapshot.manager && experience.guide_key && !['waiting','completed'].includes(snapshot.phase) ? <GuideAbility guideKey={experience.guide_key} runId={snapshot.id} previouslyUsed={Boolean(experience.guide_uses?.[snapshot.id])} /> : null}
+        {snapshot.manager && <p className="ten-mission-stability">Mission stability / {progress}%</p>}
+      </aside>
+      <div className="ten-mission-paper">
 
       {snapshot.phase === 'waiting' && <Waiting snapshot={snapshot} onReplay={preludeProgress?.completed_at ? () => setReplayingPrelude(true) : undefined} />}
-      {snapshot.stage && ['commit_open','commit_locked','discussion','revote_open','reveal'].includes(snapshot.phase) && <StageScene snapshot={snapshot} />}
-      {['commit_open','revote_open'].includes(snapshot.phase) && snapshot.stage && !snapshot.manager && <ResponseComposer snapshot={snapshot} busy={busy} submit={rpc} />}
+      {snapshot.stage && ['commit_open','commit_locked','discussion','revote_open','reveal'].includes(snapshot.phase) && <MissionEvidence key={snapshot.stage_index} stage={snapshot.stage} phase={snapshot.phase} />}
+      {['commit_open','revote_open'].includes(snapshot.phase) && snapshot.stage && !snapshot.manager && <ResponseComposer key={`${snapshot.id}:${snapshot.stage_index}:${snapshot.phase}`} snapshot={snapshot} busy={busy} submit={rpc} />}
       {snapshot.phase === 'transfer' && !snapshot.manager && <TransferComposer snapshot={snapshot} busy={busy} submit={rpc} />}
       {snapshot.phase === 'transfer' && snapshot.manager && <TransferOverview snapshot={snapshot} />}
-      {snapshot.phase === 'commit_locked' && !snapshot.manager && <StatePanel title="Commit locked" copy={snapshot.stage?.peerInstruction ? 'Your first answer is recorded. Keep your reasoning in mind; discussion is next.' : 'Your answer is recorded. The facilitator is preparing the reveal.'} />}
+      {snapshot.phase === 'commit_locked' && !snapshot.manager && <StatePanel title="Commit locked" copy={snapshot.responses.some(r => r.stage_index === snapshot.stage_index && r.round === 1) ? (snapshot.stage?.peerInstruction ? 'Your first answer is recorded. Keep your reasoning in mind; discussion is next.' : 'Your answer is recorded. The facilitator is preparing the reveal.') : 'This round is closed. No response from you is recorded for this stage. Stay with the room for the next step.'} />}
       {snapshot.phase === 'discussion' && !snapshot.manager && <DiscussionPanel endsAt={snapshot.discussion_ends_at ?? null} />}
-      {snapshot.phase === 'reveal' && snapshot.stage && <RevealPanel stage={snapshot.stage} distribution={snapshot.distribution} />}
+      {['commit_locked','discussion','reveal'].includes(snapshot.phase) && snapshot.stage && <RecordedResponse snapshot={snapshot} />}
+      {snapshot.phase === 'reveal' && snapshot.stage && <MissionReveal stage={snapshot.stage} distribution={snapshot.distribution} />}
       {snapshot.phase === 'debrief' && <Debrief snapshot={snapshot} />}
       {snapshot.phase === 'completed' && <Completed snapshot={snapshot} rpc={rpc} busy={busy} signalEarned={signalEarned} onReplay={signalEarned && epilogueProgress?.completed_at ? () => setReplayingEpilogue(true) : undefined} />}
 
       {snapshot.manager && <FacilitatorControls snapshot={snapshot} busy={busy} command={command} />}
+      </div>
     </div>
   </main>
-}
-
-function MissionAtmosphere({ mission }: { mission: Snapshot['mission_id'] }) {
-  const theme = missionTheme[mission]
-  return <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-    <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-25 blur-3xl" style={{ background: theme.accent }} />
-    <div className="absolute -left-20 top-[42%] h-64 w-64 rounded-full opacity-15 blur-3xl" style={{ background: theme.accent }} />
-    <div className="absolute inset-x-0 bottom-0 h-52 opacity-[.16]" style={{ background: `linear-gradient(180deg, transparent, ${theme.soft})` }} />
-  </div>
 }
 
 function Waiting({ snapshot, onReplay }: { snapshot: Snapshot; onReplay?: () => void }) {
@@ -265,19 +243,6 @@ function Waiting({ snapshot, onReplay }: { snapshot: Snapshot; onReplay?: () => 
     <p className="mt-3 leading-7 text-[#d8e7e2]">The mission is loaded, but no clinical clue has been released. Keep this screen open; the first stage appears automatically when the facilitator opens the commit.</p>
     <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold"><span className="rounded-full border border-white/20 px-3 py-2">{snapshot.participants} connected</span><span className="rounded-full border border-white/20 px-3 py-2">Mission {snapshot.mission_id}</span></div>
     {onReplay && <button type="button" onClick={onReplay} className="mt-5 min-h-11 rounded-full border border-white/20 px-4 text-xs font-black text-[#f2d99b]">Replay mission prelude</button>}
-  </section>
-}
-
-function StageScene({ snapshot }: { snapshot: Snapshot }) {
-  const stage = snapshot.stage!
-  const theme = missionTheme[snapshot.mission_id]
-  return <section className="mb-5 overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8]/96 shadow-[0_16px_45px_rgba(23,54,58,.07)] backdrop-blur-sm">
-    <div className="h-1.5" style={{ background: theme.accent }} />
-    <div className="p-5 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-black tracking-[.14em] text-[#8b6a2b]">{stage.label?.toUpperCase()}</p><span className="rounded-full bg-[#edf7f4] px-3 py-1 text-[10px] font-black text-[#1f6668]">{snapshot.phase.replaceAll('_',' ').toUpperCase()}</span></div>
-      <p className="mt-4 whitespace-pre-wrap font-serif text-xl leading-8 text-[#17363a] sm:text-2xl">{stage.pptText}</p>
-      <div className="mt-5 rounded-2xl border-l-4 bg-[#f7f0df] p-4" style={{ borderColor: theme.accent }}><p className="text-xs font-black tracking-[.12em] text-[#8b6a2b]">YOUR MOVE</p><p className="mt-2 font-bold leading-6">{stage.studentTask}</p></div>
-    </div>
   </section>
 }
 
@@ -326,7 +291,7 @@ function ResponseComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy
 
   if (already) return <StatePanel title={round === 2 ? 'Revote recorded' : 'Commit recorded'} copy="Your response is locked for this round. Stay with the room; the next state will appear automatically." />
 
-  return <form onSubmit={onSubmit} className="rounded-[1.75rem] border border-[#315b5d] bg-[#17363a] p-5 text-white shadow-[0_18px_50px_rgba(23,54,58,.14)] sm:p-7">
+  return <form onSubmit={onSubmit} className="ten-response-composer" aria-busy={busy}><fieldset disabled={busy}>
     <p className="text-xs font-black tracking-[.16em] text-[#f2d99b]">{round === 2 ? 'RE-COMMIT' : 'PRIVATE COMMIT'}</p>
     <h2 className="mt-2 font-serif text-2xl">{round === 2 ? 'Keep it or change it.' : 'Reason before the room speaks.'}</h2>
     {round === 2 && <p className="mt-2 text-sm leading-6 text-[#d8e7e2]">Your first response is preloaded. Change it only if the discussion changed your reasoning.</p>}
@@ -347,7 +312,7 @@ function ResponseComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy
     {needsConfidence && <div className="mt-5"><p className="mb-2 text-sm font-bold">Confidence <span className="font-normal text-[#cfe1dc]">— calibration signal, not extra marks</span></p><div className="grid grid-cols-5 gap-1 sm:gap-2">{[20,40,60,80,100].map(value => <button type="button" key={value} aria-pressed={confidence === value} onClick={() => setConfidence(value)} className={`min-h-11 rounded-xl border text-xs font-black ${confidence === value ? 'border-[#f2d99b] bg-[#d8a94e] text-[#17363a]' : 'border-white/20'}`}>{value}%</button>)}</div></div>}
     <TextArea label="Why? Give one brief justification" value={justification} setValue={setJustification} extra="mt-5" />
     <button disabled={busy || !canSubmit} className="mt-5 min-h-14 w-full rounded-2xl bg-[#d8a94e] px-5 font-black text-[#17363a] transition active:scale-[.985] disabled:cursor-not-allowed disabled:opacity-50" type="submit">{busy ? 'Recording…' : round === 2 ? 'Lock my revote' : 'Lock my reasoning'}</button>
-  </form>
+  </fieldset></form>
 }
 
 function TransferComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy: boolean; submit: (operation: string, payload: Record<string, unknown>) => Promise<boolean> }) {
@@ -356,7 +321,7 @@ function TransferComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy
   const already = snapshot.responses.some(r => r.stage_index === snapshot.stage_count && r.round === 1)
   const canSubmit = text.trim().length >= 3 && why.trim().length >= 3
   if (already) return <StatePanel title="Transfer response recorded" copy="Your near-transfer response is locked. The facilitator will now close the reasoning loop." />
-  return <form onSubmit={async e => { e.preventDefault(); if (!canSubmit) return; await submit('respond',{run_id:snapshot.id,stage_index:snapshot.stage_count,round:1,answer:{text},confidence:null,justification:why}) }} className="rounded-[1.75rem] border border-[#315b5d] bg-[#17363a] p-6 text-white shadow-[0_18px_50px_rgba(23,54,58,.14)]">
+  return <form onSubmit={async e => { e.preventDefault(); if (!canSubmit) return; await submit('respond',{run_id:snapshot.id,stage_index:snapshot.stage_count,round:1,answer:{text},confidence:null,justification:why}) }} className="ten-response-composer" aria-busy={busy}>
     <p className="text-xs font-black tracking-[.16em] text-[#f2d99b]">TRANSFER MICRO-CASE</p>
     <h2 className="mt-3 font-serif text-2xl leading-8">{snapshot.transfer?.stem}</h2>
     <p className="mt-4 font-bold leading-7">{snapshot.transfer?.question}</p>
@@ -368,17 +333,6 @@ function TransferComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy
 
 function TransferOverview({ snapshot }: { snapshot: Snapshot }) {
   return <section className="rounded-[1.75rem] border border-[#315b5d] bg-[#17363a] p-6 text-white"><p className="text-xs font-black tracking-[.16em] text-[#f2d99b]">TRANSFER MICRO-CASE · FACILITATOR VIEW</p><h2 className="mt-3 font-serif text-2xl leading-8">{snapshot.transfer?.stem}</h2><p className="mt-4 font-bold leading-7">{snapshot.transfer?.question}</p><p className="mt-5 rounded-2xl border border-white/15 bg-white/5 p-4 text-sm leading-6 text-[#d8e7e2]">Do not reveal the anchor yet. Let learners commit their transfer response before opening the debrief.</p></section>
-}
-
-function RevealPanel({ stage, distribution }: { stage: Stage; distribution?: Record<string, number> }) {
-  return <section role="status" className="rounded-[1.75rem] border border-[#9bc9b9] bg-[#edf7f4] p-5 shadow-[0_16px_45px_rgba(23,54,58,.06)] sm:p-7">
-    <p className="text-xs font-black tracking-[.16em] text-[#1f6668]">REVEAL</p>
-    <h2 className="mt-2 font-serif text-2xl">The evidence is now open.</h2>
-    {stage.answer !== undefined && <div className="mt-4 rounded-xl bg-white/75 p-4"><p className="text-xs font-black tracking-[.12em] text-[#1f6668]">EXPECTED ANSWER</p><p className="mt-2 font-bold leading-6">{formatAnswer(stage.answer, stage.options)}</p></div>}
-    <p className="mt-4 leading-7">{stage.feedback}</p>
-    {stage.expectedReasoning && <div className="mt-4 border-t border-[#9bc9b9] pt-4"><p className="text-xs font-black tracking-[.12em] text-[#1f6668]">WHY IT MATTERS</p><p className="mt-2 leading-7">{stage.expectedReasoning}</p></div>}
-    {distribution && Object.keys(distribution).length > 0 && <div className="mt-5 grid gap-2 sm:grid-cols-2">{Object.entries(distribution).map(([key,n]) => <div key={key} className="flex items-center justify-between gap-3 rounded-xl bg-[#17363a] px-3 py-2 text-xs font-bold text-white"><span className="truncate">{distributionLabel(key, stage.options)}</span><span>{n}</span></div>)}</div>}
-  </section>
 }
 
 function DiscussionPanel({ endsAt }: { endsAt: string | null }) {
@@ -466,7 +420,14 @@ function Metric({ label, value }: { label:string; value:string }) {
 }
 
 function StatePanel({ title, copy }: { title:string; copy:string }) {
-  return <section className="rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8] p-6 text-center shadow-[0_16px_45px_rgba(23,54,58,.06)]"><div className="mx-auto mb-4 h-3 w-3 animate-pulse rounded-full bg-[#46b9bd] motion-reduce:animate-none" /><h2 className="font-serif text-2xl">{title}</h2><p className="mx-auto mt-3 max-w-md leading-7 text-[#526c6e]">{copy}</p></section>
+  return <section className="rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8] p-6 text-center shadow-[0_16px_45px_rgba(23,54,58,.06)]"><h2 className="font-serif text-2xl">{title}</h2><p className="mx-auto mt-3 max-w-md leading-7 text-[#526c6e]">{copy}</p></section>
+}
+
+function RecordedResponse({ snapshot }: { snapshot: Snapshot }) {
+  const response = snapshot.responses.filter(item => item.stage_index === snapshot.stage_index).sort((a,b) => b.round-a.round)[0]
+  if (!response) return null
+  const answer = response.payload.choice ?? response.payload.choices ?? response.payload.text ?? response.payload
+  return <details className="ten-recorded-response"><summary>Your recorded reasoning</summary><p>{formatAnswer(answer, snapshot.stage?.options)}</p>{response.justification && <blockquote>{response.justification}</blockquote>}</details>
 }
 
 function RankedField({ rank,label,value,setValue }: { rank:string; label:string; value:string; setValue:(value:string)=>void }) {

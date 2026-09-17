@@ -130,7 +130,9 @@ for (const [score, max, expected] of [[0, 2, 'incorrect'], [1, 2, 'partial'], [2
   assert.equal(releasedScoreOutcome(score, max), expected)
 }
 
-assert.equal(arrivalStory.scenes.length, 7)
+assert.ok(arrivalStory.scenes.length >= 7)
+assert.equal(arrivalStory.scenes[0].visualKey, 'quiet')
+for (const id of ['arrival','nexus','ten','fracture','guardians','seeker','invitation']) assert.ok(arrivalStory.scenes.some(scene => scene.id === id), `Persisted scene ID retained: ${id}`)
 assert.equal(new Set(arrivalStory.scenes.map(scene => scene.id)).size, arrivalStory.scenes.length)
 assert.equal(arrivalStory.scenes.at(-1)?.ctaLabel, 'Enter the Nexus')
 assert.deepEqual([0, 1, 2, 3, 4].map(completed => computeWorldState(completed, 4).level), [0, 1, 2, 3, 4])
@@ -142,6 +144,11 @@ for (const guide of guides) {
 const episodeInput = { runId: '11111111-1111-1111-1111-111111111111', missionId: 'FUTURE-17', title: 'A future mission', mentor: 'A future mentor', lens: 'A configurable reasoning lens', focus: null, guide: 'ibn-sina' }
 const prelude = createMissionPrelude(episodeInput)
 const epilogue = createMissionEpilogue(episodeInput)
+const distinctGuides = { ...episodeInput, guardian: 'al-razi', nexusLevel: 3 }
+assert.equal(createMissionPrelude(distinctGuides).scenes[1].character, 'al-razi')
+assert.equal(createMissionEpilogue(distinctGuides).scenes[0].character, 'ibn-sina')
+assert.equal(createMissionEpilogue(distinctGuides).scenes[0].nexusLevel, 3)
+assert.equal(createMissionPrelude({ ...episodeInput, guardian: null }).scenes[1].character, undefined)
 assert.equal(prelude.id, `mission:${episodeInput.runId}:prelude`)
 assert.equal(epilogue.id, `mission:${episodeInput.runId}:epilogue`)
 assert.doesNotMatch(JSON.stringify([prelude, epilogue]), /SAH|NSTEMI|pulmonary embol|sepsis/i)

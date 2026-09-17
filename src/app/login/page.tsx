@@ -1,54 +1,15 @@
+import Image from 'next/image'
+import { brandAssets, worldAssets } from '@/lib/the-ten/assets'
+import { PendingButton } from '@/components/the-ten/experience/pending-button'
 import { login } from './actions'
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>
-}) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams
-
-  return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-6 text-white">
-      <section className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl">
-        <p className="text-sm font-semibold tracking-[0.2em] text-sky-300">SEIP HUB</p>
-        <h1 className="mt-3 text-3xl font-semibold">Sign in</h1>
-        <p className="mt-2 text-sm text-slate-400">Use your SEIP account credentials.</p>
-
-        {params.error ? (
-          <div className="mt-5 rounded-xl border border-rose-900/70 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
-            Unable to sign in. Check your credentials and try again.
-          </div>
-        ) : null}
-
-        <form className="mt-7 space-y-5">
-          <label className="block text-sm">
-            <span className="mb-2 block text-slate-300">Email</span>
-            <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none ring-sky-400 focus:ring-2"
-              type="email"
-              name="email"
-              autoComplete="email"
-              required
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="mb-2 block text-slate-300">Password</span>
-            <input
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 outline-none ring-sky-400 focus:ring-2"
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              required
-            />
-          </label>
-          <button
-            formAction={login}
-            className="w-full rounded-xl bg-sky-400 px-4 py-3 font-semibold text-slate-950 hover:bg-sky-300"
-          >
-            Continue
-          </button>
-        </form>
-      </section>
-    </main>
-  )
+  return <main className="ten-entry">
+    <section className="ten-entry-world" aria-labelledby="entry-world-title"><Image src={worldAssets.baghdadHero} alt="Baghdad’s river and domes beyond a scholar’s window" fill preload quality={90} sizes="(max-width: 720px) 640px, 100vw" className="object-cover"/><p className="ten-scene-label">THE TEN / BAGHDAD NEXUS</p><div><p className="ten-scene-label">A CITY OF KNOWLEDGE. A JOURNEY OF JUDGMENT.</p><h2 id="entry-world-title">The next connection<br />begins with you.</h2><p>Enter Baghdad. Follow its Signals. Bring your way of thinking into the Nexus.</p></div></section>
+    <section className="ten-entry-form" aria-labelledby="sign-in-title"><div className="ten-entry-brand"><Image src={brandAssets.lockup} alt="THE TEN — Baghdad Nexus" fill sizes="170px" className="object-cover"/></div><p className="ten-eyebrow">WELCOME TO THE NEXUS</p><h1 id="sign-in-title">Enter your journey.</h1><p>Sign in with your SEIP account.</p>
+      {params.error && <div role="alert" className="ten-entry-error">Unable to sign in. Check your credentials and try again.</div>}
+      <form action={login}><label>Email<input type="email" name="email" autoComplete="email" required/></label><label>Password<input type="password" name="password" autoComplete="current-password" required/></label><PendingButton pendingLabel="Signing in…">Sign in <span aria-hidden="true">→</span></PendingButton></form>
+    </section>
+  </main>
 }

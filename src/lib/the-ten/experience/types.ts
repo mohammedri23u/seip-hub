@@ -4,7 +4,7 @@ import type { TheTenCharacter } from '../assets'
 export type GuideKey = TheTenCharacter
 export type StoryMode = 'story' | 'reasoning' | 'reveal'
 export type StoryLayout = 'left' | 'center' | 'split' | 'portrait'
-export type StoryVisualKey = 'dark' | 'baghdad' | 'nexus' | 'signals' | 'guardians' | 'seeker'
+export type StoryVisualKey = 'quiet' | 'city' | 'dark' | 'baghdad' | 'nexus' | 'signals' | 'guardians' | 'seeker'
 export type StoryMotionPreset = 'still' | 'drift' | 'focus' | 'fracture' | 'activate'
 export type StoryAtmospherePreset = 'quiet' | 'city' | 'nexus' | 'fracture' | 'gold'
 
@@ -15,6 +15,7 @@ export type StoryScene = {
   narration?: string
   dialogue?: string
   speaker?: string
+  nexusLevel?: number
   visualKey: StoryVisualKey
   character?: GuideKey
   characterReaction?: CharacterReaction
@@ -59,6 +60,8 @@ export type GuideDefinition = {
 }
 
 export type MissionEpisodeInput = {
+  guardian?: GuideKey | null
+  nexusLevel?: number
   runId: string
   missionId: string
   title: string
