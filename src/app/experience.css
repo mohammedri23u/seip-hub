@@ -433,9 +433,14 @@
 .ten-story-header .ten-language-switch,.ten-immersive-language .ten-language-switch,.ten-signal-activation .ten-language-switch{color:var(--ten-light-gold)}
 .ten-immersive-language{position:absolute;z-index:5;inset-block-start:1.5rem;inset-inline-end:var(--ten-scene-gutter)}
 [dir="rtl"] .ten-learner,[dir="rtl"] .ten-entry,[dir="rtl"] .ten-guide-hall,[dir="rtl"] [data-experience="story"]{text-align:right}
-[dir="rtl"] .ten-header-inner,[dir="rtl"] .ten-page-heading,[dir="rtl"] .ten-toolbar{direction:rtl}
-[dir="rtl"] .ten-account>div{right:auto;left:0}
-[dir="rtl"] .ten-skip{right:1rem;left:auto}
+[dir="rtl"] .ten-header-inner,[dir="rtl"] .ten-toolbar{direction:ltr}
+[dir="rtl"] .ten-page-heading{direction:rtl}
+[dir="rtl"] .ten-header nav a,[dir="rtl"] .ten-account summary,[dir="rtl"] .ten-account>div{direction:rtl;text-align:right}
+[dir="rtl"] .ten-account>div{right:0;left:auto}
+[dir="rtl"] .ten-skip{right:auto;left:1rem}
+[dir="rtl"] .ten-city{direction:ltr;text-align:left}
+[dir="rtl"] .ten-city-heading{direction:rtl;text-align:right}
+[dir="rtl"] .ten-city-state p,[dir="rtl"] .ten-city-paths>a>span,[dir="rtl"] .ten-city-paths>span>span,[dir="rtl"] .ten-guide-presence>div:last-child{direction:rtl;text-align:right}
 [dir="rtl"] .ten-learner h1,[dir="rtl"] .ten-learner h2,[dir="rtl"] .ten-world h2,[dir="rtl"] .ten-story-copy h1,[dir="rtl"] .ten-guide-dialogue h2{font-family:Tahoma,Arial,sans-serif;letter-spacing:0}
 [dir="rtl"] .ten-story-controls form{margin-right:auto;margin-left:0}
 [dir="rtl"] input[type="email"],[dir="rtl"] input[type="password"],[dir="rtl"] input[name="code"],[dir="rtl"] input[name="join_code"]{direction:ltr;text-align:left}
