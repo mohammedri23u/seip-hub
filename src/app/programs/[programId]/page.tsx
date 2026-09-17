@@ -44,6 +44,7 @@ export default async function ProgramPage({
       title={program.name}
       actions={<>
         {canViewPilot ? <Link href={`/programs/${programId}/pilot`} className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900">Pilot Readiness</Link> : null}
+        {canViewPilot ? <Link href={`/programs/${programId}/pilot/double-rating`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Rater QC</Link> : null}
         {canViewAnalytics ? <Link href={`/programs/${programId}/analytics`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Reasoning Signals</Link> : null}
         <Link href={`/programs/${programId}/assessment`} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white">Assessment Center</Link>
         <Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>
