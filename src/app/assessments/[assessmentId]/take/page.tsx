@@ -1,15 +1,21 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { AssessmentExperience } from '@/components/the-ten/assessment-experience'
 import { CheckpointGate } from '@/components/the-ten/checkpoint-gate'
 import { LearnerShell } from '@/components/the-ten/learner-shell'
+import { ProgressiveAssessmentStep, type ProgressiveDeliveryStep } from '@/components/the-ten/progressive-assessment-step'
 import { requireUser } from '@/lib/auth/require-user'
 import { checkpointState } from '@/lib/the-ten/journey'
-import { startAssessment, submitAssessment } from './actions'
+import { startAssessment, submitAssessment, submitProgressiveAssessmentStep } from './actions'
 
 type DeliveryOption = { id: string; text: string; position: number }
 type DeliveryItem = { question_version_id: string; position: number; marks: number; question_type: string; stem: string; options: DeliveryOption[] }
 type Delivery = { assessment_id: string; title: string; description: string | null; duration_minutes: number | null; items: DeliveryItem[] }
+type JourneyGate = {
+  next_stage?: string
+  pretest?: { id?: string | null; completed?: boolean }
+  posttest?: { id?: string | null; completed?: boolean }
+}
 
 const backLink = (
   <Link
@@ -55,20 +61,41 @@ export default async function TakeAssessmentPage({
     .in('status', ['active', 'completed'])
     .maybeSingle()
 
-  const availability = checkpointState(assessment, attempt ?? undefined, { canTake: learnerMembership?.status === 'active' })
+  let journeyGate: JourneyGate | null = null
+  if (assessment.assessment_type === 'progress') {
+    const { data } = await supabase.rpc('journey_summary', { target_cohort_id: assessment.cohort_id })
+    journeyGate = (data ?? null) as JourneyGate | null
+  }
+
+  const isAssignedPre = journeyGate?.pretest?.id === assessmentId
+  const isAssignedPost = journeyGate?.posttest?.id === assessmentId
+  const progressiveStageAllowed = assessment.assessment_type !== 'progress'
+    || (isAssignedPre && journeyGate?.next_stage === 'pretest')
+    || (isAssignedPost && journeyGate?.next_stage === 'posttest')
+    || Boolean(attempt)
+
+  const availability = checkpointState(assessment, attempt ?? undefined, {
+    canTake: learnerMembership?.status === 'active' && progressiveStageAllowed,
+  })
+
   if (availability.state === 'locked' && (!attempt || attempt.status === 'in_progress')) {
     return <LearnerShell active="/learner" title={assessment.title} actions={backLink}>
-      <section className="ten-panel"><h2>{availability.label}</h2><p>{availability.reason}</p></section>
+      <section className="ten-panel">
+        <h2>{assessment.assessment_type === 'progress' && !progressiveStageAllowed ? 'This form is not your current gate' : availability.label}</h2>
+        <p>{assessment.assessment_type === 'progress' && !progressiveStageAllowed ? 'THE TEN assigns one counterbalanced form at a time. Complete the journey stage shown in Baghdad before this form can open.' : availability.reason}</p>
+      </section>
     </LearnerShell>
   }
 
   if (!attempt) {
-    const checkpointKind = assessment.assessment_type === 'diagnostic' ? 'entry' : assessment.assessment_type === 'final' ? 'exit' : 'checkpoint'
+    const checkpointKind = assessment.assessment_type === 'diagnostic' || isAssignedPre ? 'entry' : assessment.assessment_type === 'final' || isAssignedPost ? 'exit' : 'checkpoint'
     return (
       <LearnerShell active="/learner" immersive title={assessment.title}>
         <CheckpointGate
           title={assessment.title}
-          description={assessment.description}
+          description={assessment.assessment_type === 'progress'
+            ? `${assessment.description ?? ''}\n\nProgressive disclosure: one stage is released at a time. Once committed, an earlier response cannot be edited after new information appears.`.trim()
+            : assessment.description}
           durationMinutes={assessment.duration_minutes}
           kind={checkpointKind}
           startAction={
@@ -96,6 +123,31 @@ export default async function TakeAssessmentPage({
             Continue journey →
           </Link>
         </div>
+      </LearnerShell>
+    )
+  }
+
+  if (assessment.assessment_type === 'progress') {
+    const { data, error } = await supabase.rpc('get_progressive_assessment_step', { target_assessment_id: assessmentId })
+    if (error || !data) {
+      return <LearnerShell active="/learner" title={assessment.title} actions={backLink}>
+        <section className="ten-panel"><h2>Current stage could not be loaded</h2><p>Your committed responses remain stored. Return to Baghdad and reopen this assessment, or contact the assessment lead if the problem persists.</p></section>
+      </LearnerShell>
+    }
+    const step = data as ProgressiveDeliveryStep & { completed?: boolean }
+    if (step.completed) redirect('/learner')
+
+    return (
+      <LearnerShell
+        active="/learner"
+        title={step.title}
+        actions={<span className="rounded-[14px] border border-[#D8CCB6] bg-[#FFFDF8] px-4 py-2.5 text-sm font-black text-[#17363A] shadow-sm">{step.duration_minutes ? `${step.duration_minutes} min` : 'Untimed'} · Stage {step.position}/{step.total}</span>}
+      >
+        {query.error ? <p role="alert" className="mx-auto mb-5 max-w-4xl rounded-[16px] border border-[#E4B9B4] bg-[#FCEFED] px-4 py-3 text-sm font-semibold text-[#8C403A]">This stage was not committed. Your previous locked stages are unchanged; review the current response and try again.</p> : null}
+        <ProgressiveAssessmentStep
+          step={step}
+          action={submitProgressiveAssessmentStep.bind(null, assessmentId, attempt.id, step.item.question_version_id, step.item.question_type)}
+        />
       </LearnerShell>
     )
   }
