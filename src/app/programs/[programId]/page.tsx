@@ -29,6 +29,7 @@ export default async function ProgramPage({
 
   const canManage = membership?.role === 'program_director' || Boolean(platformAdmin)
   const canViewAnalytics = canManage || membership?.role === 'assessment_lead'
+  const canViewPilot = canManage || membership?.role === 'assessment_lead' || membership?.role === 'reviewer'
   const cohortRows = (cohorts ?? []) as Array<{ id: string; name: string; start_date: string | null; end_date: string | null; status: string }>
   const cohortIds = cohortRows.map((cohort) => cohort.id)
   let sessionCount = 0
@@ -42,6 +43,7 @@ export default async function ProgramPage({
       eyebrow={`${program.code} · PROGRAM`}
       title={program.name}
       actions={<>
+        {canViewPilot ? <Link href={`/programs/${programId}/pilot`} className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900">Pilot Readiness</Link> : null}
         {canViewAnalytics ? <Link href={`/programs/${programId}/analytics`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Reasoning Signals</Link> : null}
         <Link href={`/programs/${programId}/assessment`} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white">Assessment Center</Link>
         <Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>
