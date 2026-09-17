@@ -15,7 +15,7 @@ export function LearnerShell({ title, intro, active = '/learner', children, acti
           <Image src={brandAssets.lockup} alt="" fill sizes="(max-width: 720px) 132px, 164px" loading="lazy" className="object-cover object-center" />
         </Link>
         <nav aria-label="Learner journey navigation">{navigation.map(([href, label]) => <Link key={href} href={href} aria-current={href === active ? 'page' : undefined}>{label}</Link>)}</nav>
-        <details className="ten-account"><summary>Account</summary><div><Link href="/learner/certificate">Completion</Link><Link href="/learner/orientation">Orientation</Link><Link href="/dashboard">SEIP workspace</Link><form action="/auth/signout" method="post"><button type="submit">Sign out</button></form></div></details>
+        <details className="ten-account"><summary>Account</summary><div><Link href="/learner/certificate">Completion</Link><Link href="/learner/orientation">Orientation</Link><Link href="/learner/research-consent">Research choice</Link><Link href="/dashboard">SEIP workspace</Link><form action="/auth/signout" method="post"><button type="submit">Sign out</button></form></div></details>
       </div>
     </header>
     <main id="learner-content" tabIndex={-1} className={`ten-main ${immersive ? 'pt-3 sm:pt-5' : ''}`}>
