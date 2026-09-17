@@ -1,0 +1,103 @@
+{
+  "records": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "broken": 0,
+      "inputs": [
+        {
+          "type": "hidden",
+          "autocomplete": "",
+          "required": false
+        },
+        {
+          "type": "email",
+          "autocomplete": "email",
+          "required": true
+        },
+        {
+          "type": "password",
+          "autocomplete": "current-password",
+          "required": true
+        }
+      ],
+      "overlay": false
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "broken": 0,
+      "inputs": [
+        {
+          "type": "hidden",
+          "autocomplete": "",
+          "required": false
+        },
+        {
+          "type": "email",
+          "autocomplete": "email",
+          "required": true
+        },
+        {
+          "type": "password",
+          "autocomplete": "current-password",
+          "required": true
+        }
+      ],
+      "overlay": false
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "broken": 0,
+      "inputs": [
+        {
+          "type": "hidden",
+          "autocomplete": "",
+          "required": false
+        },
+        {
+          "type": "email",
+          "autocomplete": "email",
+          "required": true
+        },
+        {
+          "type": "password",
+          "autocomplete": "current-password",
+          "required": true
+        }
+      ],
+      "overlay": false
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "broken": 0,
+      "inputs": [
+        {
+          "type": "hidden",
+          "autocomplete": "",
+          "required": false
+        },
+        {
+          "type": "email",
+          "autocomplete": "email",
+          "required": true
+        },
+        {
+          "type": "password",
+          "autocomplete": "current-password",
+          "required": true
+        }
+      ],
+      "overlay": false
+    }
+  ],
+  "requiredValidation": true,
+  "focus": {
+    "tag": "INPUT",
+    "name": "password",
+    "outline": "3px"
+  },
+  "errorPresentation": true
+}

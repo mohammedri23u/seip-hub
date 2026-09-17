@@ -30,8 +30,8 @@ export function SignalActivation({ signalNumber, totalSignals = 10, guideKey, on
 
   return <main className="ten-signal-activation" data-experience="activation" data-phase={phase} aria-labelledby="signal-activation-title">
     <div className="ten-activation-environment" aria-hidden="true">
-      <Image src={storyAssets.signalActivationBackground} alt="" fill preload sizes="(max-width: 720px) 900px, 100vw" quality={90} className="object-cover" />
-      <Image src={getNexusStateAsset(world.level)} alt="" fill sizes="(max-width: 720px) 900px, 100vw" quality={90} className="ten-activation-destination object-cover" loading="eager" />
+      <Image src={storyAssets.signalActivationBackground} alt="" fill preload sizes="(max-width: 720px) 900px, (max-width: 1100px) 1672px, 100vw" quality={90} className="object-cover" />
+      <Image src={getNexusStateAsset(world.level)} alt="" fill sizes="(max-width: 720px) 900px, (max-width: 1100px) 1672px, 100vw" quality={90} className="ten-activation-destination object-cover" loading="eager" />
     </div>
     <svg className="ten-activation-path" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path pathLength="1" d="M500 700 V520 L350 410 L500 290 L650 410 L500 520"/><circle cx="500" cy="290" r="22"/></svg>
     <header><p className="ten-scene-label">FIRST ACTIVATION / A RECORDED CONNECTION</p><p>{String(signalNumber).padStart(2,'0')} / {String(totalSignals).padStart(2,'0')}</p></header>

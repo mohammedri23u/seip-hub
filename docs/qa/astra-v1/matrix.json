@@ -1,0 +1,398 @@
+[
+  {
+    "view": "arrival",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "Every connection has a beginning."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "guide",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "A way of seeing.A mind beside yours."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "world",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "Baghdad"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "prelude",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reasoning",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "locked",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reveal",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "activation",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "The path holds."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "epilogue",
+    "width": 320,
+    "scrollWidth": 320,
+    "brokenImages": 0,
+    "headings": [
+      "A connection has been restored."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "arrival",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "Every connection has a beginning."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "guide",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "A way of seeing.A mind beside yours."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "world",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "Baghdad"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "prelude",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reasoning",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "locked",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reveal",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "activation",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "The path holds."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "epilogue",
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": 0,
+    "headings": [
+      "A connection has been restored."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "arrival",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "Every connection has a beginning."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "guide",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "A way of seeing.A mind beside yours."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "world",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "Baghdad"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "prelude",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reasoning",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "locked",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reveal",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "activation",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "The path holds."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "epilogue",
+    "width": 768,
+    "scrollWidth": 768,
+    "brokenImages": 0,
+    "headings": [
+      "A connection has been restored."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "arrival",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "Every connection has a beginning."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "guide",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "A way of seeing.A mind beside yours."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "world",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "Baghdad"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "prelude",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reasoning",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "locked",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "reveal",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "The unconnected observations"
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "activation",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "The path holds."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  },
+  {
+    "view": "epilogue",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": 0,
+    "headings": [
+      "A connection has been restored."
+    ],
+    "overlays": false,
+    "smallTargets": []
+  }
+]

@@ -225,7 +225,7 @@ export function LiveMission({ initial, initialExperience }: { initial: Snapshot;
       {snapshot.phase === 'transfer' && snapshot.manager && <TransferOverview snapshot={snapshot} />}
       {snapshot.phase === 'commit_locked' && !snapshot.manager && <StatePanel title="Commit locked" copy={snapshot.responses.some(r => r.stage_index === snapshot.stage_index && r.round === 1) ? (snapshot.stage?.peerInstruction ? 'Your first answer is recorded. Keep your reasoning in mind; discussion is next.' : 'Your answer is recorded. The facilitator is preparing the reveal.') : 'This round is closed. No response from you is recorded for this stage. Stay with the room for the next step.'} />}
       {snapshot.phase === 'discussion' && !snapshot.manager && <DiscussionPanel endsAt={snapshot.discussion_ends_at ?? null} />}
-      {['commit_locked','discussion','reveal'].includes(snapshot.phase) && snapshot.stage && <RecordedResponse snapshot={snapshot} />}
+      {!snapshot.manager && ['commit_locked','discussion','reveal'].includes(snapshot.phase) && snapshot.stage && <RecordedResponse snapshot={snapshot} />}
       {snapshot.phase === 'reveal' && snapshot.stage && <MissionReveal stage={snapshot.stage} distribution={snapshot.distribution} />}
       {snapshot.phase === 'debrief' && <Debrief snapshot={snapshot} />}
       {snapshot.phase === 'completed' && <Completed snapshot={snapshot} rpc={rpc} busy={busy} signalEarned={signalEarned} onReplay={signalEarned && epilogueProgress?.completed_at ? () => setReplayingEpilogue(true) : undefined} />}
@@ -289,7 +289,7 @@ function ResponseComposer({ snapshot, busy, submit }: { snapshot: Snapshot; busy
     await submit('respond', { run_id: snapshot.id, stage_index: snapshot.stage_index, round, answer, confidence: confidence === '' ? null : confidence, justification })
   }
 
-  if (already) return <StatePanel title={round === 2 ? 'Revote recorded' : 'Commit recorded'} copy="Your response is locked for this round. Stay with the room; the next state will appear automatically." />
+  if (already) return <><StatePanel title={round === 2 ? 'Revote recorded' : 'Commit recorded'} copy="Your response is locked for this round. Stay with the room; the next state will appear automatically." /><RecordedResponse snapshot={snapshot}/></>
 
   return <form onSubmit={onSubmit} className="ten-response-composer" aria-busy={busy}><fieldset disabled={busy}>
     <p className="text-xs font-black tracking-[.16em] text-[#f2d99b]">{round === 2 ? 'RE-COMMIT' : 'PRIVATE COMMIT'}</p>

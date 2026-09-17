@@ -423,3 +423,7 @@
   .ten-guide-mobile-choices button { min-height: 44px; border-bottom: 1px solid #7a9a945c; padding: .5rem; font-size: .75rem; color: #d7e8e3; cursor: pointer; }
   .ten-guide-mobile-choices button[aria-pressed="true"] { border-color: var(--ten-light-gold); color: var(--ten-light-gold); }
 }
+@media (max-width: 720px) {
+  .ten-story-composition[data-visual="guardians"] .ten-story-backdrop { height: 430px; bottom: auto; }
+}
+@media (max-width: 720px) { .ten-entry-world > div > .ten-scene-label { display: none; } }

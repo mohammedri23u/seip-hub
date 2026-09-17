@@ -36,7 +36,6 @@ export function StoryPlayer({ story, initialSceneId, progressAction, completionA
 
   useEffect(() => {
     headingRef.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true })
-
   }, [index, story.scenes])
 
   useEffect(() => {
@@ -75,7 +74,7 @@ export function StoryPlayer({ story, initialSceneId, progressAction, completionA
     <a href="#story-controls" className="ten-skip">Skip to story controls</a>
     <header className="ten-story-header">
       <p className="ten-story-wordmark">THE TEN <span>BAGHDAD NEXUS</span></p>
-      <div className="ten-story-progress" aria-label={`Scene ${index + 1} of ${story.scenes.length}`}>{story.scenes.map((item, itemIndex) => <span key={item.id} data-state={itemIndex === index ? 'current' : itemIndex < index ? 'complete' : 'future'} />)}</div>
+      <div className="ten-story-progress" role="img" aria-label={`Scene ${index + 1} of ${story.scenes.length}`}>{story.scenes.map((item, itemIndex) => <span key={item.id} data-state={itemIndex === index ? 'current' : itemIndex < index ? 'complete' : 'future'} />)}</div>
       {replaying && onDismiss ? <button type="button" onClick={onDismiss} className="ten-story-dismiss">Close replay</button> : <span className="ten-story-count">{index + 1}/{story.scenes.length}</span>}
     </header>
 

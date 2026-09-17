@@ -17,7 +17,7 @@ export function GuideSelection({ chooseAction }: GuideSelectionProps) {
 
   return <main className="ten-guide-hall" data-experience="story">
     <a href="#guide-choice" className="ten-skip">Skip to Guide selection</a>
-    <div className="ten-hall-environment" aria-hidden="true"><Image src={storyAssets.guideSelectionHall} alt="" fill sizes="(max-width: 720px) 1280px, 100vw" quality={90} className="object-cover" preload /></div>
+    <div className="ten-hall-environment" aria-hidden="true"><Image src={storyAssets.guideSelectionHall} alt="" fill sizes="(max-width: 1100px) 1672px, 100vw" quality={90} className="object-cover" preload /></div>
     <header className="ten-hall-heading"><p className="ten-scene-label">THE NEXUS / HALL OF GUIDES</p><h1>A way of seeing.<br />A mind beside yours.</h1><p>Every Guardian has something to teach you.<br />Choose the Guide who will walk with you.</p></header>
     <div className="ten-hall-body" id="guide-choice" tabIndex={-1}>
       <div className="ten-hall-assembly" aria-label="The four Guides">
