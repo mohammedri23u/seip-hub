@@ -14,7 +14,7 @@
   --ten-scene: 420ms;
   --ten-ease: cubic-bezier(.22, .68, .2, 1);
   --ten-scene-gutter: clamp(1.25rem, 5vw, 5.5rem);
-  --ten-display: Georgia, 'Times New Roman', serif;
+  --ten-display: var(--font-thmanyah-serif-display), Georgia, 'Times New Roman', serif;
 }
 [data-experience] { overflow-wrap: anywhere; }
 [data-experience] :focus-visible, .ten-entry :focus-visible { outline: 3px solid var(--ten-brass); outline-offset: 5px; }
@@ -35,7 +35,7 @@
 .ten-story-player { position: relative; isolation: isolate; display: flex; flex-direction: column; min-height: 100svh; overflow: clip; background: #081e21; color: var(--ten-ivory); }
 .ten-story-header { z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.6rem var(--ten-scene-gutter); }
 .ten-story-wordmark { flex-shrink: 0; font: 700 1.1rem var(--ten-display); letter-spacing: .12em; }
-.ten-story-wordmark span { display: block; margin-top: .3rem; font: 600 .5rem Arial, sans-serif; letter-spacing: .24em; color: var(--ten-light-gold); }
+.ten-story-wordmark span { display: block; margin-top: .3rem; font: 600 .5rem var(--font-thmanyah-sans), Arial, sans-serif; letter-spacing: .24em; color: var(--ten-light-gold); }
 .ten-story-progress { display: flex; gap: .55rem; margin-left: auto; }
 .ten-story-progress span { width: 6px; height: 6px; border: 1px solid #c3d2cc8a; transform: rotate(45deg); transition: background var(--ten-control); }
 .ten-story-progress [data-state="current"] { background: var(--ten-light-gold); border-color: var(--ten-light-gold); }
@@ -333,7 +333,7 @@
 .ten-activation-guide { display: flex; align-items: center; gap: 1rem; margin-block: 1.5rem; }
 .ten-activation-guide > span { position: relative; width: 110px; height: 155px; flex: 0 0 110px; }
 .ten-activation-guide blockquote { font: italic 1.1rem/1.6 var(--ten-display); }
-.ten-activation-guide small { display: block; margin-top: .6rem; color: var(--ten-light-gold); font: 600 .6rem Arial, sans-serif; letter-spacing: .1em; }
+.ten-activation-guide small { display: block; margin-top: .6rem; color: var(--ten-light-gold); font: 600 .6rem var(--font-thmanyah-sans), Arial, sans-serif; letter-spacing: .1em; }
 .ten-activation-path { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: .75; }
 .ten-activation-path path { fill: none; stroke: #79c7c3; stroke-width: 1.5; stroke-dasharray: 1; animation: tenPathRestore 700ms var(--ten-ease) both; }
 .ten-activation-path circle { fill: none; stroke: #f2d99b; stroke-width: 1; animation: tenSceneArt 700ms both; }
@@ -441,7 +441,7 @@
 [dir="rtl"] .ten-city{direction:ltr;text-align:left}
 [dir="rtl"] .ten-city-heading{direction:rtl;text-align:right}
 [dir="rtl"] .ten-city-state p,[dir="rtl"] .ten-city-paths>a>span,[dir="rtl"] .ten-city-paths>span>span,[dir="rtl"] .ten-guide-presence>div:last-child{direction:rtl;text-align:right}
-[dir="rtl"] .ten-learner h1,[dir="rtl"] .ten-learner h2,[dir="rtl"] .ten-world h2,[dir="rtl"] .ten-story-copy h1,[dir="rtl"] .ten-guide-dialogue h2{font-family:Tahoma,Arial,sans-serif;letter-spacing:0}
+[dir="rtl"] .ten-learner h1,[dir="rtl"] .ten-learner h2,[dir="rtl"] .ten-world h2,[dir="rtl"] .ten-story-copy h1,[dir="rtl"] .ten-guide-dialogue h2{font-family:var(--font-thmanyah-serif-display),Georgia,serif;letter-spacing:0}
 [dir="rtl"] .ten-story-controls form{margin-right:auto;margin-left:0}
 [dir="rtl"] input[type="email"],[dir="rtl"] input[type="password"],[dir="rtl"] input[name="code"],[dir="rtl"] input[name="join_code"]{direction:ltr;text-align:left}
 .ten-clinical-content{direction:ltr;text-align:left;unicode-bidi:isolate}

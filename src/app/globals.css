@@ -23,7 +23,7 @@ body {
     radial-gradient(circle at top right, rgba(70, 185, 189, 0.08), transparent 28rem),
     linear-gradient(180deg, #fbf6e9 0%, var(--the-ten-parchment) 100%);
   color: var(--the-ten-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-thmanyah-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -68,7 +68,7 @@ a {
 
 /* THE TEN learner system: accessible text navigation remains available without artwork. */
 .ten-learner { min-height: 100vh; background: #f7f0df; color: #17363a; }
-.ten-learner h1, .ten-learner h2, .ten-world h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 600; text-wrap: balance; }
+.ten-learner h1, .ten-learner h2, .ten-world h2 { font-family: var(--font-thmanyah-serif-display), Georgia, 'Times New Roman', serif; font-weight: 600; text-wrap: balance; }
 .ten-learner h1 { font-size: clamp(2rem, 4.2vw, 3.3rem); line-height: 1.13; }
 .ten-learner h2 { font-size: 1.6rem; line-height: 1.3; }
 .ten-learner h3 { font-weight: 700; }
@@ -106,7 +106,7 @@ a {
 .ten-nexus-art { position: relative; align-self: stretch; min-height: 220px; overflow: hidden; border-right: 1px solid #d8ccb6; background: #f7f0df; }
 .ten-nexus-focus > div:last-child { padding: 1.25rem; }
 .ten-nexus-focus .ten-eyebrow { color: #8b6a2b; }
-.ten-nexus-focus h3 { margin-top: .45rem; font-family: Georgia, 'Times New Roman', serif; font-size: 1.35rem; }
+.ten-nexus-focus h3 { margin-top: .45rem; font-family: var(--font-thmanyah-serif-display), Georgia, 'Times New Roman', serif; font-size: 1.35rem; }
 .ten-nexus-focus p:not(.ten-eyebrow) { margin-top: .55rem; color: #526c6e; font-size: .86rem; line-height: 1.55; }
 .ten-nexus-focus a { display: inline-flex; min-height: 44px; align-items: center; margin-top: .75rem; color: #1f6668; font-size: .84rem; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .ten-action { display: inline-flex; justify-content: center; align-items: center; gap: 1rem; min-height: 48px; padding: .75rem 1.25rem; background: #1f6668; color: #fff; font-weight: 700; font-size: .9rem; border-radius: 14px; cursor: pointer; transition: transform var(--ten-control, 190ms) ease-out, background var(--ten-control, 190ms) ease-out; }
@@ -120,8 +120,8 @@ a {
 .ten-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 2.5rem; }
 .ten-summary > div { padding: 1.2rem 1.5rem; border: 1px solid #d8ccb6; border-radius: 20px; background: #fffdf8; }
 .ten-summary dt { color: #526c6e; font-size: .8rem; font-weight: 700; }
-.ten-summary dd { font-size: 2rem; font-family: Georgia, serif; margin-top: .5rem; }
-.ten-summary dd span { font: .8rem Arial, sans-serif; color: #526c6e; }
+.ten-summary dd { font-size: 2rem; font-family: var(--font-thmanyah-serif-display), Georgia, serif; margin-top: .5rem; }
+.ten-summary dd span { font: .8rem var(--font-thmanyah-sans), Arial, sans-serif; color: #526c6e; }
 .ten-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 2.4rem 0 1rem; }
 .ten-section-heading a, .ten-text-link { display: inline-flex; align-items: center; min-height: 44px; font-size: .9rem; color: #1f6668; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .ten-card-grid, .ten-two-columns, .ten-orientation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
@@ -155,12 +155,12 @@ a {
 .ten-skip { position: fixed; left: 1rem; top: -100px; z-index: 100; background: #fffdf8; padding: 1rem; border-radius: 12px; }
 .ten-skip:focus { top: 1rem; }
 .ten-journey-entry { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid #d8ccb6; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; background: #fffdf8; color: #17363a; }
-.ten-journey-entry h2 { font-size: 1.5rem; font-family: Georgia, serif; margin: .5rem 0; }
+.ten-journey-entry h2 { font-size: 1.5rem; font-family: var(--font-thmanyah-serif-display), Georgia, serif; margin: .5rem 0; }
 .ten-character-guide { display: flex; align-items: center; gap: 1rem; overflow: hidden; border: 1px solid #d8ccb6; border-radius: 24px; padding: .75rem; background: #fffdf8; box-shadow: 0 14px 40px rgba(23, 54, 58, .07); }
 .ten-character-portrait { position: relative; width: 144px; height: 144px; flex: 0 0 144px; overflow: hidden; border-radius: 18px; background: #f0e5d1; }
 .ten-character-copy { min-width: 0; padding: .5rem 1rem .5rem 0; }
 .ten-character-copy > p { color: #1f6668; font-size: .72rem; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
-.ten-character-copy blockquote { margin: .5rem 0 0; color: #425f62; font-family: Georgia, 'Times New Roman', serif; font-size: 1.02rem; line-height: 1.65; }
+.ten-character-copy blockquote { margin: .5rem 0 0; color: #425f62; font-family: var(--font-thmanyah-serif-display), Georgia, 'Times New Roman', serif; font-size: 1.02rem; line-height: 1.65; }
 @media (max-width: 720px) {
   .ten-header-inner { flex-wrap: wrap; gap: .8rem; padding: 1rem; }
   .ten-header nav { order: 3; flex-basis: 100%; justify-content: space-between; gap: 0; }
@@ -244,10 +244,10 @@ a {
 .ten-guide-ability-summary > span { min-width: 0; flex: 1; }
 .ten-guide-ability-summary small, .ten-guide-ability-summary strong { display: block; }
 .ten-guide-ability-summary small { color: #8b6a2b; font-size: .58rem; font-weight: 900; letter-spacing: .13em; }
-.ten-guide-ability-summary strong { margin-top: .2rem; font-family: Georgia, serif; font-size: 1rem; }
+.ten-guide-ability-summary strong { margin-top: .2rem; font-family: var(--font-thmanyah-serif-display), Georgia, serif; font-size: 1rem; }
 .ten-guide-ability-summary button { min-height: 44px; flex: 0 0 auto; border: 1px solid #1f66684d; border-radius: 999px; padding: .6rem 1rem; background: #edf7f4; color: #1f6668; font-size: .75rem; font-weight: 900; cursor: pointer; }
 .ten-guide-workspace { border-top: 1px solid #d8ccb6; padding: 1.2rem; background: #f7f0df; }
-.ten-guide-workspace h2 { margin-top: .35rem; font-family: Georgia, serif; font-size: 1.45rem; }
+.ten-guide-workspace h2 { margin-top: .35rem; font-family: var(--font-thmanyah-serif-display), Georgia, serif; font-size: 1.45rem; }
 .ten-guide-workspace > div:first-child > p:last-child { margin-top: .45rem; color: #526c6e; font-size: .85rem; line-height: 1.55; }
 .ten-guide-prompts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: 1rem; }
 .ten-guide-prompts label { display: grid; grid-template-columns: auto 1fr; gap: .35rem .6rem; align-items: baseline; border: 1px solid #d8ccb6; border-radius: 16px; padding: .8rem; background: #fffdf8; font-size: .78rem; font-weight: 800; }
