@@ -13,10 +13,12 @@ export function CharacterGuide({
   character,
   reaction = 'neutral',
   message,
+  name,
 }: {
   character: TheTenCharacter
   reaction?: CharacterReaction
   message?: string
+  name?: string
 }) {
   const src = getCharacterAsset(character, reaction)
 
@@ -33,7 +35,7 @@ export function CharacterGuide({
         />
       </div>}
       <div className="ten-character-copy">
-        <p>{names[character]}</p>
+        <p>{name ?? names[character]}</p>
         {message ? <blockquote>{message}</blockquote> : null}
       </div>
     </aside>

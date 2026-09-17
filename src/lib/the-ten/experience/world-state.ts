@@ -1,4 +1,5 @@
 export type WorldStateLevel = 0 | 1 | 2 | 3 | 4
+import type { Locale } from '@/lib/i18n'
 export type WorldState = { level: WorldStateLevel; name: string; description: string; pathLayers: number; nexusActive: boolean; activationComplete: boolean }
 
 const worldStates: Record<WorldStateLevel, Omit<WorldState, 'level'>> = {
@@ -9,9 +10,17 @@ const worldStates: Record<WorldStateLevel, Omit<WorldState, 'level'>> = {
   4: { name: 'First Activation', description: 'All four reachable Signals are active.', pathLayers: 4, nexusActive: true, activationComplete: true },
 }
 
-export function computeWorldState(completedSignals: number, reachableSignals = 4): WorldState {
+const worldStatesArabic: Record<WorldStateLevel, Omit<WorldState, 'level'>> = {
+  0: { name: 'النِكسس خامل', description: 'المسارات المكشوفة ساكنة.', pathLayers: 0, nexusActive: false, activationComplete: false },
+  1: { name: 'الإشارة الأولى فعّالة', description: 'مسار واحد يحمل الآن طاقة النِكسس.', pathLayers: 1, nexusActive: true, activationComplete: false },
+  2: { name: 'المسارات تستيقظ', description: 'طبقة ثانية تصل المدينة الآن.', pathLayers: 2, nexusActive: true, activationComplete: false },
+  3: { name: 'النِكسس يستجيب', description: 'بدأت المسارات المستعادة تتحرك معاً.', pathLayers: 3, nexusActive: true, activationComplete: false },
+  4: { name: 'التفعيل الأول', description: 'الإشارات الأربع المتاحة فعّالة.', pathLayers: 4, nexusActive: true, activationComplete: true },
+}
+
+export function computeWorldState(completedSignals: number, reachableSignals = 4, locale: Locale = 'en'): WorldState {
   const safeCompleted = Math.max(0, Math.min(completedSignals, reachableSignals))
   const normalized = reachableSignals <= 0 ? 0 : Math.round((safeCompleted / reachableSignals) * 4)
   const level = Math.max(0, Math.min(4, normalized)) as WorldStateLevel
-  return { level, ...worldStates[level] }
+  return { level, ...(locale === 'ar' ? worldStatesArabic[level] : worldStates[level]) }
 }

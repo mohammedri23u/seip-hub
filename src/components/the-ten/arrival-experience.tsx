@@ -1,7 +1,8 @@
 'use client'
 
 import { StoryPlayer } from '@/components/the-ten/experience/story-player'
-import { arrivalStory } from '@/lib/the-ten/experience'
+import { getArrivalStory } from '@/lib/the-ten/experience'
+import { useI18n } from '@/components/i18n-provider'
 
 type ArrivalExperienceProps = {
   completeAction: (formData: FormData) => Promise<void>
@@ -10,5 +11,6 @@ type ArrivalExperienceProps = {
 }
 
 export function ArrivalExperience({ completeAction, progressAction, initialSceneId }: ArrivalExperienceProps) {
-  return <StoryPlayer story={arrivalStory} initialSceneId={initialSceneId} progressAction={progressAction} completionAction={completeAction} />
+  const { locale } = useI18n()
+  return <StoryPlayer story={getArrivalStory(locale)} initialSceneId={initialSceneId} progressAction={progressAction} completionAction={completeAction} />
 }

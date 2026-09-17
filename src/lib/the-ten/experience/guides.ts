@@ -1,4 +1,5 @@
 import type { GuideDefinition, GuideKey } from './types'
+import type { Locale } from '@/lib/i18n'
 
 export const guides: GuideDefinition[] = [
   {
@@ -27,6 +28,17 @@ export const guides: GuideDefinition[] = [
   },
 ]
 
+export const guidesArabic: GuideDefinition[] = [
+  { ...guides[0], name: 'ابن سينا', title: 'المُكامل', philosophy: 'انظر إلى الكل قبل أن تحكم على الجزء.', lens: 'التوليف · ترتيب الأولويات · تكامل الأنماط', ability: { name: 'وَحِّد', description: 'نظّم ما هو معلوم قبل أن تلتزم بتفسيره.', prompts: ['من هو المريض؟', 'ما الذي تغيّر؟', 'ما الذي يحدّد المشكلة الحالية؟', 'ما الذي لا يمكن تجاهله؟'] }, confirmation: 'لن أعطيك الإجابات، بل سأساعدك على رؤية ما ينبغي أن يجتمع.' },
+  { ...guides[1], name: 'الرازي', title: 'التجريبي', philosophy: 'لا تحمِ استنتاجك الأول؛ اختبره.', lens: 'الدليل · تحديث التقدير · الوعي بالانحياز', ability: { name: 'تَحَدَّ', description: 'اكشف الافتراض المختبئ داخل استدلالك الحالي.', prompts: ['ما الافتراض الذي تبنيه؟', 'أي دليل مكشوف حالياً يدعمه؟', 'ما الذي سيدفعك إلى إعادة النظر؟'] }, confirmation: 'توقّع أن أسائلك بدقة حين تبلغ ذروة يقينك.' },
+  { ...guides[2], name: 'جابر بن حيّان', title: 'صاحب التجربة', philosophy: 'تصبح الفرضية نافعة حين يمكن اختبارها.', lens: 'الفرضية · الاحتمال · الاستقصاء', ability: { name: 'اِخْتَبِر', description: 'قارن ما يدعم فرضيتك أو يضعفها أو يميّزها.', prompts: ['ما فرضيتك؟', 'ما الذي يدعمها؟', 'ما الذي يعارضها؟', 'أي نتيجة أو فحص سيغيّر رأيك؟'] }, confirmation: 'ائتني بالفرضيات، ولنرَ إن كانت ستصمد.' },
+  { ...guides[3], name: 'أبقراط', title: 'المستكشف', philosophy: 'قبل المرض، يوجد المريض.', lens: 'الملاحظة · السلامة · إعادة التقييم', ability: { name: 'لَاحِظ', description: 'أعد صياغة المشكلة من خلال سياق المريض الفوري وأولوياته.', prompts: ['ما الذي يحتاج إلى اهتمام الآن؟', 'ما الذي قد يؤذي المريض أولاً؟', 'ما الذي تغيّر؟', 'ما الذي يحتاج إلى إعادة تقييم؟'] }, confirmation: 'حين تتعقّد المشكلة، عُد أولاً إلى المريض.' },
+]
+
+export function getGuides(locale: Locale) {
+  return locale === 'ar' ? guidesArabic : guides
+}
+
 /** Usage is recorded once per run for First Activation; the workspace never affects marks or progression. */
 export const guideAbilityPolicy = {
   recordedInvocationsPerMission: 1,
@@ -34,8 +46,8 @@ export const guideAbilityPolicy = {
   persistsWorkspaceText: false,
 } as const
 
-export function getGuide(key: GuideKey | null | undefined) {
-  return guides.find(guide => guide.key === key) ?? null
+export function getGuide(key: GuideKey | null | undefined, locale: Locale = 'en') {
+  return getGuides(locale).find(guide => guide.key === key) ?? null
 }
 
 export function guideKeyFromName(name: string | null | undefined): GuideKey | null {

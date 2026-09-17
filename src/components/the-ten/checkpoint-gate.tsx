@@ -1,15 +1,18 @@
 import Image from 'next/image'
 import { DecorSprite } from '@/components/the-ten/art-sprite'
 import { brandAssets, worldAssets } from '@/lib/the-ten/assets'
+import { getLocale, localize } from '@/lib/i18n'
 
-export function CheckpointGate({ title, description, durationMinutes, kind, startAction }: { title: string; description?: string | null; durationMinutes?: number | null; kind: 'entry' | 'exit' | 'checkpoint'; startAction: React.ReactNode }) {
+export async function CheckpointGate({ title, description, durationMinutes, kind, startAction }: { title: string; description?: string | null; durationMinutes?: number | null; kind: 'entry' | 'exit' | 'checkpoint'; startAction: React.ReactNode }) {
+  const locale = await getLocale()
+  const tr = (english: string, arabic: string) => localize(locale, english, arabic)
   const isEntry = kind === 'entry'
-  const eyebrow = isEntry ? 'ENTRY GATE · BASELINE' : kind === 'exit' ? 'EXIT GATE · TRANSFER CHECK' : 'NEXUS CHECKPOINT'
+  const eyebrow = isEntry ? tr('ENTRY GATE · BASELINE', 'بوابة الدخول · خط الأساس') : kind === 'exit' ? tr('EXIT GATE · TRANSFER CHECK', 'بوابة الخروج · فحص الانتقال') : tr('NEXUS CHECKPOINT', 'نقطة تحقّق النِكسس')
   const lead = isEntry
-    ? 'Record how you reason before the first Signal.'
+    ? tr('Record how you reason before the first Signal.', 'سجّل طريقة استدلالك قبل الإشارة الأولى.')
     : kind === 'exit'
-      ? 'The four Signals are active. Test what transfers beyond their cases.'
-      : 'Enter the checkpoint with the same deliberate reasoning you used in the missions.'
+      ? tr('The four Signals are active. Test what transfers beyond their cases.', 'الإشارات الأربع فعّالة. اختبر ما ينتقل إلى ما وراء حالاتها.')
+      : tr('Enter the checkpoint with the same deliberate reasoning you used in the missions.', 'ادخل نقطة التحقّق بالاستدلال المتأنّي نفسه الذي استخدمته في المهمات.')
 
   return <section className="mx-auto max-w-4xl overflow-hidden rounded-[2rem] border border-[#315b5d] bg-[#17363a] shadow-[0_28px_90px_rgba(23,54,58,.16)]">
     <div className="relative min-h-[430px]">
@@ -22,7 +25,7 @@ export function CheckpointGate({ title, description, durationMinutes, kind, star
         <h2 className="mt-3 font-serif text-3xl leading-tight sm:text-5xl">{lead}</h2>
         <p className="mt-3 text-lg font-bold text-[#fffdf8]">{title}</p>
         {description ? <p className="mt-2 max-w-xl text-sm leading-6 text-[#d8e7e2]">{description}</p> : null}
-        <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">{durationMinutes ? `${durationMinutes} minutes` : 'Untimed'}</span><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">Private attempt</span><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">No public ranking</span></div>
+        <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">{durationMinutes ? `${durationMinutes} ${tr('minutes', 'دقيقة')}` : tr('Untimed', 'دون توقيت')}</span><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">{tr('Private attempt', 'محاولة خاصة')}</span><span className="rounded-full border border-white/20 bg-[#102f32]/45 px-3 py-2">{tr('No public ranking', 'لا يوجد ترتيب علني')}</span></div>
         <div className="mt-6 max-w-sm">{startAction}</div>
       </div>
     </div>

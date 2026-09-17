@@ -96,7 +96,7 @@ export function nextJourneyAction(data: JourneyData, now = Date.now()) {
   return { title: data.cohorts.length ? 'Take stock of your journey' : 'Your journey starts here', description: data.cohorts.length ? 'Review your attendance, submitted checkpoints, and released results.' : 'Explore the orientation. Your sessions will appear when you join an active learner cohort.', label: data.cohorts.length ? 'View progress' : 'Read orientation', href: data.cohorts.length ? '/learner/progress' : '/learner/orientation' }
 }
 
-export function formatJourneyDate(value: string | null) {
-  if (!value) return 'Time to be confirmed'
-  return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Baghdad' }).format(new Date(value)) + ' · Baghdad'
+export function formatJourneyDate(value: string | null, locale: 'ar' | 'en' = 'en') {
+  if (!value) return locale === 'ar' ? 'الوقت سيُحدَّد لاحقاً' : 'Time to be confirmed'
+  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-IQ' : 'en', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Baghdad' }).format(new Date(value)) + (locale === 'ar' ? ' · بغداد' : ' · Baghdad')
 }

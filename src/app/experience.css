@@ -427,3 +427,16 @@
   .ten-story-composition[data-visual="guardians"] .ten-story-backdrop { height: 430px; bottom: auto; }
 }
 @media (max-width: 720px) { .ten-entry-world > div > .ten-scene-label { display: none; } }
+/* Bilingual experience controls and direction-safe clinical content. */
+.ten-language-switch{min-height:2.5rem;border:1px solid currentColor;border-radius:999px;background:transparent;padding:.45rem .8rem;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer;white-space:nowrap}
+.ten-language-switch:disabled{cursor:wait;opacity:.55}
+.ten-story-header .ten-language-switch,.ten-immersive-language .ten-language-switch,.ten-signal-activation .ten-language-switch{color:var(--ten-light-gold)}
+.ten-immersive-language{position:absolute;z-index:5;inset-block-start:1.5rem;inset-inline-end:var(--ten-scene-gutter)}
+[dir="rtl"] .ten-learner,[dir="rtl"] .ten-entry,[dir="rtl"] .ten-guide-hall,[dir="rtl"] [data-experience="story"]{text-align:right}
+[dir="rtl"] .ten-header-inner,[dir="rtl"] .ten-page-heading,[dir="rtl"] .ten-toolbar{direction:rtl}
+[dir="rtl"] .ten-account>div{right:auto;left:0}
+[dir="rtl"] .ten-skip{right:1rem;left:auto}
+[dir="rtl"] .ten-learner h1,[dir="rtl"] .ten-learner h2,[dir="rtl"] .ten-world h2,[dir="rtl"] .ten-story-copy h1,[dir="rtl"] .ten-guide-dialogue h2{font-family:Tahoma,Arial,sans-serif;letter-spacing:0}
+[dir="rtl"] .ten-story-controls form{margin-right:auto;margin-left:0}
+[dir="rtl"] input[type="email"],[dir="rtl"] input[type="password"],[dir="rtl"] input[name="code"],[dir="rtl"] input[name="join_code"]{direction:ltr;text-align:left}
+.ten-clinical-content{direction:ltr;text-align:left;unicode-bidi:isolate}
