@@ -1,0 +1,224 @@
+[
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 0,
+    "title": "Every connection has a beginning.",
+    "cta": "Open the chronicle →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 1,
+    "title": "A city gathered around knowledge.",
+    "cta": "Look beyond the familiar →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 1
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 2,
+    "title": "Not the Baghdad history remembers.",
+    "cta": "Follow the hidden path →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 1
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 3,
+    "title": "The Nexus.",
+    "cta": "Enter the chamber →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 4,
+    "title": "Ten Signals kept those paths alive.",
+    "cta": "Listen →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 5,
+    "title": "Knowledge remained. Connection did not.",
+    "cta": "Find what remains →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 6,
+    "title": "Four answered when the Nexus called.",
+    "cta": "Approach →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 7,
+    "title": "It found you.",
+    "cta": "Answer the call →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": false,
+    "index": 8,
+    "title": "Four Signals can still be reached.",
+    "cta": "Enter the Nexus →",
+    "focus": "story-title",
+    "width": 390,
+    "running": 0
+  },
+  {
+    "test": "arrival-to-guide",
+    "reduced": false,
+    "pass": true
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 0,
+    "title": "Every connection has a beginning.",
+    "cta": "Open the chronicle →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 1,
+    "title": "A city gathered around knowledge.",
+    "cta": "Look beyond the familiar →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 2,
+    "title": "Not the Baghdad history remembers.",
+    "cta": "Follow the hidden path →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 3,
+    "title": "The Nexus.",
+    "cta": "Enter the chamber →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 4,
+    "title": "Ten Signals kept those paths alive.",
+    "cta": "Listen →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 5,
+    "title": "Knowledge remained. Connection did not.",
+    "cta": "Find what remains →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 6,
+    "title": "Four answered when the Nexus called.",
+    "cta": "Approach →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 7,
+    "title": "It found you.",
+    "cta": "Answer the call →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "story",
+    "reduced": true,
+    "index": 8,
+    "title": "Four Signals can still be reached.",
+    "cta": "Enter the Nexus →",
+    "focus": "story-title",
+    "width": 320,
+    "running": 0
+  },
+  {
+    "test": "arrival-to-guide",
+    "reduced": true,
+    "pass": true
+  },
+  {
+    "test": "guide-selection",
+    "name": "Al-Razi",
+    "pass": true
+  },
+  {
+    "test": "guide-selection",
+    "name": "Jabir ibn Hayyan",
+    "pass": true
+  },
+  {
+    "test": "guide-selection",
+    "name": "Hippocrates",
+    "pass": true
+  },
+  {
+    "test": "guide-selection",
+    "name": "Ibn Sina",
+    "pass": true
+  },
+  {
+    "test": "locked-and-restored-directory",
+    "pass": true
+  },
+  {
+    "test": "response-validation-and-failure-preserves-choice",
+    "pass": true
+  },
+  {
+    "test": "reduced-activation-to-epilogue",
+    "pass": true
+  }
+]

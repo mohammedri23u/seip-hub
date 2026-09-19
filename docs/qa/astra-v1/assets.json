@@ -1,0 +1,242 @@
+[
+  {
+    "path": "characters/ibn-sina/introduce.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 235638
+  },
+  {
+    "path": "characters/ibn-sina/guide.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 213332
+  },
+  {
+    "path": "characters/ibn-sina/thinking.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 217430
+  },
+  {
+    "path": "characters/ibn-sina/celebrate.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 212862
+  },
+  {
+    "path": "characters/ibn-sina/locked.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 191786
+  },
+  {
+    "path": "characters/jabir/introduce.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 246370
+  },
+  {
+    "path": "characters/jabir/guide.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 228786
+  },
+  {
+    "path": "characters/jabir/thinking.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 228662
+  },
+  {
+    "path": "characters/jabir/celebrate.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 229904
+  },
+  {
+    "path": "characters/jabir/locked.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 223216
+  },
+  {
+    "path": "characters/hippocrates/introduce.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 209942
+  },
+  {
+    "path": "characters/hippocrates/guide.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 227418
+  },
+  {
+    "path": "characters/hippocrates/thinking.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 234948
+  },
+  {
+    "path": "characters/hippocrates/celebrate.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 216238
+  },
+  {
+    "path": "characters/hippocrates/locked.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 226372
+  },
+  {
+    "path": "characters/al-razi/introduce.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 235984
+  },
+  {
+    "path": "characters/al-razi/guide.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 235984
+  },
+  {
+    "path": "characters/al-razi/thinking.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 247140
+  },
+  {
+    "path": "characters/al-razi/celebrate.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 234370
+  },
+  {
+    "path": "characters/al-razi/locked.webp",
+    "status": 200,
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 218712
+  },
+  {
+    "path": "world/baghdad-hero.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 353974
+  },
+  {
+    "path": "world/baghdad-blue-hour-nexus-reveal.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 360660
+  },
+  {
+    "path": "world/nexus-state-0-dormant.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 335752
+  },
+  {
+    "path": "world/nexus-state-1-signal-1.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 323950
+  },
+  {
+    "path": "world/nexus-state-2-signal-2.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 324878
+  },
+  {
+    "path": "world/nexus-state-3-signal-3.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 315048
+  },
+  {
+    "path": "world/nexus-state-4-first-activation.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 335852
+  },
+  {
+    "path": "world/guide-selection-hall-empty.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 413338
+  },
+  {
+    "path": "world/chronicler-desk.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 331812
+  },
+  {
+    "path": "world/signal-activation-background.webp",
+    "status": 200,
+    "width": 1672,
+    "height": 941,
+    "alpha": false,
+    "bytes": 240066
+  }
+]

@@ -29,7 +29,7 @@ export function CharacterGuide({
           fill
           sizes="(max-width: 520px) 104px, 144px"
           loading="lazy"
-          className="object-cover object-center"
+          className="object-contain object-bottom"
         />
       </div>}
       <div className="ten-character-copy">

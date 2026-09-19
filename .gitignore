@@ -13,3 +13,6 @@ __pycache__
 
 # TypeScript incremental cache
 *.tsbuildinfo
+
+# Temporary local-only UI fixture route (scripts/qa/review-ui.mjs)
+src/app/ten-ui-review/
