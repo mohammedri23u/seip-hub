@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -27,7 +28,7 @@ export default async function AssessmentCenterPage({
     { data: rubrics },
   ] = await Promise.all([
     supabase.from('programs').select('id, name, code').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('learning_objectives').select('id, code, title, domain, competency, status').eq('program_id', programId).order('code'),
     supabase.from('cohorts').select('id, name').eq('program_id', programId),

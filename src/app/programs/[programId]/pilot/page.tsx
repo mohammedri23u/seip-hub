@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -34,7 +35,7 @@ export default async function PilotReadinessPage({
 
   const [{ data: program }, { data: membership }, { data: platformAdmin }] = await Promise.all([
     supabase.from('programs').select('id, name, code').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ])
   if (!program) notFound()
@@ -58,6 +59,9 @@ export default async function PilotReadinessPage({
     eyebrow={`${program.code} · PILOT CONTROL`}
     title="First Activation readiness"
     actions={<>
+      <Link href={`/programs/${programId}/pilot/operations`} className="ten-text-link">Program operations</Link>
+      <Link href={`/programs/${programId}/pilot/governance`} className="ten-text-link">Research governance</Link>
+      <Link href={`/programs/${programId}/pilot/fce`} className="ten-text-link">Focused Clinical Encounter</Link>
       <Link href={`/programs/${programId}/assessment/grading`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Grading operations</Link>
       <Link href={`/programs/${programId}/analytics`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Reasoning Signals</Link>
       <Link href={`/programs/${programId}`} className="rounded-xl bg-[#17363A] px-4 py-2.5 text-sm font-semibold text-white">Back to program</Link>

@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -32,7 +33,7 @@ export default async function DoubleRatingPage({
 
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: qualityData }, { data: sequenceData }] = await Promise.all([
     supabase.from('programs').select('id, code, name').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('program_assessment_quality_settings').select('double_rating_required, double_rating_target_count, double_rating_selection_rule').eq('program_id', programId).maybeSingle(),
     supabase.from('program_assessment_sequences').select('pre_assessment_id, post_assessment_id').eq('program_id', programId).eq('active', true),

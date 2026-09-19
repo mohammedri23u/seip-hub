@@ -1,0 +1,332 @@
+{
+  "tested_at": "2026-09-18",
+  "scope": "Transactional database/RPC tests with six synthetic identities; not browser E2E",
+  "rollback": true,
+  "results": [
+    {
+      "test": "AB pre before orientation",
+      "detail": "42501: new row violates row-level security policy for table \"assessment_attempts\"",
+      "passed": true
+    },
+    {
+      "test": "AB wrong form",
+      "detail": "42501: new row violates row-level security policy for table \"assessment_attempts\"",
+      "passed": true
+    },
+    {
+      "test": "AB stage 1 only",
+      "detail": "One item projection",
+      "passed": true
+    },
+    {
+      "test": "AB full form disclosure",
+      "detail": "P0001: Progressive assessment requires sequential delivery",
+      "passed": true
+    },
+    {
+      "test": "AB out-of-order submission",
+      "detail": "42501: Out-of-sequence assessment submission",
+      "passed": true
+    },
+    {
+      "test": "AB committed answer immutable",
+      "detail": "RLS update affected zero rows",
+      "passed": true
+    },
+    {
+      "test": "AB replay submission",
+      "detail": "42501: Out-of-sequence assessment submission",
+      "passed": true
+    },
+    {
+      "test": "AB all 15 Pre stages submitted",
+      "detail": "Sequential RPC submission",
+      "passed": true
+    },
+    {
+      "test": "AB arrival and guide",
+      "detail": "Assigned Pre form accepted",
+      "passed": true
+    },
+    {
+      "test": "AB certificate bypass",
+      "detail": "P0001: Journey requirements are not complete",
+      "passed": true
+    },
+    {
+      "test": "AB research without ethics",
+      "detail": "P0001: Research consent is pending approved information and ethics governance",
+      "passed": true
+    },
+    {
+      "test": "AB stale consent version",
+      "detail": "P0001: Information version changed; read the current version",
+      "passed": true
+    },
+    {
+      "test": "AB research decline allowed",
+      "detail": "Education remains available",
+      "passed": true
+    },
+    {
+      "test": "AB unauthorized scoring",
+      "detail": "42501: Reviewer access required",
+      "passed": true
+    },
+    {
+      "test": "AB export without approval",
+      "detail": "42501: Export requester access required",
+      "passed": true
+    },
+    {
+      "test": "AB facilitator command",
+      "detail": "P0001: Live activity management permission required",
+      "passed": true
+    },
+    {
+      "test": "AB protected live answer keys",
+      "detail": "RLS visibility",
+      "passed": true
+    },
+    {
+      "test": "BA pre before orientation",
+      "detail": "42501: new row violates row-level security policy for table \"assessment_attempts\"",
+      "passed": true
+    },
+    {
+      "test": "BA wrong form",
+      "detail": "42501: new row violates row-level security policy for table \"assessment_attempts\"",
+      "passed": true
+    },
+    {
+      "test": "BA stage 1 only",
+      "detail": "One item projection",
+      "passed": true
+    },
+    {
+      "test": "BA full form disclosure",
+      "detail": "P0001: Progressive assessment requires sequential delivery",
+      "passed": true
+    },
+    {
+      "test": "BA out-of-order submission",
+      "detail": "42501: Out-of-sequence assessment submission",
+      "passed": true
+    },
+    {
+      "test": "BA committed answer immutable",
+      "detail": "RLS update affected zero rows",
+      "passed": true
+    },
+    {
+      "test": "BA replay submission",
+      "detail": "42501: Out-of-sequence assessment submission",
+      "passed": true
+    },
+    {
+      "test": "BA all 15 Pre stages submitted",
+      "detail": "Sequential RPC submission",
+      "passed": true
+    },
+    {
+      "test": "BA arrival and guide",
+      "detail": "Assigned Pre form accepted",
+      "passed": true
+    },
+    {
+      "test": "BA certificate bypass",
+      "detail": "P0001: Journey requirements are not complete",
+      "passed": true
+    },
+    {
+      "test": "BA research without ethics",
+      "detail": "P0001: Research consent is pending approved information and ethics governance",
+      "passed": true
+    },
+    {
+      "test": "BA stale consent version",
+      "detail": "P0001: Information version changed; read the current version",
+      "passed": true
+    },
+    {
+      "test": "BA research decline allowed",
+      "detail": "Education remains available",
+      "passed": true
+    },
+    {
+      "test": "BA unauthorized scoring",
+      "detail": "42501: Reviewer access required",
+      "passed": true
+    },
+    {
+      "test": "BA export without approval",
+      "detail": "42501: Export requester access required",
+      "passed": true
+    },
+    {
+      "test": "BA facilitator command",
+      "detail": "P0001: Live activity management permission required",
+      "passed": true
+    },
+    {
+      "test": "BA protected live answer keys",
+      "detail": "RLS visibility",
+      "passed": true
+    },
+    {
+      "test": "director readiness access",
+      "detail": "Real-world gates remain pending",
+      "passed": true
+    },
+    {
+      "test": "lead readiness access",
+      "detail": "Real-world gates remain pending",
+      "passed": true
+    },
+    {
+      "test": "reviewer readiness access",
+      "detail": "Real-world gates remain pending",
+      "passed": true
+    },
+    {
+      "test": "allocation locked after start",
+      "detail": "P0001: Allocation locked after assessment starts",
+      "passed": true
+    },
+    {
+      "test": "assigned facilitator can open vote",
+      "detail": "Assigned session authorization",
+      "passed": true
+    },
+    {
+      "test": "premature reveal",
+      "detail": "P0001: Close responses and complete required revote before reveal",
+      "passed": true
+    },
+    {
+      "test": "M01 complete state machine",
+      "detail": "Both learners committed every stage, peer revote and transfer",
+      "passed": true
+    },
+    {
+      "test": "M02 complete state machine",
+      "detail": "Both learners committed every stage, peer revote and transfer",
+      "passed": true
+    },
+    {
+      "test": "M03 complete state machine",
+      "detail": "Both learners committed every stage, peer revote and transfer",
+      "passed": true
+    },
+    {
+      "test": "M04 complete state machine",
+      "detail": "Both learners committed every stage, peer revote and transfer",
+      "passed": true
+    },
+    {
+      "test": "AB four Signals earned",
+      "detail": "Mission completion gate",
+      "passed": true
+    },
+    {
+      "test": "AB assigned Post completed",
+      "detail": "Opposite form completed",
+      "passed": true
+    },
+    {
+      "test": "AB attendance and feedback eligibility",
+      "detail": "All requirements satisfied without research consent",
+      "passed": true
+    },
+    {
+      "test": "AB certificate issued",
+      "detail": "Rolled-back test certificate only",
+      "passed": true
+    },
+    {
+      "test": "BA four Signals earned",
+      "detail": "Mission completion gate",
+      "passed": true
+    },
+    {
+      "test": "BA assigned Post completed",
+      "detail": "Opposite form completed",
+      "passed": true
+    },
+    {
+      "test": "BA attendance and feedback eligibility",
+      "detail": "All requirements satisfied without research consent",
+      "passed": true
+    },
+    {
+      "test": "BA certificate issued",
+      "detail": "Rolled-back test certificate only",
+      "passed": true
+    },
+    {
+      "test": "first independent rating",
+      "detail": "Human review RPC",
+      "passed": true
+    },
+    {
+      "test": "submitted rating immutable",
+      "detail": "P0001: Submitted independent rating is immutable; use moderation",
+      "passed": true
+    },
+    {
+      "test": "sample cannot finalize with one rater",
+      "detail": "P0001: This response is in the double-rating sample and requires 2 submitted human reviews before finalization.",
+      "passed": true
+    },
+    {
+      "test": "reviewer cannot see other independent ratings",
+      "detail": "RLS blind scoring",
+      "passed": true
+    },
+    {
+      "test": "reviewer rubric projection",
+      "detail": "Protected rubric RPC",
+      "passed": true
+    },
+    {
+      "test": "second independent rating",
+      "detail": "Separate reviewer",
+      "passed": true
+    },
+    {
+      "test": "reviewer cannot release final score",
+      "detail": "42501: Assessment lead access required",
+      "passed": true
+    },
+    {
+      "test": "disagreement blocks final score",
+      "detail": "P0001: Open moderation case must be resolved before final approval",
+      "passed": true
+    },
+    {
+      "test": "moderation and final score atomic",
+      "detail": "Original independent scores retained",
+      "passed": true
+    },
+    {
+      "test": "FCE premature moderation",
+      "detail": "P0001: All assigned independent ratings required",
+      "passed": true
+    },
+    {
+      "test": "FCE second examiner blind",
+      "detail": "Other rating hidden",
+      "passed": true
+    },
+    {
+      "test": "FCE rating immutable",
+      "detail": "23505: duplicate key value violates unique constraint \"fce_ratings_encounter_id_examiner_id_key\"",
+      "passed": true
+    },
+    {
+      "test": "FCE moderated without pass fail",
+      "detail": "Two independent ratings and global scores retained",
+      "passed": true
+    }
+  ]
+}

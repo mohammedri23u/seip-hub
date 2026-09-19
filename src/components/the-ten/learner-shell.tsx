@@ -26,3 +26,4 @@ export function LearnerShell({ title, intro, active = '/learner', children, acti
     <footer className="ten-footer">THE TEN · Baghdad Nexus <span>Think carefully. Learn together. Reflect.</span></footer>
   </div>
 }
+

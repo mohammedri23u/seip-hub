@@ -45,3 +45,4 @@ export async function getLearnerJourney(): Promise<JourneyData> {
     attendance: (attendance.data ?? []) as Attendance[], attempts: (attempts.data ?? []) as LearnerAttempt[],
   }
 }
+

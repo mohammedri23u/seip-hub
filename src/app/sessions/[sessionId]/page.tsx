@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -29,7 +30,7 @@ export default async function SessionPage({ params }: { params: Promise<{ sessio
 
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: ownFacilitator }, { data: facilitators }, { data: objectives }] = await Promise.all([
     supabase.from('programs').select('name, code').eq('id', cohort.program_id).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', cohort.program_id).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, cohort.program_id, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('session_facilitators').select('user_id').eq('session_id', sessionId).eq('user_id', userId).maybeSingle(),
     supabase.from('session_facilitators').select('user_id, facilitator_role').eq('session_id', sessionId),
@@ -71,8 +72,8 @@ export default async function SessionPage({ params }: { params: Promise<{ sessio
 
       <section className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Live session access</h2>
-          <p className="mt-1 text-sm text-slate-500">Live interactions arrive in the next build stage.</p>
+          <h2 className="text-xl font-semibold">Live session access</h2><Link className="ten-text-link" href={`/sessions/${sessionId}/live`}>Open live activities →</Link>
+          <p className="mt-1 text-sm text-slate-500">Peer Instruction and Diagnostic Updating are available in the live room.</p>
           <div className="mt-5 rounded-2xl bg-slate-950 p-6 text-white">
             <p className="text-xs font-semibold tracking-[0.18em] text-sky-300">JOIN CODE</p>
             <p className="mt-2 font-mono text-3xl font-semibold tracking-wider">{session.join_code ?? 'NOT SET'}</p>

@@ -1,3 +1,5 @@
+import { programMembership } from '@/lib/auth/program-membership'
+import { reviewDetail } from '@/lib/assessment/review'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -20,7 +22,7 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
   const { supabase, userId } = await requireUser()
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: response }] = await Promise.all([
     supabase.from('programs').select('id, code').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('student_responses').select('id, attempt_id, question_version_id, text_response, submitted_at').eq('id', responseId).maybeSingle(),
   ])
@@ -30,23 +32,16 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
   const canFinalize = Boolean(platformAdmin) || role === 'program_director' || role === 'assessment_lead'
   if (!canGrade) notFound()
 
-  const [{ data: attempt }, { data: questionVersion }, { data: mapping }] = await Promise.all([
-    supabase.from('assessment_attempts').select('id, assessment_id, learner_id, status, submitted_at').eq('id', response.attempt_id).maybeSingle(),
-    supabase.from('question_versions').select('id, question_id, stem, version_number').eq('id', response.question_version_id).maybeSingle(),
-    supabase.from('question_rubrics').select('rubric_version_id').eq('question_version_id', response.question_version_id).maybeSingle(),
-  ])
-  if (!attempt || !questionVersion || !mapping) notFound()
+  const detail = await reviewDetail(supabase, programId, responseId)
+  if (!detail) notFound()
+  const assessment = { title: detail.assessment_title }
+  const question = { question_code: detail.question_code }
+  const questionVersion = { stem: detail.stem }
+  const rubricVersion = { id: detail.rubric_version_id }
+  const rubric = { rubric_code: detail.question_code }
+  const criteriaData = detail.criteria.map(c => ({ ...c, criterion_code: c.code }))
 
-  const [{ data: assessment }, { data: question }, { data: rubricVersion }] = await Promise.all([
-    supabase.from('assessments').select('id, title, status').eq('id', attempt.assessment_id).maybeSingle(),
-    supabase.from('questions').select('id, question_code, question_type').eq('id', questionVersion.question_id).maybeSingle(),
-    supabase.from('rubric_versions').select('id, rubric_id, version_number, instructions, reference_answer, moderation_threshold_points').eq('id', mapping.rubric_version_id).maybeSingle(),
-  ])
-  if (!assessment || !question || !rubricVersion) notFound()
-
-  const [{ data: rubric }, { data: criteriaData }, { data: aiRunsData }, { data: reviewsData }, { data: moderationData }, { data: finalDecision }] = await Promise.all([
-    supabase.from('rubrics').select('id, rubric_code, title, status').eq('id', rubricVersion.rubric_id).maybeSingle(),
-    supabase.from('rubric_criteria').select('id, criterion_code, title, description, scoring_guidance, max_score, position').eq('rubric_version_id', rubricVersion.id).order('position'),
+  const [{ data: aiRunsData }, { data: reviewsData }, { data: moderationData }, { data: finalDecision }] = await Promise.all([
     supabase.from('ai_grading_runs').select('id, status, provider, model, prompt_version, proposed_total_score, max_score, confidence, summary, uncertainty, input_tokens, output_tokens, error_message, created_at, completed_at').eq('response_id', responseId).order('created_at', { ascending: false }),
     supabase.from('human_reviews').select('id, response_id, reviewer_id, ai_grading_run_id, status, total_score, max_score, general_feedback, submitted_at, updated_at').eq('response_id', responseId).order('updated_at', { ascending: false }),
     supabase.from('moderation_cases').select('id, response_id, ai_grading_run_id, human_review_id, trigger_type, status, reason, resolved_score, resolution_note, created_at, resolved_at').eq('response_id', responseId).order('created_at', { ascending: false }),
@@ -69,7 +64,7 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
   const moderations = (moderationData ?? []) as Moderation[]
   const openModeration = moderations.find((moderation) => moderation.status === 'open' || moderation.status === 'in_review') ?? null
   const maxScore = criteria.reduce((sum, criterion) => sum + Number(criterion.max_score), 0)
-  const hasSubmittedHumanReview = reviews.some((review) => review.status === 'submitted')
+  const hasSubmittedHumanReview = ownReview?.status === 'submitted'
 
   return <AppShell eyebrow={`${program.code} · WRITTEN GRADING`} title={`${assessment.title} · ${question.question_code}`} actions={<Link href={`/programs/${programId}/assessment/grading`} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to queue</Link>}>
     {query.error ? <p className="mb-5 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">Action failed: {query.error.replaceAll('_', ' ')}</p> : null}
@@ -83,10 +78,10 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
           <div><h2 className="text-xl font-semibold">Independent human rubric review</h2><p className="mt-1 text-sm text-slate-500">Human fields are not prefilled from AI. Score the response against the rubric, then compare if useful.</p></div>
           <form action={submitHumanReview.bind(null, programId, responseId)} className="mt-5 space-y-4">
             <input type="hidden" name="ai_grading_run_id" value={latestCompletedAI?.id ?? ''} />
-            {criteria.map((criterion) => { const existing = ownScoreMap.get(criterion.id); return <div key={criterion.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{criterion.criterion_code} · {criterion.title}</p>{criterion.description ? <p className="mt-1 text-sm text-slate-600">{criterion.description}</p> : null}</div><span className="text-sm font-semibold">max {Number(criterion.max_score)}</span></div>{criterion.scoring_guidance ? <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">{criterion.scoring_guidance}</p> : null}<div className="mt-4 grid gap-3 md:grid-cols-[140px_1fr]"><label><span className="text-sm font-medium text-slate-700">Human score</span><input name={`criterion_${criterion.id}`} type="number" min="0" max={Number(criterion.max_score)} step="0.001" required defaultValue={existing ? String(existing.score) : ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label><label><span className="text-sm font-medium text-slate-700">Criterion feedback</span><input name={`feedback_${criterion.id}`} defaultValue={existing?.feedback ?? ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label></div></div> })}
+            {criteria.map((criterion) => { const existing = ownScoreMap.get(criterion.id); return <div key={criterion.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{criterion.criterion_code} · {criterion.title}</p>{criterion.description ? <p className="mt-1 text-sm text-slate-600">{criterion.description}</p> : null}</div><span className="text-sm font-semibold">max {Number(criterion.max_score)}</span></div>{criterion.scoring_guidance ? <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">{criterion.scoring_guidance}</p> : null}<div className="mt-4 grid gap-3 md:grid-cols-[140px_1fr]"><label><span className="text-sm font-medium text-slate-700">Human score</span><input name={`criterion_${criterion.id}`} type="number" min="0" max={Number(criterion.max_score)} step={Number(criterion.max_score) === 2 ? "1" : "0.001"} required disabled={ownReview?.status === "submitted"} defaultValue={existing ? String(existing.score) : ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label><label><span className="text-sm font-medium text-slate-700">Criterion feedback</span><span className="mt-2 block text-sm">Use the general feedback field below.</span></label></div></div> })}
             <label className="block"><span className="text-sm font-medium text-slate-700">General feedback</span><textarea name="general_feedback" rows={4} defaultValue={ownReview?.general_feedback ?? ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label>
             <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" name="send_to_moderation" value="yes" className="mt-1" /><span><span className="block text-sm font-semibold">Send to moderation</span><span className="mt-1 block text-sm text-slate-500">Use when the response is ambiguous, high-stakes, or needs a second human judgment.</span></span></label>
-            <button className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white">Submit human review</button>
+            <button disabled={ownReview?.status === "submitted" || Boolean(finalDecision)} className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{ownReview?.status === "submitted" ? "Independent rating committed" : "Submit human review"}</button>
           </form>
         </div>
 
@@ -94,7 +89,7 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
       </div>
 
       <div className="space-y-6">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">AI proposed grading</h2><p className="mt-1 text-sm text-slate-500">Advisory only · never a final grade.</p></div>{latestCompletedAI ? <StatusBadge status="completed" /> : null}</div>{aiGradingConfigured() ? <form action={runAIGrading.bind(null, programId, responseId)}><button className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold">{latestCompletedAI ? 'Run a new AI proposal' : `Run AI proposal · ${aiGradingModel()}`}</button></form> : <p className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">AI provider is not configured on this server. Human grading remains fully functional.</p>}{latestFailedAI ? <p className="mt-3 rounded-xl bg-rose-50 p-3 text-xs text-rose-700">Latest AI run failed: {latestFailedAI.error_message ?? 'Unknown error'}</p> : null}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-semibold">AI proposed grading</h2><p className="mt-1 text-sm text-slate-500">Advisory only · never a final grade.</p></div>{latestCompletedAI ? <StatusBadge status="completed" /> : null}</div>{aiGradingConfigured() ? <form action={runAIGrading.bind(null, programId, responseId)}><button className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold">{latestCompletedAI ? 'Run a new AI proposal' : `Run AI proposal · ${aiGradingModel()}`}</button></form> : <p className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">AI provider is not configured on this server. Human grading remains fully functional.</p>}{latestFailedAI ? <p className="mt-3 rounded-xl bg-rose-50 p-3 text-xs text-rose-700">Latest AI proposal could not be completed. Human scoring remains available.</p> : null}
           {latestCompletedAI && hasSubmittedHumanReview ? <details className="mt-5 rounded-2xl border border-slate-200"><summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Open AI proposal after independent review</summary><div className="border-t border-slate-200 p-4"><div className="flex items-center justify-between"><span className="text-sm text-slate-500">Proposed total</span><span className="font-semibold">{Number(latestCompletedAI.proposed_total_score)} / {Number(latestCompletedAI.max_score)}</span></div><p className="mt-3 text-sm text-slate-700">{latestCompletedAI.summary}</p><p className="mt-2 text-xs text-slate-500">Self-reported confidence: {latestCompletedAI.confidence === null ? '—' : Number(latestCompletedAI.confidence).toFixed(2)}. This is not a calibrated probability.</p>{latestCompletedAI.uncertainty ? <p className="mt-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">Uncertainty: {latestCompletedAI.uncertainty}</p> : null}<div className="mt-4 space-y-3">{criteria.map((criterion) => { const ai = aiScoreMap.get(criterion.id); return <div key={criterion.id} className="rounded-xl bg-slate-50 p-3"><div className="flex justify-between gap-3"><span className="text-sm font-semibold">{criterion.criterion_code}</span><span className="text-sm font-semibold">{ai ? Number(ai.proposed_score) : '—'} / {Number(criterion.max_score)}</span></div>{ai ? <><p className="mt-2 text-xs leading-5 text-slate-600">{ai.rationale}</p>{ai.errors.length ? <p className="mt-2 text-xs text-rose-700">Errors: {ai.errors.join('; ')}</p> : null}{ai.missing_concepts.length ? <p className="mt-1 text-xs text-amber-700">Missing: {ai.missing_concepts.join('; ')}</p> : null}</> : null}</div> })}</div><p className="mt-4 text-xs text-slate-400">{latestCompletedAI.model} · {latestCompletedAI.prompt_version} · {latestCompletedAI.input_tokens ?? '—'} input / {latestCompletedAI.output_tokens ?? '—'} output tokens</p></div></details> : latestCompletedAI ? <p className="mt-4 rounded-xl bg-sky-50 p-3 text-xs text-sky-800">AI proposal is stored but hidden until at least one human review is submitted, reducing anchoring during first-pass scoring.</p> : null}
         </div>
 

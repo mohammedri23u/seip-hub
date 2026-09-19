@@ -1,5 +1,8 @@
 'use server'
 
+import { programMembership } from '@/lib/auth/program-membership'
+
+
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser } from '@/lib/auth/require-user'
@@ -7,7 +10,7 @@ import { requireUser } from '@/lib/auth/require-user'
 async function assertAssessmentLead(programId: string) {
   const { supabase, userId } = await requireUser()
   const [{ data: membership }, { data: admin }] = await Promise.all([
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ])
   if (!admin && membership?.role !== 'program_director' && membership?.role !== 'assessment_lead') {

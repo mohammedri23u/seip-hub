@@ -224,3 +224,4 @@ function extractApiError(raw: Record<string, unknown>) {
   const message = (error as { message?: unknown }).message
   return typeof message === 'string' ? message : null
 }
+

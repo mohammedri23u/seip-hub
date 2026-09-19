@@ -157,12 +157,12 @@ const [scratchpadSource, reasoningToolSource, liveMissionSource, toolChannelMigr
   readFile(new URL('../src/components/the-ten/mission-scratchpad.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/mission-reasoning-tool.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/live-mission.tsx', import.meta.url), 'utf8'),
-  readFile(new URL('../supabase/migrations/20260908232400_ten_tool_realtime_channel.sql', import.meta.url), 'utf8'),
-  readFile(new URL('../supabase/migrations/20260909072000_ten_assessment_architecture_v2.sql', import.meta.url), 'utf8'),
-  readFile(new URL('../supabase/migrations/20260909074500_ten_program_analytics_v1.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260908232014_ten_tool_realtime_channel.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260909071622_ten_assessment_architecture_v2.sql', import.meta.url), 'utf8'),
+  readFile(new URL('../supabase/migrations/20260909082050_ten_program_analytics_v1.sql', import.meta.url), 'utf8'),
   readFile(new URL('../src/components/the-ten/assessment-experience.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/app/programs/[programId]/analytics/page.tsx', import.meta.url), 'utf8'),
-  readFile(new URL('../supabase/migrations/20260910023000_ten_experience_story_and_guide_state.sql', import.meta.url), 'utf8'),
+  Promise.all(['20260909232850_ten_experience_story_and_guide_state.sql', '20260909233139_ten_experience_signal_activation_idempotency.sql'].map(name => readFile(new URL('../supabase/migrations/' + name, import.meta.url), 'utf8'))).then(parts => parts.join('\n')),
   readFile(new URL('../src/components/the-ten/experience/guide-ability.tsx', import.meta.url), 'utf8'),
 ])
 assert.match(scratchpadSource, /supabase\.channel\(`ten-tool:\$\{initial\.id\}`/)

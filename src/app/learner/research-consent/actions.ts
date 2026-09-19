@@ -4,11 +4,14 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser } from '@/lib/auth/require-user'
 
-export async function recordResearchChoice(programId: string, decision: 'granted' | 'declined') {
+export async function recordResearchChoice(programId: string, decision: 'granted' | 'declined', expectedVersion: string, formData: FormData) {
+  if (decision === 'granted' && formData.get('acknowledged') !== 'on') redirect('/learner/research-consent?error=acknowledgement_required')
   const { supabase } = await requireUser()
-  const { error } = await supabase.rpc('record_research_consent', {
+  const { error } = await supabase.rpc('record_versioned_research_consent', {
     target_program_id: programId,
     decision,
+    expected_version: expectedVersion,
+    acknowledged: formData.get('acknowledged') === 'on',
   })
   if (error) redirect('/learner/research-consent?error=save_failed')
   revalidatePath('/learner/research-consent')

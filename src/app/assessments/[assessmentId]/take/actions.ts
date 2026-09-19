@@ -83,3 +83,4 @@ export async function submitAssessment(assessmentId: string, attemptId: string, 
   if (error) redirect(`/assessments/${assessmentId}/take?error=submit_failed`)
   redirect('/learner/assessments?submitted=1')
 }
+

@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -19,7 +20,7 @@ export default async function ProgramPage({
 
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: cohorts }, { count: loCount }] = await Promise.all([
     supabase.from('programs').select('id, name, code, description, status').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('cohorts').select('id, name, start_date, end_date, status').eq('program_id', programId).order('start_date', { ascending: false }),
     supabase.from('learning_objectives').select('id', { count: 'exact', head: true }).eq('program_id', programId).eq('status', 'active'),
@@ -112,3 +113,4 @@ function formatDateRange(start: string | null, end: string | null) {
   if (!start && end) return `Ends ${end}`
   return `${start} → ${end}`
 }
+
