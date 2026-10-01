@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { saveRubricReview } from './save-review'
 import { redirect } from 'next/navigation'
 import { gradeWrittenResponse } from '@/lib/ai/grading'
 import { reviewDetail } from '@/lib/assessment/review'
@@ -20,6 +21,7 @@ export async function runAIGrading(programId: string, responseId: string) {
   const context = await loadGradingContext(supabase, programId, responseId)
   if (!context) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=missing_context`)
 
+  if (context.scientific) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=human_scoring_required`)
   const maxScore = context.criteria.reduce((sum, criterion) => sum + Number(criterion.max_score), 0)
   const model = process.env.SEIP_AI_GRADING_MODEL?.trim() || 'gpt-5.6-luna'
   const promptVersion = process.env.SEIP_AI_PROMPT_VERSION?.trim() || 'written_rubric_v1'
@@ -90,64 +92,8 @@ export async function runAIGrading(programId: string, responseId: string) {
 }
 
 export async function submitHumanReview(programId: string, responseId: string, formData: FormData) {
-  const { supabase, userId } = await requireUser()
-  const context = await loadGradingContext(supabase, programId, responseId)
-  if (!context) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=missing_context`)
-
-  const criterionScores = context.criteria.map((criterion) => {
-    const score = Number(formData.get(`criterion_${criterion.id}`) ?? NaN)
-    const feedback = String(formData.get(`feedback_${criterion.id}`) ?? '').trim() || null
-    return { criterion, score, feedback }
-  })
-  if (criterionScores.some(({ criterion, score }) => !Number.isFinite(score) || (Number(criterion.max_score) === 2 && !Number.isInteger(score)) || score < 0 || score > Number(criterion.max_score))) {
-    redirect(`/programs/${programId}/assessment/grading/${responseId}?error=invalid_human_scores`)
-  }
-
-  const totalScore = criterionScores.reduce((sum, item) => sum + item.score, 0)
-  const maxScore = context.criteria.reduce((sum, criterion) => sum + Number(criterion.max_score), 0)
-  const aiRunId = String(formData.get('ai_grading_run_id') ?? '').trim() || null
-  const generalFeedback = String(formData.get('general_feedback') ?? '').trim() || null
-  const manualModeration = String(formData.get('send_to_moderation') ?? '') === 'yes'
-
-  const { data: savedReview, error: reviewError } = await supabase.rpc('ten_save_human_review', {
-    target_response_id: responseId,
-    criterion_scores: Object.fromEntries(criterionScores.map(({ criterion, score }) => [criterion.id, score])),
-    feedback: generalFeedback,
-    submit_review: true,
-  })
-  const review = savedReview ? { id: String(savedReview.review_id) } : null
-  if (reviewError || !review) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=review_failed`)
-
-  let moderationReason: string | null = manualModeration ? 'Reviewer requested moderation.' : null
-  let triggerType: 'manual' | 'ai_human_disagreement' = 'manual'
-
-  if (!moderationReason && aiRunId && context.rubricVersion.moderation_threshold_points !== null) {
-    const { data: aiRun } = await supabase.from('ai_grading_runs').select('proposed_total_score, status').eq('id', aiRunId).eq('response_id', responseId).maybeSingle()
-    if (aiRun?.status === 'completed' && aiRun.proposed_total_score !== null) {
-      const difference = Math.abs(Number(aiRun.proposed_total_score) - totalScore)
-      if (difference >= Number(context.rubricVersion.moderation_threshold_points)) {
-        moderationReason = `AI–human absolute score difference is ${difference.toFixed(3)} points, meeting the rubric moderation threshold.`
-        triggerType = 'ai_human_disagreement'
-      }
-    }
-  }
-
-  if (moderationReason) {
-    const { data: openCase } = await supabase.from('moderation_cases').select('id').eq('response_id', responseId).in('status', ['open', 'in_review']).maybeSingle()
-    if (!openCase) {
-      await supabase.from('moderation_cases').insert({
-        response_id: responseId,
-        ai_grading_run_id: aiRunId,
-        human_review_id: review.id,
-        trigger_type: triggerType,
-        reason: moderationReason,
-        opened_by: userId,
-      })
-    }
-  }
-
-  revalidatePath(`/programs/${programId}/assessment/grading/${responseId}`)
-  revalidatePath(`/programs/${programId}/assessment/grading`)
+  const result = await saveRubricReview(programId, responseId, {}, formData)
+  if (result.error) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=review_validation_failed`)
 }
 
 export async function approveHumanFinalScore(programId: string, responseId: string, humanReviewId: string) {
@@ -165,10 +111,13 @@ export async function approveHumanFinalScore(programId: string, responseId: stri
   if (error) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=final_approval_failed`)
   revalidatePath(`/programs/${programId}/assessment/grading/${responseId}`)
   revalidatePath(`/programs/${programId}/assessment/grading`)
+  revalidatePath(`/programs/${programId}/assessment/grading/students`, 'layout')
+  revalidatePath('/facilitator/the-ten')
 }
 
 export async function resolveModeration(programId: string, responseId: string, moderationCaseId: string, formData: FormData) {
-  const score = Number(formData.get('resolved_score') ?? NaN)
+  const rawScore = formData.get('resolved_score')
+  const score = typeof rawScore === 'string' && rawScore.trim() !== '' ? Number(rawScore) : NaN
   const note = String(formData.get('resolution_note') ?? '').trim()
   if (!Number.isFinite(score) || score < 0 || !note) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=invalid_moderation`)
 
@@ -184,12 +133,15 @@ export async function resolveModeration(programId: string, responseId: string, m
   if (error) redirect(`/programs/${programId}/assessment/grading/${responseId}?error=moderation_final_failed`)
   revalidatePath(`/programs/${programId}/assessment/grading/${responseId}`)
   revalidatePath(`/programs/${programId}/assessment/grading`)
+  revalidatePath(`/programs/${programId}/assessment/grading/students`, 'layout')
+  revalidatePath('/facilitator/the-ten')
 }
 
 async function loadGradingContext(supabase: Awaited<ReturnType<typeof requireUser>>['supabase'], programId: string, responseId: string) {
   const detail = await reviewDetail(supabase, programId, responseId)
   if (!detail || !detail.criteria.length) return null
   return {
+    scientific: detail.scientific,
     response: { text_response: detail.response_text },
     rubricVersion: { id: detail.rubric_version_id, instructions: detail.rubric_instructions, reference_answer: detail.reference_answer, moderation_threshold_points: detail.moderation_threshold_points },
     criteria: detail.criteria.map(c => ({ ...c, criterion_code: c.code })) as CriterionRow[],

@@ -39,6 +39,7 @@ export default async function DashboardPage() {
   const programs = [...programAccess.values()]
 
   const canFacilitateTen = Boolean(platformAdmin) || Boolean(facilitator) || programs.some(entry => entry.roles.includes('program_director') || entry.roles.includes('peer_educator') || entry.roles.includes('reviewer'))
+  const canGrade = Boolean(platformAdmin) || programs.some(p => p.roles.some(r => ['program_director', 'assessment_lead', 'reviewer', 'peer_educator'].includes(r)))
   const programIds = programs.map(entry => entry.program.id)
   let cohortCount = 0
   let upcomingSessionCount = 0
@@ -62,6 +63,8 @@ export default async function DashboardPage() {
         <Link href="/learner" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</span><h2>Enter Baghdad</h2><p>Continue the story from your recorded gate, signal, and Codex state.</p></div><span aria-hidden="true">→</span></Link>
         {canFacilitateTen && <Link href="/facilitator/the-ten" className="ten-journey-entry"><div><span className="ten-eyebrow">FACILITATOR CONTROL ROOM</span><h2>Open your teacher workspace</h2><p>See pending ratings and assigned sessions before entering the live control room.</p></div><span aria-hidden="true">→</span></Link>}
       </div>
+
+      {canGrade && <Link href="/grading" dir="rtl" className="my-6 block rounded-3xl border border-sky-200 bg-white p-6 shadow-sm"><p className="text-xs font-semibold tracking-wide text-sky-700">GRADING WORKSPACE</p><h2 className="mt-2 text-2xl font-semibold">تصحيح إجابات الطلبة</h2><p className="mt-2 text-sm text-slate-600">اختيار الطالب، مراجعة إجاباته مع الـRubric، ومتابعة حساب الدرجات والاعتماد.</p></Link>}
 
       <section className="grid gap-4 md:grid-cols-4">
         <MetricCard label="Active programs" value={programs.length} />

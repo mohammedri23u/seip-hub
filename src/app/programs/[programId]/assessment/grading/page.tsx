@@ -19,14 +19,14 @@ type Row = {
 
 export default async function GradingQueuePage({ params }: { params: Promise<{ programId: string }> }) {
   const { programId } = await params
-  const { supabase } = await requireProgramRole(programId, ['program_director', 'assessment_lead', 'reviewer', 'peer_educator'])
+  const { supabase, role } = await requireProgramRole(programId, ['program_director', 'assessment_lead', 'reviewer', 'peer_educator'])
   const { data, error } = await supabase.rpc('ten_review_queue', { target_program_id: programId })
   if (error) throw new Error('The grading queue is temporarily unavailable.')
   const rows = (data ?? []) as Row[]
   const pendingAssigned = rows.filter(row => row.assigned_to_me && row.assignment_status === 'assigned' && row.existing_review_status !== 'submitted' && !row.finalized)
   const secondRatings = pendingAssigned.filter(row => row.assignment_kind === 'second')
 
-  return <AppShell eyebrow="THE TEN · WRITTEN GRADING" title="Your scoring queue" actions={<Link href={`/programs/${programId}/pilot/double-rating`}>Second-rating sample</Link>}>
+  return <AppShell eyebrow="THE TEN · WRITTEN GRADING" title="Your scoring queue" actions={<>{["program_director", "assessment_lead"].includes(role) && <Link href={`/programs/${programId}/assessment/grading/students`} className="rounded-xl bg-slate-950 px-4 py-3 text-white">التصحيح حسب اسم الطالب</Link>}<Link href={`/programs/${programId}/pilot/double-rating`}>Second-rating sample</Link></>}>
     <p className="mb-5">Learner identities are hidden. Teachers see only responses assigned to them; Assessment Leads and Program Directors retain oversight access. Score each response against the displayed rubric before comparing any AI proposal.</p>
     <section className="grid gap-4 sm:grid-cols-4">
       <MetricCard label="Visible responses" value={rows.length}/>
