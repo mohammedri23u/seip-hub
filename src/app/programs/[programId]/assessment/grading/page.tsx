@@ -26,8 +26,8 @@ export default async function GradingQueuePage({ params }: { params: Promise<{ p
   const pendingAssigned = rows.filter(row => row.assigned_to_me && row.assignment_status === 'assigned' && row.existing_review_status !== 'submitted' && !row.finalized)
   const secondRatings = pendingAssigned.filter(row => row.assignment_kind === 'second')
 
-  return <AppShell eyebrow="THE TEN · WRITTEN GRADING" title="Your scoring queue" actions={<>{["program_director", "assessment_lead"].includes(role) && <Link href={`/programs/${programId}/assessment/grading/students`} className="rounded-xl bg-slate-950 px-4 py-3 text-white">التصحيح حسب اسم الطالب</Link>}<Link href={`/programs/${programId}/pilot/double-rating`}>Second-rating sample</Link></>}>
-    <p className="mb-5">Learner identities are hidden. Teachers see only responses assigned to them; Assessment Leads and Program Directors retain oversight access. Score each response against the displayed rubric before comparing any AI proposal.</p>
+  return <AppShell eyebrow="THE TEN · WRITTEN GRADING" title="Your scoring queue" actions={<>{["program_director", "assessment_lead"].includes(role) && <Link href={`/programs/${programId}/assessment/grading/students`} className="rounded-xl bg-slate-950 px-4 py-3 text-white">كشف الدرجات حسب اسم الطالب</Link>}<Link href={`/programs/${programId}/pilot/double-rating`}>Second-rating sample</Link></>}>
+    <p dir="rtl" className="mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm">هذه قائمة الإجابات الكتابية فقط. درجات MCQs والمحاولات المنتهية بدون إجابات تظهر في «كشف الدرجات حسب اسم الطالب».</p><p className="mb-5">Learner identities are hidden. Teachers see only responses assigned to them; Assessment Leads and Program Directors retain oversight access. Score each response against the displayed rubric before comparing any AI proposal.</p>
     <section className="grid gap-4 sm:grid-cols-4">
       <MetricCard label="Visible responses" value={rows.length}/>
       <MetricCard label="Awaiting your rating" value={pendingAssigned.length}/>
