@@ -25,12 +25,21 @@ export default async function DashboardPage() {
   ])
 
   const membershipRows = (memberships ?? []) as MembershipRow[]
-  const programs = membershipRows
-    .map((membership: MembershipRow) => ({ role: membership.role, program: readProgram(membership.programs) }))
-    .filter((entry): entry is { role: string; program: { id: string; name: string; code: string; status: string } } => Boolean(entry.program))
+  const programAccess = new Map<string, { program: Program; roles: string[] }>()
+  for (const membership of membershipRows) {
+    const program = readProgram(membership.programs)
+    if (!program) continue
+    const current = programAccess.get(program.id)
+    if (current) {
+      if (!current.roles.includes(membership.role)) current.roles.push(membership.role)
+    } else {
+      programAccess.set(program.id, { program, roles: [membership.role] })
+    }
+  }
+  const programs = [...programAccess.values()]
 
-  const canFacilitateTen = Boolean(platformAdmin) || Boolean(facilitator) || programs.some(entry => entry.role === 'program_director')
-  const programIds = programs.map((entry) => entry.program.id)
+  const canFacilitateTen = Boolean(platformAdmin) || Boolean(facilitator) || programs.some(entry => entry.roles.includes('program_director') || entry.roles.includes('peer_educator') || entry.roles.includes('reviewer'))
+  const programIds = programs.map(entry => entry.program.id)
   let cohortCount = 0
   let upcomingSessionCount = 0
 
@@ -51,7 +60,7 @@ export default async function DashboardPage() {
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <Link href="/learner" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</span><h2>Enter Baghdad</h2><p>Continue the story from your recorded gate, signal, and Codex state.</p></div><span aria-hidden="true">→</span></Link>
-        {canFacilitateTen && <Link href="/facilitator/the-ten" className="ten-journey-entry"><div><span className="ten-eyebrow">FACILITATOR CONTROL ROOM</span><h2>Run First Activation</h2><p>Open one of the four prepared mission signals and control the live room.</p></div><span aria-hidden="true">→</span></Link>}
+        {canFacilitateTen && <Link href="/facilitator/the-ten" className="ten-journey-entry"><div><span className="ten-eyebrow">FACILITATOR CONTROL ROOM</span><h2>Open your teacher workspace</h2><p>See pending ratings and assigned sessions before entering the live control room.</p></div><span aria-hidden="true">→</span></Link>}
       </div>
 
       <section className="grid gap-4 md:grid-cols-4">
@@ -64,7 +73,10 @@ export default async function DashboardPage() {
       <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-semibold">Your programs</h2><p className="mt-1 text-sm text-slate-500">Program access is enforced by Supabase Row Level Security.</p></div></div>
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {programs.length ? programs.map(({ program, role }) => <Link key={`${program.id}-${role}`} href={`/programs/${program.id}`} className="group rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50"><div className="flex items-start justify-between gap-4"><div><p className="text-lg font-semibold group-hover:text-sky-700">{program.name}</p><p className="mt-1 text-sm text-slate-500">{program.code}</p></div><StatusBadge status={program.status} /></div><div className="mt-5 flex items-center justify-between text-sm"><span className="font-medium capitalize text-slate-600">{role.replaceAll('_', ' ')}</span><span className="text-sky-700">Open program →</span></div></Link>) : <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:col-span-2">No active program membership yet.</div>}
+          {programs.length ? programs.map(({ program, roles }) => {
+            const visibleRoles = roles.includes('peer_educator') ? roles.filter(role => role !== 'reviewer') : roles
+            return <Link key={program.id} href={`/programs/${program.id}`} className="group rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:bg-slate-50"><div className="flex items-start justify-between gap-4"><div><p className="text-lg font-semibold group-hover:text-sky-700">{program.name}</p><p className="mt-1 text-sm text-slate-500">{program.code}</p></div><StatusBadge status={program.status} /></div><div className="mt-5 flex items-center justify-between text-sm"><span className="font-medium capitalize text-slate-600">{visibleRoles.map(role => role.replaceAll('_', ' ')).join(' · ')}</span><span className="text-sky-700">Open program →</span></div></Link>
+          }) : <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:col-span-2">No active program membership yet.</div>}
         </div>
       </section>
     </AppShell>

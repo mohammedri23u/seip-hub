@@ -20,24 +20,24 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
   const { programId, responseId } = await params
   const query = await searchParams
   const { supabase, userId } = await requireUser()
-  const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: response }] = await Promise.all([
+  const [{ data: program }, { data: membership }, { data: platformAdmin }] = await Promise.all([
     supabase.from('programs').select('id, code').eq('id', programId).maybeSingle(),
     programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
-    supabase.from('student_responses').select('id, attempt_id, question_version_id, text_response, submitted_at').eq('id', responseId).maybeSingle(),
   ])
-  if (!program || !response || response.text_response === null) notFound()
+  if (!program) notFound()
   const role = membership?.role
-  const canGrade = Boolean(platformAdmin) || role === 'program_director' || role === 'assessment_lead' || role === 'reviewer'
+  const canGrade = Boolean(platformAdmin) || role === 'program_director' || role === 'assessment_lead' || role === 'reviewer' || role === 'peer_educator'
   const canFinalize = Boolean(platformAdmin) || role === 'program_director' || role === 'assessment_lead'
   if (!canGrade) notFound()
 
   const detail = await reviewDetail(supabase, programId, responseId)
-  if (!detail) notFound()
+  if (!detail || !detail.response_text) notFound()
+  const response = { text_response: detail.response_text }
   const assessment = { title: detail.assessment_title }
   const question = { question_code: detail.question_code }
   const questionVersion = { stem: detail.stem }
-  const rubricVersion = { id: detail.rubric_version_id }
+  const rubricVersion = { id: detail.rubric_version_id, instructions: detail.rubric_instructions, referenceAnswer: detail.reference_answer }
   const rubric = { rubric_code: detail.question_code }
   const criteriaData = detail.criteria.map(c => ({ ...c, criterion_code: c.code }))
 
@@ -75,10 +75,14 @@ export default async function GradingResponsePage({ params, searchParams }: { pa
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Question</p><p className="mt-3 text-base leading-7 text-slate-800">{questionVersion.stem}</p><div className="mt-5 border-t border-slate-200 pt-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Learner response</p><p className="mt-3 whitespace-pre-wrap text-base leading-7 text-slate-800">{response.text_response || '— No written response submitted —'}</p></div></div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div><h2 className="text-xl font-semibold">Independent human rubric review</h2><p className="mt-1 text-sm text-slate-500">Human fields are not prefilled from AI. Score the response against the rubric, then compare if useful.</p></div>
+          <div><p className="text-xs font-black tracking-[0.15em] text-[#8B6A2B]">RUBRIC IN VIEW</p><h2 className="mt-2 text-xl font-semibold">Independent human rubric review</h2><p className="mt-1 text-sm text-slate-500">Score directly against the rubric below. Human fields are never prefilled from AI.</p></div>
+          {(rubricVersion.instructions || rubricVersion.referenceAnswer) ? <div className="mt-5 grid gap-3">
+            {rubricVersion.instructions ? <div className="rounded-2xl border border-[#d8ccb6] bg-[#faf5e9] p-4"><p className="text-xs font-black tracking-[0.12em] text-[#8B6A2B]">SCORING INSTRUCTIONS</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#526c6e]">{rubricVersion.instructions}</p></div> : null}
+            {rubricVersion.referenceAnswer ? <details className="rounded-2xl border border-[#cfe2df] bg-[#f2f8f6]"><summary className="cursor-pointer px-4 py-3 text-sm font-bold text-[#1F6668]">Reference answer</summary><p className="border-t border-[#cfe2df] px-4 py-4 whitespace-pre-wrap text-sm leading-6 text-[#526c6e]">{rubricVersion.referenceAnswer}</p></details> : null}
+          </div> : null}
           <form action={submitHumanReview.bind(null, programId, responseId)} className="mt-5 space-y-4">
             <input type="hidden" name="ai_grading_run_id" value={latestCompletedAI?.id ?? ''} />
-            {criteria.map((criterion) => { const existing = ownScoreMap.get(criterion.id); return <div key={criterion.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{criterion.criterion_code} · {criterion.title}</p>{criterion.description ? <p className="mt-1 text-sm text-slate-600">{criterion.description}</p> : null}</div><span className="text-sm font-semibold">max {Number(criterion.max_score)}</span></div>{criterion.scoring_guidance ? <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">{criterion.scoring_guidance}</p> : null}<div className="mt-4 grid gap-3 md:grid-cols-[140px_1fr]"><label><span className="text-sm font-medium text-slate-700">Human score</span><input name={`criterion_${criterion.id}`} type="number" min="0" max={Number(criterion.max_score)} step={Number(criterion.max_score) === 2 ? "1" : "0.001"} required disabled={ownReview?.status === "submitted"} defaultValue={existing ? String(existing.score) : ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label><label><span className="text-sm font-medium text-slate-700">Criterion feedback</span><span className="mt-2 block text-sm">Use the general feedback field below.</span></label></div></div> })}
+            {criteria.map((criterion) => { const existing = ownScoreMap.get(criterion.id); return <div key={criterion.id} className="rounded-2xl border border-slate-200 p-4"><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{criterion.criterion_code} · {criterion.title}</p>{criterion.description ? <p className="mt-1 text-sm text-slate-600">{criterion.description}</p> : null}</div><span className="text-sm font-semibold">max {Number(criterion.max_score)}</span></div>{criterion.scoring_guidance ? <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 p-3"><p className="text-[10px] font-black tracking-[0.12em] text-amber-800">SCORING GUIDANCE</p><p className="mt-1 text-sm leading-6 text-slate-700">{criterion.scoring_guidance}</p></div> : null}<div className="mt-4 grid gap-3 md:grid-cols-[140px_1fr]"><label><span className="text-sm font-medium text-slate-700">Human score</span><input name={`criterion_${criterion.id}`} type="number" min="0" max={Number(criterion.max_score)} step={Number(criterion.max_score) === 2 ? "1" : "0.001"} required disabled={ownReview?.status === "submitted"} defaultValue={existing ? String(existing.score) : ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label><label><span className="text-sm font-medium text-slate-700">Criterion feedback</span><span className="mt-2 block text-sm">Use the general feedback field below.</span></label></div></div> })}
             <label className="block"><span className="text-sm font-medium text-slate-700">General feedback</span><textarea name="general_feedback" rows={4} defaultValue={ownReview?.general_feedback ?? ''} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2.5" /></label>
             <label className="flex items-start gap-3 rounded-2xl border border-slate-200 p-4"><input type="checkbox" name="send_to_moderation" value="yes" className="mt-1" /><span><span className="block text-sm font-semibold">Send to moderation</span><span className="mt-1 block text-sm text-slate-500">Use when the response is ambiguous, high-stakes, or needs a second human judgment.</span></span></label>
             <button disabled={ownReview?.status === "submitted" || Boolean(finalDecision)} className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{ownReview?.status === "submitted" ? "Independent rating committed" : "Submit human review"}</button>
