@@ -10,6 +10,7 @@ export type ProgressiveDeliveryItem = {
   marks: number
   question_type: string
   stem: string
+  hint_ar?: string | null
   options: Array<{ id: string; text: string; position: number }>
 }
 
@@ -77,6 +78,18 @@ export function ProgressiveAssessmentStep({
         <section className="rounded-[30px] border border-[#CFC2AA] bg-[#FFFDF8] p-6 shadow-[0_18px_55px_rgba(23,54,58,0.08)] sm:p-8">
           <p className="text-xs font-black tracking-[0.14em] text-[#8B6A2B]">CURRENT STAGE</p>
           <p className="mt-3 whitespace-pre-wrap text-[17px] font-semibold leading-8 text-[#17363A]">{step.item.stem}</p>
+
+          {step.item.hint_ar ? (
+            <aside
+              lang="ar"
+              dir="rtl"
+              aria-label="توضيح المطلوب بالعربي"
+              className="mt-5 rounded-[18px] border border-[#D8A94E]/55 bg-[#FFF8E7] px-4 py-4 text-right"
+            >
+              <p className="text-sm font-black text-[#8B6A2B]">توضيح المطلوب</p>
+              <p className="mt-1.5 text-[15px] font-semibold leading-7 text-[#526064]">{step.item.hint_ar}</p>
+            </aside>
+          ) : null}
 
           <div className="mt-6 border-t border-[#E5DCCB] pt-6">
             {isChoice ? (
