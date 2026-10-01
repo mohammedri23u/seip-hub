@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { AnswerOption } from './answer-option'
+import { MicroAssessmentStep, type MicroDeliveryStep } from './micro-assessment-step'
 
 export type ProgressiveDeliveryItem = {
   question_version_id: string
@@ -39,7 +40,18 @@ function CommitButton({ ready, finalStage }: { ready: boolean; finalStage: boole
   )
 }
 
-export function ProgressiveAssessmentStep({
+export function ProgressiveAssessmentStep(props: {
+  step: ProgressiveDeliveryStep
+  action: (formData: FormData) => Promise<void>
+}) {
+  const micro = props.step as MicroDeliveryStep
+  if (micro.micro_assessment) {
+    return <MicroAssessmentStep key={micro.item.question_version_id} step={micro} action={props.action} />
+  }
+  return <LegacyProgressiveAssessmentStep key={props.step.item.question_version_id} {...props} />
+}
+
+function LegacyProgressiveAssessmentStep({
   step,
   action,
 }: {
