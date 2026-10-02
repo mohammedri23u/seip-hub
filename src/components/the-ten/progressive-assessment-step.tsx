@@ -45,7 +45,7 @@ export function ProgressiveAssessmentStep(props: {
   action: (formData: FormData) => Promise<void>
 }) {
   const micro = props.step as MicroDeliveryStep
-  if (micro.micro_assessment) {
+  if (micro.micro_assessment || micro.compact_assessment) {
     return <MicroAssessmentStep key={micro.item.question_version_id} step={micro} action={props.action} />
   }
   return <LegacyProgressiveAssessmentStep key={props.step.item.question_version_id} {...props} />

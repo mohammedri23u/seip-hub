@@ -1,5 +1,6 @@
 export type AttemptSnapshot = {
  id: string; assessment_id: string; phase: string; title: string; status: string; instrument_version: string
+ reopened_at?: string | null; timing_mode?: string
  started_at: string; submitted_at: string | null; expired: boolean; deadline_at: string | null
  completion_kind: string; total_items: number; answered_items: number; saved_answers: number; missing_items: number
  max_score: number; known_score: number | null; known_items: number; approved_score: number | null; approved_items: number
@@ -13,7 +14,7 @@ export function attemptLabel(a?: AttemptSnapshot) {
   submitted_complete: 'إجابات مكتملة ومسلّمة', timed_out_complete: 'أُغلق بالوقت — جميع الإجابات محفوظة',
   timed_out_empty: 'انتهى الوقت — بدون إجابات محفوظة', submitted_empty: 'أُغلقت المحاولة بدون إجابات',
   timed_out_partial: 'انتهى الوقت — إجابات جزئية', submitted_partial: 'تسليم جزئي — إجابات ناقصة',
-  in_progress: 'قيد الإجابة — لم يسلّم', expired_unfinalized: 'انتهى الوقت — بانتظار إغلاق المحاولة', invalidated: 'محاولة ملغاة'
+  reopened_in_progress: 'أُعيد فتحها — أكمل بدون توقيت', in_progress: 'قيد الإجابة — لم يسلّم', expired_unfinalized: 'انتهى الوقت — بانتظار إغلاق المحاولة', invalidated: 'محاولة ملغاة'
  }
  return labels[a.completion_kind] ?? 'حالة غير معروفة'
 }

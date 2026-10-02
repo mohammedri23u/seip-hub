@@ -5,8 +5,9 @@ export function AttemptGradeSummary({ snapshot: a, compact = false }: { snapshot
  const closed = ['submitted','late'].includes(a.status)
  return <div className="mt-3" dir="rtl">
   <p className={`text-sm font-semibold ${a.expired || a.missing_items > 0 && closed ? 'text-amber-900' : 'text-slate-700'}`}>{attemptLabel(a)}</p>
-  <p className="mt-2 text-xs leading-6 text-slate-500">إجابات محفوظة: <bdi>{a.answered_items} / {a.total_items}</bdi> · {a.instrument_version === 'original' ? 'النسخة الأصلية' : 'نسخة 5 دقائق'}</p>
+  <p className="mt-2 text-xs leading-6 text-slate-500">إجابات محفوظة: <bdi>{a.answered_items} / {a.total_items}</bdi> · {a.instrument_version === 'original' ? 'النسخة الأصلية' : a.timing_mode === 'self_paced' ? 'النسخة المختصرة · بدون توقيت' : 'النسخة المختصرة'}</p>
   <p className="mt-2 text-base font-semibold"><bdi>{snapshotScore(a)}</bdi></p>
+  {a.reopened_at && !closed && <p className="mt-2 text-xs leading-6 text-[#1F6668]">أُعيد فتح المحاولة لإكمال الإجابات المتبقية. الإجابات والدرجات السابقة محفوظة.</p>}
   {closed && a.answered_items > 0 && <div className={`mt-3 grid gap-2 ${compact ? 'grid-cols-2' : 'sm:grid-cols-4'}`}>
    {a.mcq_max > 0 && <div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">MCQ</p><p className="mt-1 font-semibold"><bdi>{fmt(a.mcq_score,a.mcq_max)}</bdi></p></div>}
    {a.written_max > 0 && <div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-slate-500">Written / VSAQ</p><p className="mt-1 text-sm font-semibold"><bdi>{a.written_score === null ? a.pending_reviews > 0 ? 'بانتظار التصحيح' : 'لا توجد درجة مسجلة' : fmt(a.written_score,a.written_max)}</bdi></p></div>}
