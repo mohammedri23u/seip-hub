@@ -1,8 +1,10 @@
 import 'server-only'
+import type { AssessmentRetakeNotice } from '@/lib/assessment/retakes'
 import { requireUser } from '@/lib/auth/require-user'
 import type { GuideKey, GuideUseRecord, StoryProgressRecord } from './experience'
 
 export type JourneySummary = {
+  assessment_retake?: AssessmentRetakeNotice | null
   enrolled: boolean
   profile?: { name?: string | null }
   program?: { id: string; name: string }

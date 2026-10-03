@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -12,7 +13,7 @@ export default async function QuestionDetailPage({ params, searchParams }: { par
   const [{ data: program }, { data: question }, { data: membership }, { data: platformAdmin }] = await Promise.all([
     supabase.from('programs').select('name, code').eq('id', programId).maybeSingle(),
     supabase.from('questions').select('id, question_code, question_type, status').eq('id', questionId).eq('program_id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ])
   if (!program || !question) notFound()

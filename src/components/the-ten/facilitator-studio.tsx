@@ -97,7 +97,7 @@ export function FacilitatorStudio({ studio, catalog }: { studio: TenStudio; cata
           const isBusy = busySession === session.id
           const character = characterByMission[missionId as keyof typeof characterByMission]
           const portrait = character ? characterAssets[character.key].neutral : null
-          return <article key={session.id} className="group relative overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8] shadow-[0_16px_45px_rgba(23,54,58,.06)]">
+          return <article key={session.id} className="group relative overflow-hidden rounded-[1.75rem] border border-[#d8ccb6] bg-[#fffdf8] shadow-[0_16px_45px_rgba(23,54,58,.06)]"><Link href={`/sessions/${session.id}/live`} className="relative z-10 block p-4 text-sm font-bold underline">Live activities · attendance · closeout</Link>
             <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[#1f6668]/5" aria-hidden="true" />
             <div className="grid min-h-full grid-cols-[7rem_1fr] sm:grid-cols-[8.5rem_1fr]">
               <div className="relative min-h-[19rem] overflow-hidden bg-[#efe1c7]">

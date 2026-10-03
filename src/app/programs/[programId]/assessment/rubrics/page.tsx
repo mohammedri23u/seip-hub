@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -12,7 +13,7 @@ export default async function RubricsPage({ params }: { params: Promise<{ progra
   const { supabase, userId } = await requireUser()
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: rubrics }] = await Promise.all([
     supabase.from('programs').select('id, code').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('rubrics').select('id, rubric_code, title, description, status, created_at').eq('program_id', programId).order('created_at', { ascending: false }),
   ])

@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -20,7 +21,7 @@ export default async function CohortPage({
   const [{ data: cohort }, { data: program }, { data: membership }, { data: platformAdmin }, { data: sessions }, { count: learnerCount }] = await Promise.all([
     supabase.from('cohorts').select('id, name, start_date, end_date, status, program_id').eq('id', cohortId).eq('program_id', programId).maybeSingle(),
     supabase.from('programs').select('name, code').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('sessions').select('id, title, scheduled_at, duration_minutes, status, join_code').eq('cohort_id', cohortId).order('scheduled_at', { ascending: true, nullsFirst: false }),
     supabase.from('cohort_memberships').select('id', { count: 'exact', head: true }).eq('cohort_id', cohortId).eq('member_type', 'learner').eq('status', 'active'),

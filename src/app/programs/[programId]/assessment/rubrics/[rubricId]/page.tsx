@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -17,7 +18,7 @@ export default async function RubricDetailPage({ params, searchParams }: { param
   const [{ data: program }, { data: rubric }, { data: membership }, { data: platformAdmin }] = await Promise.all([
     supabase.from('programs').select('id, code').eq('id', programId).maybeSingle(),
     supabase.from('rubrics').select('id, rubric_code, title, description, status').eq('id', rubricId).eq('program_id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ])
   if (!program || !rubric) notFound()

@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -19,7 +20,7 @@ export default async function ProgramPage({
 
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: cohorts }, { count: loCount }] = await Promise.all([
     supabase.from('programs').select('id, name, code, description, status').eq('id', programId).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', programId).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, programId, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('cohorts').select('id, name, start_date, end_date, status').eq('program_id', programId).order('start_date', { ascending: false }),
     supabase.from('learning_objectives').select('id', { count: 'exact', head: true }).eq('program_id', programId).eq('status', 'active'),
@@ -29,6 +30,7 @@ export default async function ProgramPage({
 
   const canManage = membership?.role === 'program_director' || Boolean(platformAdmin)
   const canViewAnalytics = canManage || membership?.role === 'assessment_lead'
+  const canViewPilot = canManage || membership?.role === 'assessment_lead' || membership?.role === 'reviewer'
   const cohortRows = (cohorts ?? []) as Array<{ id: string; name: string; start_date: string | null; end_date: string | null; status: string }>
   const cohortIds = cohortRows.map((cohort) => cohort.id)
   let sessionCount = 0
@@ -42,6 +44,8 @@ export default async function ProgramPage({
       eyebrow={`${program.code} · PROGRAM`}
       title={program.name}
       actions={<>
+        {canViewPilot ? <Link href={`/programs/${programId}/pilot`} className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-900">Pilot Readiness</Link> : null}
+        {canViewPilot ? <Link href={`/programs/${programId}/pilot/double-rating`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Rater QC</Link> : null}
         {canViewAnalytics ? <Link href={`/programs/${programId}/analytics`} className="rounded-xl border border-[#CFC2AA] bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#17363A]">Reasoning Signals</Link> : null}
         <Link href={`/programs/${programId}/assessment`} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white">Assessment Center</Link>
         <Link href="/dashboard" className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium">Back to dashboard</Link>
@@ -109,3 +113,4 @@ function formatDateRange(start: string | null, end: string | null) {
   if (!start && end) return `Ends ${end}`
   return `${start} → ${end}`
 }
+

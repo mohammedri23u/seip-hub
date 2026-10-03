@@ -281,3 +281,4 @@ revoke all on function public.ten_experience_state(uuid) from public, anon;
 revoke all on function public.ten_experience_command(text, jsonb, uuid) from public, anon;
 grant execute on function public.ten_experience_state(uuid) to authenticated;
 grant execute on function public.ten_experience_command(text, jsonb, uuid) to authenticated;
+

@@ -1,3 +1,4 @@
+import { programMembership } from '@/lib/auth/program-membership'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AppShell } from '@/components/app-shell'
@@ -23,7 +24,7 @@ export default async function AssessmentDetailPage({ params, searchParams }: { p
   if (!cohort) notFound()
   const [{ data: program }, { data: membership }, { data: platformAdmin }, { data: objectives }, { data: blueprint }, { data: items }] = await Promise.all([
     supabase.from('programs').select('name, code').eq('id', cohort.program_id).maybeSingle(),
-    supabase.from('program_memberships').select('role').eq('program_id', cohort.program_id).eq('user_id', userId).eq('status', 'active').maybeSingle(),
+    programMembership(supabase, cohort.program_id, userId),
     supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
     supabase.from('learning_objectives').select('id, code, title').eq('program_id', cohort.program_id).eq('status', 'active').order('code'),
     supabase.from('assessment_blueprint').select('id, learning_objective_id, target_weight, target_marks').eq('assessment_id', assessmentId),

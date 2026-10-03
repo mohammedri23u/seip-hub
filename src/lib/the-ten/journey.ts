@@ -30,6 +30,7 @@ export function attachLearnerMembershipStatus(
   })
 }
 export type JourneyData = {
+  assessment_retake?: import('../assessment/retakes').AssessmentRetakeNotice | null
   name: string | null
   cohorts: LearnerCohort[]
   sessions: LearnerSession[]
