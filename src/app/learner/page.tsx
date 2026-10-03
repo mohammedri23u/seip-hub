@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { AssessmentRetakeBanner } from '@/components/the-ten/assessment-retake-notice'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { LearnerShell } from '@/components/the-ten/learner-shell'
@@ -30,6 +31,7 @@ export default async function LearnerHome() {
 
   if (!summary.pretest?.completed) {
     return <LearnerShell title={name ? `${name}, one gate remains before Baghdad opens` : 'One gate remains before Baghdad opens'} intro="Your Entry Baseline establishes the starting point. It is low-stakes and does not certify competence.">
+      <AssessmentRetakeBanner notice={summary.assessment_retake} link />
       <section className="relative overflow-hidden rounded-[2rem] border border-[#315b5d] bg-[#17363a] text-white shadow-[0_30px_90px_rgba(23,54,58,.18)]">
         <div className="grid min-h-[430px] md:grid-cols-[.9fr_1.1fr]"><div className="flex flex-col justify-center p-7 sm:p-10"><p className="text-xs font-black tracking-[.18em] text-[#f2d99b]">ENTRY GATE · BASELINE</p><h2 className="mt-3 font-serif text-4xl leading-tight">Before the city reveals its signals, show us how you reason today.</h2><p className="mt-4 leading-7 text-[#d8e7e2]">Low-stakes reasoning with unfamiliar situations. No public ranking. This establishes a starting point for reflection as your journey unfolds.</p>{summary.pretest?.id ? <Link className="ten-action ten-action-gold mt-6 w-fit" href={`/assessments/${summary.pretest.id}/take`}>Begin Entry Baseline →</Link> : <p className="mt-6 rounded-xl border border-white/20 p-4">The baseline is not available yet.</p>}</div><div className="relative min-h-72"><Image src={worldAssets.nexusState0Dormant} alt="The Nexus entry gate" fill sizes="(max-width:768px) 100vw, 55vw" className="object-cover" priority /></div></div>
       </section>

@@ -17,9 +17,10 @@ export default async function LearnerGrading({ params }: { params: Promise<{ pro
  const workspace = data as LearnerWorkspace
  if (!workspace?.learner) notFound()
  const base = `/programs/${programId}/assessment/grading`
- const phaseName = (phase: string) => phase === 'pre' ? 'Pre-test' : phase === 'post' ? 'Post-test' : 'Mission Practice'
+ const phaseName = (phase: string) => phase === 'pre' ? 'Pre-test' : phase === 'post' ? 'Post-test' : phase === 'legacy' ? 'أرشيف الاختبار القديم' : 'Mission Practice'
  return <AppShell title={workspace.learner.full_name || 'ملف الطالب'} eyebrow="THE TEN · STUDENT GRADING" actions={<Link href={`${base}/students`} className="rounded-xl border bg-white px-4 py-2.5">اختيار طالب آخر</Link>}>
   <div dir="rtl" className="space-y-6"><GradeRefresh />
+   {workspace.retake?.required && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7">هذا الطالب مكلّف بإعادة الـPre-test بالنسخة المختصرة بدون توقيت. محاولته القديمة محفوظة بالأرشيف ولا تُحسب إكمالًا للاختبار الحالي.</p>}
    <p className="text-sm text-slate-600"><bdi>{workspace.learner.student_id}</bdi> · الدرجات المصحّحة لا تصبح نهائية أو منشورة تلقائيًا.</p>
    <div className="grid gap-3 sm:grid-cols-2">{['pre', 'post'].map(phase => {
     const attempt = workspace.attempts.find(a => a.phase === phase)
@@ -31,7 +32,7 @@ export default async function LearnerGrading({ params }: { params: Promise<{ pro
     const next = attempt.items.find(i => i.response_id && i.response_text?.trim() && i.has_rubric && i.final_score === null && i.my_review_status !== 'submitted')
     return <section id={`attempt-${attempt.id}`} key={attempt.id} className="scroll-mt-6 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6">
      <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold tracking-wide text-sky-800">{phaseName(attempt.phase)}</p><h2 dir="auto" className="mt-2 text-lg font-semibold">{attempt.title}</h2><p className="mt-2 text-xs text-slate-500">{attempt.summary?.instrument_version?.startsWith('micro') ? 'النسخة المختصرة · بدون توقيت' : 'النسخة الأصلية / التدريب'}{attempt.submitted_at ? ` · إغلاق المحاولة ${new Intl.DateTimeFormat('ar-IQ', { timeZone: 'Asia/Baghdad', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(attempt.submitted_at))}` : ''}</p></div>{ready && next && <Link className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white" href={`${base}/${next.response_id}?learner=${learnerId}`}>ابدأ / أكمل التصحيح</Link>}</div>
-     {!ready ? <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm">هذا الاختبار لم يُسلّم بعد. لن تُعرض إجاباته للتصحيح أو تُحسب له درجة نهائية.</p> : <>
+     {attempt.phase === 'legacy' ? <div className="mt-5 rounded-xl border border-slate-200 p-4"><AttemptGradeSummary snapshot={attempt.summary} /><p className="mt-3 text-sm leading-7">حُفظت هذه المحاولة وإجاباتها للتوثيق. لم تُنقل درجاتها إلى الاختبار الجديد، ولم تعد ضمن مهام التصحيح الحالية.</p></div> : !ready ? <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm">هذا الاختبار لم يُسلّم بعد. لن تُعرض إجاباته للتصحيح أو تُحسب له درجة نهائية.</p> : <>
       <AttemptGradeSummary snapshot={attempt.summary} />
       <p className="mt-3 text-xs leading-6 text-slate-500">الدرجة الجزئية ليست نهائية. الإجابات غير المحفوظة لا تُعامل كإجابات مصحّحة. الاعتماد غير نشر النتيجة للطالب.</p>
       {attempt.released_at && <p className="mt-2 text-sm text-emerald-800">النتيجة المنشورة: <bdi>{attempt.released_score} / {attempt.released_max}</bdi></p>}

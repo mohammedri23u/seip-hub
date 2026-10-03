@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { AssessmentRetakeBanner } from '@/components/the-ten/assessment-retake-notice'
+import { isLegacyRetakeForm, retakeTarget, type AssessmentRetakeNotice } from '@/lib/assessment/retakes'
 import { notFound, redirect } from 'next/navigation'
 import { AssessmentExperience } from '@/components/the-ten/assessment-experience'
 import { CheckpointGate } from '@/components/the-ten/checkpoint-gate'
@@ -12,6 +14,7 @@ type DeliveryOption = { id: string; text: string; position: number }
 type DeliveryItem = { question_version_id: string; position: number; marks: number; question_type: string; stem: string; options: DeliveryOption[] }
 type Delivery = { assessment_id: string; title: string; description: string | null; duration_minutes: number | null; items: DeliveryItem[] }
 type JourneyGate = {
+  assessment_retake?: AssessmentRetakeNotice | null
   next_stage?: string
   pretest?: { id?: string | null; completed?: boolean }
   posttest?: { id?: string | null; completed?: boolean }
@@ -67,6 +70,13 @@ export default async function TakeAssessmentPage({
     journeyGate = (data ?? null) as JourneyGate | null
   }
 
+  if (isLegacyRetakeForm(assessmentId, journeyGate?.assessment_retake)) {
+    return <LearnerShell active="/learner" title="المحاولة القديمة مؤرشفة" actions={backLink}>
+      <AssessmentRetakeBanner notice={journeyGate?.assessment_retake} link />
+      <section className="ten-panel" dir="rtl"><h2>تم استبدال هذا الاختبار بالنسخة المختصرة</h2><p>الإجابات السابقة محفوظة للتوثيق ولا تدخل في الدرجة الحالية. استخدم الاختبار المكلّف به حاليًا.</p><Link className="ten-action ten-spaced" href={retakeTarget(journeyGate?.assessment_retake) ?? '/learner/assessments'}>الاختبار الحالي</Link></section>
+    </LearnerShell>
+  }
+
   const isAssignedPre = journeyGate?.pretest?.id === assessmentId
   const isAssignedPost = journeyGate?.posttest?.id === assessmentId
   const progressiveStageAllowed = assessment.assessment_type !== 'progress'
@@ -91,6 +101,7 @@ export default async function TakeAssessmentPage({
     const checkpointKind = assessment.assessment_type === 'diagnostic' || isAssignedPre ? 'entry' : assessment.assessment_type === 'final' || isAssignedPost ? 'exit' : 'checkpoint'
     return (
       <LearnerShell active="/learner" immersive title={assessment.title}>
+        <AssessmentRetakeBanner notice={journeyGate?.assessment_retake} />
         <CheckpointGate
           title={assessment.title}
           description={assessment.assessment_type === 'progress'

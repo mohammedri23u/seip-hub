@@ -1,5 +1,6 @@
+import type { AssessmentRetakeNotice } from './retakes'
 import type { AttemptSnapshot } from './attempt-status'
-export type LearnerRow = { attempt_summaries?: AttemptSnapshot[]; learner_id: string; full_name: string; student_id: string | null; groups: string[]; submitted_attempts: number; in_progress_attempts: number; pending_reviews: number; pending_approval: number }
+export type LearnerRow = { retake?: AssessmentRetakeNotice | null; attempt_summaries?: AttemptSnapshot[]; learner_id: string; full_name: string; student_id: string | null; groups: string[]; submitted_attempts: number; in_progress_attempts: number; pending_reviews: number; pending_approval: number }
 export type GradingItem = {
  position: number; question_version_id: string; question_code: string; question_type: string; marks: number; stem: string
  response_id: string | null; response_text: string | null; selected_option_id: string | null; selected_option_ids: string[] | null
@@ -8,8 +9,8 @@ export type GradingItem = {
  final_score: number | null; final_max: number | null; review_id: string | null; review_score: number | null; review_max: number | null
  my_review_status: string | null; moderation_required: boolean
 }
-export type GradingAttempt = { summary?: AttemptSnapshot; id: string; assessment_id: string; title: string; status: string; started_at: string; submitted_at: string | null; phase: 'pre' | 'post' | 'practice'; duration_minutes: number | null; released_at: string | null; released_score: number | null; released_max: number | null; items: GradingItem[] }
-export type LearnerWorkspace = { learner: Pick<LearnerRow, 'learner_id' | 'full_name' | 'student_id'>; assigned_forms: { cohort_id: string; pre_assessment_id: string | null; post_assessment_id: string | null; sequence: string | null }[]; attempts: GradingAttempt[] }
+export type GradingAttempt = { summary?: AttemptSnapshot; id: string; assessment_id: string; title: string; status: string; started_at: string; submitted_at: string | null; phase: 'pre' | 'post' | 'practice' | 'legacy'; duration_minutes: number | null; released_at: string | null; released_score: number | null; released_max: number | null; items: GradingItem[] }
+export type LearnerWorkspace = { retake?: AssessmentRetakeNotice | null; learner: Pick<LearnerRow, 'learner_id' | 'full_name' | 'student_id'>; assigned_forms: { cohort_id: string; pre_assessment_id: string | null; post_assessment_id: string | null; sequence: string | null }[]; attempts: GradingAttempt[] }
 
 // Normalize each raw rubric score to its assessment-item weight exactly once.
 // Unknown/unreviewed answers remain pending; they are never silently treated as zero.

@@ -1,4 +1,5 @@
 export type AttemptSnapshot = {
+ superseded_by_retake?: boolean; retake_pre_assessment_id?: string; retake_requested_at?: string
  id: string; assessment_id: string; phase: string; title: string; status: string; instrument_version: string
  reopened_at?: string | null; timing_mode?: string
  started_at: string; submitted_at: string | null; expired: boolean; deadline_at: string | null
@@ -11,6 +12,7 @@ export type AttemptSnapshot = {
 export function attemptLabel(a?: AttemptSnapshot) {
  if (!a) return 'لم يبدأ بعد'
  const labels: Record<string,string> = {
+  superseded_legacy: 'محاولة قديمة مؤرشفة — استُبدلت بالنسخة المختصرة',
   submitted_complete: 'إجابات مكتملة ومسلّمة', timed_out_complete: 'أُغلق بالوقت — جميع الإجابات محفوظة',
   timed_out_empty: 'انتهى الوقت — بدون إجابات محفوظة', submitted_empty: 'أُغلقت المحاولة بدون إجابات',
   timed_out_partial: 'انتهى الوقت — إجابات جزئية', submitted_partial: 'تسليم جزئي — إجابات ناقصة',
@@ -19,12 +21,13 @@ export function attemptLabel(a?: AttemptSnapshot) {
  return labels[a.completion_kind] ?? 'حالة غير معروفة'
 }
 export function isCompleteSubmission(a: AttemptSnapshot) {
- return ['submitted_complete','timed_out_complete'].includes(a.completion_kind)
+ return !a.superseded_by_retake && ['submitted_complete','timed_out_complete'].includes(a.completion_kind)
 }
 export function isClosedEmpty(a: AttemptSnapshot) {
  return ['timed_out_empty','submitted_empty'].includes(a.completion_kind)
 }
 export function snapshotScore(a: AttemptSnapshot) {
+ if (a.superseded_by_retake || a.completion_kind === 'superseded_legacy') return 'محاولة مؤرشفة — لا تدخل الدرجة الحالية'
  if (!['submitted','late'].includes(a.status)) return 'غير متاحة قبل التسليم'
  if (a.answered_items === 0) return 'لا توجد درجة — لا توجد إجابات'
  if (a.final_score !== null) return `${a.final_score} / ${a.max_score} — معتمدة`

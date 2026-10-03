@@ -47,7 +47,7 @@ export default async function AssessmentUpgradePage({ searchParams }: {
       <p className="text-xl font-bold">{status.active ? 'النسخة المختصرة مفعّلة' : 'النسخة جاهزة ولم تُفعّل بعد'}</p>
       <p className="mt-4 leading-8">كل Pre-test وPost-test يحتوي {status.mcq} MCQs وسؤال VSAQ واحد، بمجموع {status.questions} أسئلة، بدون توقيت إجباري. يوجد توضيح عربي للمطلوب مع كل سؤال.</p>
       <p className="mt-3 leading-8">الطالب يجيب بالوقت الذي يناسبه ويمكنه العودة لإكمال الأسئلة المتبقية. تبقى الإجابات المثبّتة محفوظة. النص الذي لم يضغط حفظه لا يُرسل تلقائيًا.</p>
-      <p className="mt-3 leading-8">سيحتفظ {status.preserved_legacy_learners} من المتعلمين الذين بدأوا سابقًا بنموذجيهم الأصليين Pre/Post. لا تُحذف محاولاتهم ولا تُغيَّر أسئلتهم أثناء الحل. تُطبّق النسخة المختصرة على بقية المتعلمين.</p>
+      <p className="mt-3 leading-8">المحاولات القديمة محفوظة للتوثيق. تظهر تكليفات الإعادة والاختبارات الحالية لكل طالب في كشف الدرجات، وتُفصل النتائج الجديدة عن الأرشيف القديم.</p>
       <p className="mt-3 leading-8">النموذجان A/B متطابقان في توزيع الأهداف وأنواع الأسئلة، لكن التكافؤ في الصعوبة لم يُثبت تجريبيًا. تُفصل نتائج هذه النسخة عن نتائج الاختبار الطويل، ولا تُستخدم وحدها للحكم على Competency.</p>
       {query.error ? <p role="alert" className="mt-5 rounded-xl bg-[#FCEFED] p-4 leading-7 text-[#8C403A]">لم يكتمل التفعيل. بقيت التعيينات والمحاولات محفوظة؛ تحقق من صلاحيات الإدارة وإعدادات النشر.</p> : null}
       {status.active ? <p role="status" className="mt-6 font-bold text-[#1F6668]">تم التفعيل وحُفظ سجل التغيير.</p> : <form action={activateUpgrade} className="mt-6">

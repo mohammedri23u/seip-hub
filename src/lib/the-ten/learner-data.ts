@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/auth/require-user'
 import { attachLearnerMembershipStatus, retainedLearnerMembershipStatuses, type JourneyData, type LearnerAssessment, type LearnerAttempt, type LearnerSession, type Attendance, type LearnerMembership } from './journey'
 
 type AssignedJourney = {
+  assessment_retake?: import('../assessment/retakes').AssessmentRetakeNotice | null
   pretest?: { id?: string | null }
   posttest?: { id?: string | null }
 }
@@ -39,6 +40,7 @@ export async function getLearnerJourney(): Promise<JourneyData> {
   ])
   if (attendance.error || attempts.error) throw new Error('Could not load your progress.')
   return {
+    assessment_retake: assigned?.assessment_retake,
     name: profile.data?.full_name ?? null,
     cohorts: attachLearnerMembershipStatus(cohorts.data ?? [], membershipRows),
     sessions: (sessions.data ?? []) as LearnerSession[], assessments: visibleAssessments as LearnerAssessment[],
