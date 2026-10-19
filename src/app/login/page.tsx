@@ -5,11 +5,31 @@ import { login } from './actions'
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams
-  return <main className="ten-entry">
-    <section className="ten-entry-world" aria-labelledby="entry-world-title"><Image src={worldAssets.baghdadHero} alt="Baghdad’s river and domes beyond a scholar’s window" fill preload quality={90} sizes="(max-width: 720px) 640px, (max-width: 1100px) 1672px, 100vw" className="object-cover"/><p className="ten-scene-label">THE TEN / BAGHDAD NEXUS</p><div><p className="ten-scene-label">A CITY OF KNOWLEDGE. A JOURNEY OF JUDGMENT.</p><h2 id="entry-world-title">The next connection<br />begins with you.</h2><p>Enter Baghdad. Follow its Signals. Bring your way of thinking into the Nexus.</p></div></section>
-    <section className="ten-entry-form" aria-labelledby="sign-in-title"><div className="ten-entry-brand"><Image src={brandAssets.lockup} alt="THE TEN — Baghdad Nexus" fill sizes="170px" className="object-cover"/></div><p className="ten-eyebrow">WELCOME TO THE NEXUS</p><h1 id="sign-in-title">Enter your journey.</h1><p>Sign in with your SEIP account.</p>
-      {params.error && <div role="alert" className="ten-entry-error">Unable to sign in. Check your credentials and try again.</div>}
-      <form action={login}><label>Email<input type="email" name="email" autoComplete="email" required/></label><label>Password<input type="password" name="password" autoComplete="current-password" required/></label><PendingButton pendingLabel="Signing in…">Sign in <span aria-hidden="true">→</span></PendingButton></form>
+  const errorMessage = params.error === 'missing_credentials'
+    ? 'أدخل البريد الإلكتروني وكلمة المرور، ثم حاول مجدداً.'
+    : 'تعذّر تسجيل الدخول. تأكّد من البريد الإلكتروني وكلمة المرور، ثم حاول مجدداً.'
+
+  return <main className="ten-entry" lang="ar">
+    <section className="ten-entry-world" aria-labelledby="entry-world-title" dir="rtl">
+      <Image src={worldAssets.baghdadHero} alt="نهر بغداد وقبابها من عالم THE TEN" fill preload quality={90} sizes="(max-width: 720px) 640px, (max-width: 1100px) 1672px, 100vw" className="object-cover" />
+      <p className="ten-scene-label" dir="ltr">THE TEN / BAGHDAD NEXUS</p>
+      <div>
+        <p className="ten-scene-label">لقاءات حضورية · نقاش · ورقة عمل</p>
+        <h2 id="entry-world-title">نتعلّم معًا،<br />خطوة بخطوة.</h2>
+        <p>لقاءات حضورية يقودها المعلم باستخدام PowerPoint. حسابك يساعدك على متابعة اللقاءات والاختبارات والنتائج.</p>
+      </div>
+    </section>
+    <section className="ten-entry-form" aria-labelledby="sign-in-title" dir="rtl">
+      <div className="ten-entry-brand"><Image src={brandAssets.lockup} alt="THE TEN — Baghdad Nexus" fill sizes="170px" className="object-cover" /></div>
+      <p className="ten-eyebrow">مرحبًا بك في البرنامج</p>
+      <h1 id="sign-in-title">دخول البرنامج</h1>
+      <p>استخدم الحساب الذي استلمته من إدارة البرنامج.</p>
+      {params.error && <div role="alert" className="ten-entry-error">{errorMessage}</div>}
+      <form action={login}>
+        <label>البريد الإلكتروني<input type="email" name="email" autoComplete="email" required dir="ltr" lang="en" /></label>
+        <label>كلمة المرور<input type="password" name="password" autoComplete="current-password" required dir="ltr" /></label>
+        <PendingButton pendingLabel="جارٍ تسجيل الدخول…">تسجيل الدخول <span aria-hidden="true">←</span></PendingButton>
+      </form>
     </section>
   </main>
 }
