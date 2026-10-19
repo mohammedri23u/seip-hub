@@ -1,82 +1,169 @@
-.overview {
-  --classroom-ink: var(--the-ten-ink, #17363a);
-  --classroom-teal: var(--the-ten-teal, #1f6668);
-  --classroom-gold: var(--the-ten-gold, #d8a94e);
-  color: var(--classroom-ink);
-}
-.overview h2, .meetings h2 { font-family: Arial, Helvetica, sans-serif; font-weight: 800; }
-.hero { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid #315b5d; border-radius: 28px; background: var(--classroom-ink); color: #fffdf8; box-shadow: 0 20px 55px #17363a14; }
-.heroCopy { padding: clamp(1.6rem, 4vw, 3.2rem); align-self: center; }
-.heroCopy h2 { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.5; margin: .8rem 0; }
-.heroCopy > p:not(.heroEyebrow) { color: #d8e7e2; max-width: 29rem; font-size: 1.05rem; margin-bottom: 1.6rem; }
-.heroEyebrow, .eyebrow { font-size: .76rem; font-weight: 800; color: #8b6a2b; margin: 0 0 .5rem; }
-.heroEyebrow { color: #f2d99b; }
-.heroArt { position: relative; margin: 0; min-height: 390px; overflow: hidden; border-inline-start: 1px solid #496567; background: #d1c4a5; }
+.overview { --classroom-ink: #173b3e; --classroom-teal: #215d58; --classroom-gold: #d7b16a; color: var(--classroom-ink); }
+.overview h2, .meetings h2 { font-family: inherit; font-weight: 800; }
+.hero { position: relative; min-height: 570px; overflow: hidden; border: 1px solid #2d5150; border-radius: 20px; background: #10363c; color: #fcf3df; isolation: isolate; }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, #10363cf2 0%, #10363cca 24%, #10363c8a 44%, transparent 67%); }
+.heroCopy { position: relative; z-index: 2; width: 50%; padding: clamp(2rem, 4vw, 3.6rem); padding-block: 3.8rem 3rem; margin-right: auto; text-align: right; }
+.heroCopy h2 { font-size: clamp(2.2rem, 4.6vw, 3.65rem); line-height: 1.5; letter-spacing: -.035em; margin: 1rem 0; text-wrap: balance; }
+.heroCopy > p:not(.heroEyebrow) { color: #e3e6d6; font-size: 1rem; line-height: 1.95; margin: 0 0 1.75rem; }
+.heroEyebrow, .eyebrow { font-size: .75rem; font-weight: 800; color: #8a682c; margin: 0 0 .6rem; line-height: 1.7; }
+.heroEyebrow { color: #f0d394; display: flex; align-items: center; gap: .6rem; }
+.heroEyebrow > span { display: block; flex: 0 0 7px; height: 7px; border: 1px solid #e1bd77; border-radius: 50%; }
+.heroArt { position: absolute; inset: 0; margin: 0; overflow: hidden; background: #10363c; }
 .heroImage { object-fit: cover; object-position: center; }
-.heroArt figcaption { position: absolute; inset: auto 0 0; padding: 2rem 1rem 1rem; background: linear-gradient(transparent, #17363ad9); color: #fffdf8; text-align: center; font-size: .7rem; letter-spacing: .15em; direction: ltr; }
-.classroomNote { display: flex; gap: 1rem; align-items: flex-start; padding: 1.4rem 1.6rem; margin-top: 1.25rem; border: 1px solid #b7cbc4; border-radius: 20px; background: #edf7f4; }
-.classroomNote h2 { font-size: 1.12rem; line-height: 1.7; margin: 0; }
-.classroomNote p { color: #425f62; font-size: .95rem; margin: .3rem 0 0; }
-.noteMark { display: grid; place-items: center; flex: 0 0 32px; height: 32px; border-radius: 50%; background: #1f6668; color: white; font-weight: 800; margin-top: .2rem; }
-.sectionHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
-.sectionHeading h2 { font-size: clamp(1.45rem, 2.8vw, 1.9rem); line-height: 1.65; margin: 0; }
-.howItWorks, .meetings { margin-top: 3rem; scroll-margin-top: 2rem; }
-.participationList { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; list-style: none; padding: 0; margin: 0; }
-.participationList li { padding: 1.5rem; background: #fffdf8; border: 1px solid #d8ccb6; border-radius: 20px; }
-.stepNumber { display: block; color: #8b6a2b; font-size: .8rem; font-weight: 800; margin-bottom: .7rem; }
-.participationList h3 { font-size: 1.1rem; margin: 0 0 .45rem; }
-.participationList p { font-size: .94rem; color: #526c6e; margin: 0; }
-.smallNote { color: #526c6e; font-size: .85rem; line-height: 1.8; padding-bottom: .35rem; }
-.meetingList { display: grid; gap: 1rem; list-style: none; padding: 0; margin: 0; }
-.meeting { display: flex; gap: 1.3rem; padding: 1.5rem 1.7rem; border: 1px solid #d8ccb6; background: #fffdf8; border-radius: 22px; }
-.meetingNumber { flex: 0 0 54px; display: grid; align-self: flex-start; place-items: center; height: 58px; border: 1px solid #d8a94e; border-radius: 15px; background: #fbf4e4; color: #705519; font-size: 1.35rem; font-weight: 800; }
-.meetingBody { min-width: 0; }
-.meetingMeta { color: #526c6e; font-size: .76rem; font-weight: 700; margin: 0 0 .4rem; }
-.meetingMeta span { padding-inline: .3rem; }
+.heroArt figcaption { position: absolute; z-index: 2; left: auto; right: 2rem; bottom: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; color: #fff8e4; text-shadow: 0 2px 9px #17363a80; }
+.heroArt figcaption > span:first-child { font: 2rem Georgia, 'Times New Roman', serif; letter-spacing: .08em; }
+.heroArt figcaption > span:last-child { font-size: .56rem; font-weight: 700; letter-spacing: .2em; }
+.heroActions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.heroPrimary, .heroSecondary { display: inline-flex; align-items: center; min-height: 46px; font-size: .85rem; font-weight: 700; transition: background 180ms ease, transform 180ms ease; }
+.heroPrimary { justify-content: space-between; gap: 1.6rem; padding: .75rem 1.15rem; background: #e2bd76; border: 1px solid #e2bd76; color: #173b3e; border-radius: 6px; }
+.heroPrimary:hover { background: #f0d394; transform: translateY(-2px); }
+.heroSecondary { color: #f3dfb5; border-bottom: 1px solid #a88f59; padding: .5rem .1rem; }
+.heroPrimary:focus-visible, .heroSecondary:focus-visible { outline: 3px solid #f4d795; outline-offset: 4px; }
+.heroFootnote { display: flex; align-items: center; gap: .65rem; font-size: .68rem; color: #c6d4c5; margin-top: 2rem; }
+.tinyRule { height: 1px; width: 20px; background: #a4ab8e; flex-shrink: 0; }
+.programFacts { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; border: 1px solid #d6c8aa; border-top: 0; padding: 1.4rem 0; border-radius: 0 0 15px 15px; background: #f0e7d1; }
+.programFacts > div { display: flex; flex-direction: column; text-align: center; border-inline-start: 1px solid #cfc0a0; padding: .2rem .75rem; }
+.programFacts > div:first-child { border-inline-start: 0; }
+.programFacts dd { order: -1; font: 2.3rem Georgia, 'Times New Roman', serif; color: #2a5550; margin: 0 0 .35rem; }
+.programFacts dd small { font: .7rem Arial, sans-serif; }
+.programFacts dt { font-size: .72rem; color: #536b62; }
+.classroomNote { position: relative; display: flex; gap: 1.1rem; align-items: center; padding: 1.45rem 1.6rem; margin-top: 1.7rem; border-block: 1px solid #d6c8aa; background: #ffffff38; }
+.classroomNote h2 { font-size: 1.05rem; line-height: 1.8; margin: 0; }
+.classroomNote p { color: #536b62; font-size: .86rem; margin: .35rem 0 0; max-width: 50rem; }
+.noteMark { display: grid; place-items: center; align-self: flex-start; flex: 0 0 38px; height: 42px; color: #987638; font: 1.4rem Georgia, serif; border: 1px solid #c9b687; border-radius: 50% 50% 5px 5px; margin-top: .25rem; }
+.noteAside { flex: 0 0 70px; border-inline-start: 1px solid #d6c8aa; padding-inline-start: 1rem; color: #9e8551; font-size: .9rem; line-height: 1.8; font-weight: 700; }
+.sectionHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; }
+.sectionHeading h2 { font-size: clamp(1.65rem, 3vw, 2.2rem); line-height: 1.65; margin: 0; }
+.howItWorks, .meetings, .weekSection { margin-top: 4rem; scroll-margin-top: 2rem; }
+.participationList { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; list-style: none; padding: 0; margin: 0; border-block: 1px solid #d6c8aa; background: #fffcf3; }
+.participationList li { padding: 1.8rem 1.6rem; border-inline-start: 1px solid #d6c8aa; }
+.participationList li:first-child { border-inline-start: 0; }
+.stepTopline { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.8rem; }
+.stepTopline > span:last-child { color: #8a7952; font-size: .59rem; letter-spacing: .13em; }
+.stepNumber { color: #97713a; font: 1.4rem Georgia, serif; }
+.participationList h3 { font-size: 1.25rem; margin: 0 0 .55rem; }
+.participationList p { font-size: .86rem; color: #536c6a; line-height: 1.95; margin: 0; }
+.smallNote { color: #536c6a; font-size: .75rem; line-height: 1.9; padding-bottom: .35rem; }
+.weekList { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; border: 1px solid #d2c4a7; border-radius: 10px; overflow: hidden; }
+.weekList li { padding: 1.2rem .9rem; background: #fffcf3; border-inline-start: 1px solid #e0d6bf; }
+.weekList li:first-child { border-inline-start: 0; }
+.weekList li[data-phase="assessment"] { background: #e5ebe0; }
+.weekCode { display: block; font: 1.45rem Georgia, serif; color: #376153; margin-bottom: .8rem; }
+.weekList strong { display: block; font-size: .76rem; line-height: 1.9; }
+.weekDuration { display: block; color: #8a682c; font-size: .66rem; margin-top: .35rem; }
+.weekList p { font-size: .72rem; color: #61736b; line-height: 1.8; margin: .6rem 0 0; }
+.meetingList { display: grid; gap: .75rem; list-style: none; padding: 0; margin: 0; }
+.meeting { display: flex; gap: 1.5rem; padding: 1.6rem 1.75rem; border: 1px solid #d6c8aa; background: #fffcf3; border-radius: 12px; }
+.meetingNumber { flex: 0 0 65px; display: flex; align-self: flex-start; flex-direction: column; align-items: center; justify-content: center; height: 77px; border: 1px solid #c4ae7b; border-radius: 50% 50% 6px 6px; color: #8a682c; font: 1.7rem Georgia, serif; }
+.meetingNumber small { font: .44rem Arial, sans-serif; font-weight: 700; letter-spacing: .12em; margin-bottom: .35rem; }
+.meetingBody { min-width: 0; flex: 1; }
+.meetingMeta { color: #8a682c; font-size: .75rem; font-weight: 700; margin: 0 0 .55rem; }
+.meetingMeta span { padding-inline: .15rem; }
 .meeting h3 { font-size: 1.2rem; line-height: 1.75; margin: 0; }
-.subtitle { font-size: .93rem; color: #526c6e; margin: .3rem 0 0; }
-.goalList { list-style: disc; padding-inline-start: 1.15rem; margin: .7rem 0 0; color: #425f62; font-size: .92rem; }
-.goalList li { padding-inline-start: .1rem; line-height: 1.8; }
-.worksheetLink { display: inline-flex; align-items: center; min-height: 44px; margin-top: .6rem; color: #1f6668; font-size: .88rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
-.planNote { margin: 1rem 0 0; font-size: .88rem; color: #526c6e; }
-.entrySection { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-top: 2.5rem; padding: 1.7rem; border-top: 2px solid #d8a94e; background: #f0e7d4; border-radius: 0 0 20px 20px; }
-.entrySection h2 { font-size: 1.3rem; margin: 0; }
-.entrySection p { color: #526c6e; margin: .5rem 0 0; max-width: 34rem; }
+.subtitle { font-size: .86rem; color: #536c6a; margin: .3rem 0 0; text-align: start; }
+.meetingTags { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; margin-top: .75rem; }
+.meetingTags span { padding: .3rem .55rem; color: #4a6257; background: #edf0e4; font-size: .72rem; line-height: 1.7; border-radius: 4px; border: 1px solid #d3dbc6; }
+.meetingTags span:first-child { background: #f5eddc; border-color: #e1d3b4; color: #8a682c; }
+.learningDetails { margin-top: .65rem; }
+.learningDetails summary { display: list-item; cursor: pointer; min-height: 40px; padding: .65rem .05rem; font-size: .76rem; color: #215d58; font-weight: 700; }
+.learningDetails summary:focus-visible { outline: 2px solid #8a682c; outline-offset: 3px; }
+.goalList { list-style: disc; padding-inline-start: 1.15rem; margin: .25rem 0 .6rem; color: #536c6a; font-size: .83rem; }
+.goalList li { padding-inline-start: .1rem; line-height: 1.95; }
+.worksheetLink { display: inline-flex; align-items: center; min-height: 44px; color: #215d58; font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.planNote { margin: 1rem 0 0; font-size: .76rem; line-height: 1.95; color: #536c6a; }
+.entrySection { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-top: 3rem; padding: 2rem; border-block: 1px solid #c7b484; background: #ebe0c7; border-radius: 10px; }
+.entrySection h2 { font-size: 1.35rem; margin: 0; }
+.entrySection p:not(.eyebrow) { color: #536c6a; margin: .5rem 0 0; font-size: .86rem; max-width: 34rem; }
 .entryActions { display: flex; flex-wrap: wrap; gap: .7rem; flex-shrink: 0; }
-@media (max-width: 760px) {
-  .hero { grid-template-columns: 1fr; }
-  .heroArt { min-height: 270px; border-inline-start: 0; border-top: 1px solid #496567; }
-  .heroCopy { padding: 1.6rem; }
-  .heroCopy h2 { font-size: 2rem; }
-  .classroomNote { padding: 1.15rem; gap: .75rem; }
-  .participationList { grid-template-columns: 1fr; gap: .75rem; }
-  .participationList li { padding: 1.2rem; }
-  .sectionHeading, .entrySection { align-items: flex-start; flex-direction: column; }
-  .sectionHeading { gap: .3rem; }
-  .meeting { padding: 1.2rem; gap: .9rem; }
-  .meetingNumber { flex-basis: 42px; height: 46px; border-radius: 12px; font-size: 1.05rem; }
-  .meeting h3 { font-size: 1.08rem; }
-  .entrySection { padding: 1.35rem; }
-}
-@media (max-width: 380px) {
-  .heroCopy h2 { font-size: 1.7rem; }
-  .meeting { gap: .6rem; padding: 1rem; }
-  .meetingNumber { flex-basis: 32px; height: 36px; font-size: .9rem; }
-}
-@media print {
-  .heroArt, .entryActions, .worksheetLink { display: none; }
-  .hero { display: block; color: #17363a; background: white; box-shadow: none; }
-  .heroCopy > p:not(.heroEyebrow) { color: #425f62; }
-  .meeting, .participationList li { break-inside: avoid; }
-}
-
 .cohortRecords { display: grid; gap: .8rem; margin-top: 1.1rem; }
-.scheduleFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 2rem; margin: 0; padding: 1rem 1.15rem; border: 1px solid #e2d8c6; border-radius: 15px; background: #faf5e9; }
-.scheduleFacts dt { font-size: .76rem; font-weight: 700; color: #526c6e; }
+.scheduleFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 2rem; margin: 0; padding: 1rem 1.15rem; border: 1px solid #e2d8c6; border-radius: 9px; background: #f5efdf; }
+.scheduleFacts dt { font-size: .76rem; font-weight: 700; color: #536c6a; }
 .scheduleFacts dd { margin: .3rem 0 0; font-size: .95rem; line-height: 1.75; font-weight: 700; }
-.legacyRecords { margin-top: 2.7rem; padding: 1.3rem 1.5rem; border: 1px solid #d8ccb6; border-radius: 20px; background: #fffdf8; }
+.legacyRecords { margin-top: 2.7rem; padding: 1.3rem 1.5rem; border: 1px solid #d6c8aa; border-radius: 10px; background: #fffcf3; }
 .legacyRecords summary { cursor: pointer; font-weight: 800; min-height: 44px; line-height: 1.75; padding-block: .5rem; }
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
+  .hero { min-height: 530px; }
+  .heroCopy { width: 55%; padding: 2rem; padding-block: 3rem; }
+  .heroCopy h2 { font-size: 2.65rem; }
+  .heroActions { gap: .75rem; }
+  .heroPrimary, .heroSecondary { font-size: .77rem; }
+  .weekList { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .weekList li:nth-child(n+5) { border-top: 1px solid #e0d6bf; }
+  .weekList li:nth-child(5) { border-inline-start: 0; }
+  .noteAside { display: none; }
+  .entrySection { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 760px) {
+  .hero { min-height: 0; display: flex; flex-direction: column; border-radius: 12px; }
+  .hero::before { display: none; }
+  .heroArt { position: relative; height: 300px; flex-shrink: 0; }
+  .heroArt::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #10363c 0%, transparent 44%); }
+  .heroImage { object-position: 72% center; }
+  .heroArt figcaption { right: 1.4rem; bottom: 1.5rem; }
+  .heroCopy { width: 100%; margin: 0; padding: .6rem 1.5rem 1.8rem; }
+  .heroCopy h2 { font-size: clamp(2.15rem, 7.8vw, 3.1rem); margin-top: .8rem; }
+  .heroCopy > p:not(.heroEyebrow) { font-size: .9rem; margin-bottom: 1.4rem; }
+  .heroEyebrow { font-size: .67rem; }
+  .heroFootnote { margin-top: 1.5rem; font-size: .64rem; }
+  .programFacts { padding: 1rem 0; border-radius: 0 0 8px 8px; }
+  .programFacts > div { padding: .1rem .4rem; }
+  .programFacts dd { font-size: 1.65rem; }
+  .programFacts dt { font-size: .72rem; line-height: 1.8; }
+  .programFacts dd small { font-size: .55rem; }
+  .classroomNote { padding: 1.1rem .5rem; gap: .8rem; align-items: flex-start; margin-top: 1.3rem; }
+  .classroomNote h2 { font-size: .96rem; }
+  .classroomNote p { font-size: .8rem; }
+  .noteMark { flex-basis: 31px; height: 35px; font-size: 1.1rem; }
+  .howItWorks, .meetings, .weekSection { margin-top: 3rem; }
+  .participationList { grid-template-columns: 1fr; }
+  .participationList li { border-inline-start: 0; padding: 1.3rem 1.2rem; border-top: 1px solid #d6c8aa; }
+  .participationList li:first-child { border-top: 0; }
+  .stepTopline { margin-bottom: .8rem; }
+  .sectionHeading { align-items: flex-start; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+  .sectionHeading h2 { font-size: 1.6rem; }
+  .smallNote { font-size: .7rem; }
+  .weekList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .weekList li { padding: 1.1rem; }
+  .weekList li:nth-child(n+3) { border-top: 1px solid #e0d6bf; }
+  .weekList li:nth-child(odd) { border-inline-start: 0; }
+  .weekList li:last-child { grid-column: 1 / -1; }
+  .weekList strong { font-size: .85rem; }
+  .weekList p { font-size: .75rem; }
+  .meeting { padding: 1.25rem 1rem; gap: 1rem; border-radius: 9px; }
+  .meetingNumber { flex-basis: 44px; height: 59px; font-size: 1.3rem; }
+  .meetingNumber small { font-size: .34rem; }
+  .meeting h3 { font-size: 1.02rem; }
+  .subtitle { font-size: .75rem; }
+  .meetingMeta { font-size: .7rem; }
+  .meetingTags span { font-size: .7rem; }
+  .entrySection { padding: 1.5rem; }
+  .entrySection h2 { font-size: 1.2rem; line-height: 1.7; }
+  .entryActions { width: 100%; }
+  .entryActions a { flex: 1; padding-inline: .7rem; font-size: .8rem; }
   .scheduleFacts { grid-template-columns: 1fr; gap: .8rem; padding: 1rem; }
   .legacyRecords { padding: 1.1rem; }
+}
+@media (max-width: 380px) {
+  .heroArt { height: 240px; }
+  .heroCopy { padding-inline: 1.15rem; }
+  .heroActions { gap: .7rem; }
+  .heroPrimary, .heroSecondary { font-size: .72rem; }
+  .meeting { gap: .7rem; padding: 1rem .8rem; }
+  .meetingNumber { flex-basis: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroPrimary, .heroSecondary { transition: none; }
+  .heroPrimary:hover { transform: none; }
+}
+@media print {
+  .heroArt, .heroActions, .heroFootnote, .entryActions, .worksheetLink { display: none; }
+  .hero { display: block; color: #17363a; background: white; min-height: 0; }
+  .hero::before { display: none; }
+  .heroCopy { width: 100%; padding: 1rem; }
+  .heroCopy > p:not(.heroEyebrow) { color: #536c6a; }
+  .heroEyebrow { color: #8a682c; }
+  .meeting, .participationList li, .programFacts, .weekSection { break-inside: avoid; }
+  .weekList { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .weekList li { border-top: 0 !important; grid-column: auto !important; }
+  .programFacts dd { font-size: 1.5rem; }
 }

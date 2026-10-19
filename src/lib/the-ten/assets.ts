@@ -71,6 +71,7 @@ export const brandAssets = {
 } as const
 
 export const worldAssets = {
+  wisdomClassroom: '/the-ten/world/wisdom-classroom-v3.webp',
   baghdad: '/the-ten/world/baghdad.png',
   nexus: '/the-ten/world/nexus.png',
   baghdadHero: productionAsset('world/baghdad-hero.webp'),

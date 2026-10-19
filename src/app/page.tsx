@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 export default function HomePage() {
-  return <LearnerShell publicView lang="ar" title="نتعلّم التفكير السريري، معًا." intro="برنامج حضوري مبسّط؛ يعرض المعلم الحالة، ويفكّر الطلبة ويناقشونها خطوة بخطوة.">
+  return <LearnerShell publicView immersive lang="ar" title="نتعلّم التفكير السريري، معًا." intro="برنامج حضوري مبسّط؛ يعرض المعلم الحالة، ويفكّر الطلبة ويناقشونها خطوة بخطوة.">
     <ClassroomOverview publicView />
   </LearnerShell>
 }
