@@ -27,6 +27,8 @@ export type ClassroomSlide = {
   id: string
   title: string
   body: string[]
+  kind?: string
+  notes?: string
 }
 
 /** Approved formative teaching material; never pass this type to a learner. */
@@ -56,6 +58,8 @@ export type ClassroomMeeting = ClassroomMeetingSummary & {
   cases: ClassroomTeachingCase[]
   slides: ClassroomSlide[]
   sources: ClassroomSource[]
+  edition?: string
+  reviewStatus?: string
 }
 
 /** Deliberate allow-list: no correct option, rationale or teacher notes. */

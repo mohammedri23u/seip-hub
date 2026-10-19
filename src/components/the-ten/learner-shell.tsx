@@ -44,7 +44,7 @@ export function LearnerShell({
             <summary>حسابي</summary>
             <div>
               <Link href="/learner/world">عالم بغداد الاختياري</Link>
-              <Link href="/learner/certificate">متطلبات الإكمال</Link>
+              <Link href="/learner/completion">متطلبات الإكمال الحضوري</Link>
               <Link href="/learner/orientation">دليل الاستخدام الإلكتروني</Link>
               <Link href="/learner/research-consent">المشاركة البحثية</Link>
               <Link href="/dashboard">مساحة العمل</Link>

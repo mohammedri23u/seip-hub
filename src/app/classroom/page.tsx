@@ -39,7 +39,7 @@ export default async function ClassroomHome({searchParams}:{searchParams:Promise
     <div className={styles.container}>
       <header className={styles.header}>
         <div><p className={styles.eyebrow}>THE TEN · BAGHDAD NEXUS</p><h1>جلساتك الحضورية</h1><p className={styles.intro}>افتح اللقاء، جهّز العرض، ثم تابع الحضور والتصحيح.</p></div>
-        <nav aria-label="روابط المعلم" className={styles.nav}><Link href="/grading">التصحيح</Link><Link href="/learner">خطة الطالب</Link><Link href="/dashboard">حسابي</Link></nav>
+        <nav aria-label="روابط المعلم" className={styles.nav}><Link href="/grading">التصحيح</Link><Link href="/classroom/ai">مختبر AI</Link><Link href="/learner">خطة الطالب</Link><Link href="/dashboard">حسابي</Link></nav>
       </header>
       {query.saved && <p role="status" className={styles.success}>حُفظ التغيير بنجاح.</p>}
       {query.error && <p role="alert" className={styles.error}>{messages[query.error] ?? 'لم يكتمل الإجراء. راجع البيانات ثم أعد المحاولة.'}</p>}
@@ -48,6 +48,11 @@ export default async function ClassroomHome({searchParams}:{searchParams:Promise
         <p className={styles.eyebrow}>اللقاء القادم</p>
         <h2 id="next-meeting">{nextContent?.titleAr ?? (workspace.meetings.length ? 'اكتملت اللقاءات المسجلة' : 'جهّز أول لقاء لدفعتك')}</h2>
         {next && nextContent ? <><p>{cohorts.get(next.cohort_id)?.name} · {dateLabel(next.scheduled_at)}</p><p>{nextContent.focus}</p><Link className={styles.primary} href={`/classroom/meetings/${next.id}`}>فتح اللقاء</Link></> : <p>ملفات اللقاءات الخمسة جاهزة أدناه. عند تجهيز سجل الدفعة، يظهر اللقاء القادم هنا.</p>}
+      </section>
+      <section className={styles.toolGrid} aria-label="أدوات اللقاء">
+        <Link href="/classroom/meeting-1/present"><span>01 · SESSION STAGE</span><h2>اعرض حالة. افتح نقاشًا.</h2><p>شاشة عرض واضحة، تحكّم بخطوات الكشف، ومشاركة جماعية.</p><strong>فتح العرض الأول ←</strong></Link>
+        <Link href="/classroom/ai"><span>02 · SHADOW LAB</span><h2>اختبر دمج AI بسهولة.</h2><p>مثال اصطناعي جاهز، وفحص Score وEvidence قبل المسار البحثي.</p><strong>فتح المختبر ←</strong></Link>
+        <Link href="/learner/world"><span>03 · BAGHDAD NEXUS</span><h2>اربط التعلّم بالقصة.</h2><p>أربع Missions وأربع Signals مع استخدام يدوي للمفاتيح.</p><strong>استكشاف العالم ←</strong></Link>
       </section>
       <section className={styles.review} aria-labelledby="review-title">
         <div><h2 id="review-title">مهام التصحيح</h2><p>{reviewAvailable ? `لديك ${reviewTasks.length} إجابة مسندة تحتاج إلى مراجعة.` : 'تعذر تحديث العدد الآن. افتح صفحة التصحيح لمراجعة المهام.'}</p></div>
@@ -69,7 +74,7 @@ export default async function ClassroomHome({searchParams}:{searchParams:Promise
         })}
       </section>
       <section aria-labelledby="resources-title"><h2 id="resources-title" className={styles.sectionTitle}>ملفات التدريس</h2><p className={styles.muted}>نزّل المخطط والورقة قبل الجلسة. بعد استيراد المخطط إلى PowerPoint وحفظ العرض، يمكنك تقديمه دون اتصال.</p>
-        <div className={styles.resourceList}>{summaries.map(content => <article key={content.id}><div><p className={styles.eyebrow}>اللقاء {content.number} · {content.durationMinutes} دقيقة</p><h3>{content.titleAr}</h3><p><bdi>{content.subtitle}</bdi></p></div><div className={styles.resourceLinks}><a href={`/classroom/${content.id}/resources/presentation`}>مخطط PowerPoint (RTF)</a><Link href={`/classroom/${content.id}/resources/worksheet`}>ورقة الطالب</Link><Link href={`/classroom/${content.id}/resources/guide`}>دليل المعلم</Link></div></article>)}</div>
+        <div className={styles.resourceList}>{summaries.map(content => <article key={content.id}><div><p className={styles.eyebrow}>اللقاء {content.number} · {content.durationMinutes} دقيقة</p><h3>{content.titleAr}</h3><p><bdi>{content.subtitle}</bdi></p></div><div className={styles.resourceLinks}><Link href={`/classroom/${content.id}/present`}>بدء العرض التفاعلي</Link><Link href={`/classroom/${content.id}/candidate`}>معاينة المنهج المرشح v2.2</Link><a href={`/classroom/${content.id}/resources/presentation`}>مخطط PowerPoint (RTF)</a><Link href={`/classroom/${content.id}/resources/worksheet`}>ورقة الطالب</Link><Link href={`/classroom/${content.id}/resources/guide`}>دليل المعلم</Link></div></article>)}</div>
       </section>
       <details className={styles.advanced}><summary>أدوات إضافية</summary><p>إدارة البرنامج والتجربة التفاعلية والتقييمات الرسمية.</p><div className={styles.nav}><Link href="/facilitator/the-ten/advanced">غرفة التحكم المتقدمة</Link><Link href="/dashboard">إدارة البرنامج</Link><Link href="/learner/world">عالم بغداد</Link></div></details>
     </div>
