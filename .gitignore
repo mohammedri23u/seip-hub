@@ -16,3 +16,6 @@ __pycache__
 
 # Temporary local-only UI fixture route (scripts/qa/review-ui.mjs)
 src/app/ten-ui-review/
+
+# Private classroom teacher content is stored in Supabase, never in this public repo.
+.private/

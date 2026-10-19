@@ -60,8 +60,8 @@ export default async function DashboardPage() {
       actions={platformAdmin ? <Link href="/programs/new" className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Create program</Link> : null}
     >
       <div className="grid gap-4 lg:grid-cols-2">
-        <Link href="/learner" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</span><h2>Enter Baghdad</h2><p>Continue the story from your recorded gate, signal, and Codex state.</p></div><span aria-hidden="true">→</span></Link>
-        {canFacilitateTen && <Link href="/facilitator/the-ten" className="ten-journey-entry"><div><span className="ten-eyebrow">FACILITATOR CONTROL ROOM</span><h2>Open your teacher workspace</h2><p>See pending ratings and assigned sessions before entering the live control room.</p></div><span aria-hidden="true">→</span></Link>}
+        <Link href="/learner" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · BAGHDAD NEXUS</span><h2>خطة اللقاءات</h2><p>تابع لقاءاتك الحضورية وملخصاتها، وادخل التقييمات عند الحاجة.</p></div><span aria-hidden="true">→</span></Link>
+        {canFacilitateTen && <Link href="/facilitator/the-ten" className="ten-journey-entry"><div><span className="ten-eyebrow">THE TEN · CLASSROOM</span><h2>جلساتك الحضورية</h2><p>افتح اللقاء القادم، وجهّز العرض، وسجّل الحضور من مكان واحد.</p></div><span aria-hidden="true">→</span></Link>}
       </div>
 
       {canGrade && <Link href="/grading" dir="rtl" className="my-6 block rounded-3xl border border-sky-200 bg-white p-6 shadow-sm"><p className="text-xs font-semibold tracking-wide text-sky-700">GRADING WORKSPACE</p><h2 className="mt-2 text-2xl font-semibold">تصحيح إجابات الطلبة</h2><p className="mt-2 text-sm text-slate-600">اختيار الطالب، مراجعة إجاباته مع الـRubric، ومتابعة حساب الدرجات والاعتماد.</p></Link>}

@@ -1,0 +1,82 @@
+.overview {
+  --classroom-ink: var(--the-ten-ink, #17363a);
+  --classroom-teal: var(--the-ten-teal, #1f6668);
+  --classroom-gold: var(--the-ten-gold, #d8a94e);
+  color: var(--classroom-ink);
+}
+.overview h2, .meetings h2 { font-family: Arial, Helvetica, sans-serif; font-weight: 800; }
+.hero { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid #315b5d; border-radius: 28px; background: var(--classroom-ink); color: #fffdf8; box-shadow: 0 20px 55px #17363a14; }
+.heroCopy { padding: clamp(1.6rem, 4vw, 3.2rem); align-self: center; }
+.heroCopy h2 { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.5; margin: .8rem 0; }
+.heroCopy > p:not(.heroEyebrow) { color: #d8e7e2; max-width: 29rem; font-size: 1.05rem; margin-bottom: 1.6rem; }
+.heroEyebrow, .eyebrow { font-size: .76rem; font-weight: 800; color: #8b6a2b; margin: 0 0 .5rem; }
+.heroEyebrow { color: #f2d99b; }
+.heroArt { position: relative; margin: 0; min-height: 390px; overflow: hidden; border-inline-start: 1px solid #496567; background: #d1c4a5; }
+.heroImage { object-fit: cover; object-position: center; }
+.heroArt figcaption { position: absolute; inset: auto 0 0; padding: 2rem 1rem 1rem; background: linear-gradient(transparent, #17363ad9); color: #fffdf8; text-align: center; font-size: .7rem; letter-spacing: .15em; direction: ltr; }
+.classroomNote { display: flex; gap: 1rem; align-items: flex-start; padding: 1.4rem 1.6rem; margin-top: 1.25rem; border: 1px solid #b7cbc4; border-radius: 20px; background: #edf7f4; }
+.classroomNote h2 { font-size: 1.12rem; line-height: 1.7; margin: 0; }
+.classroomNote p { color: #425f62; font-size: .95rem; margin: .3rem 0 0; }
+.noteMark { display: grid; place-items: center; flex: 0 0 32px; height: 32px; border-radius: 50%; background: #1f6668; color: white; font-weight: 800; margin-top: .2rem; }
+.sectionHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.sectionHeading h2 { font-size: clamp(1.45rem, 2.8vw, 1.9rem); line-height: 1.65; margin: 0; }
+.howItWorks, .meetings { margin-top: 3rem; scroll-margin-top: 2rem; }
+.participationList { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; list-style: none; padding: 0; margin: 0; }
+.participationList li { padding: 1.5rem; background: #fffdf8; border: 1px solid #d8ccb6; border-radius: 20px; }
+.stepNumber { display: block; color: #8b6a2b; font-size: .8rem; font-weight: 800; margin-bottom: .7rem; }
+.participationList h3 { font-size: 1.1rem; margin: 0 0 .45rem; }
+.participationList p { font-size: .94rem; color: #526c6e; margin: 0; }
+.smallNote { color: #526c6e; font-size: .85rem; line-height: 1.8; padding-bottom: .35rem; }
+.meetingList { display: grid; gap: 1rem; list-style: none; padding: 0; margin: 0; }
+.meeting { display: flex; gap: 1.3rem; padding: 1.5rem 1.7rem; border: 1px solid #d8ccb6; background: #fffdf8; border-radius: 22px; }
+.meetingNumber { flex: 0 0 54px; display: grid; align-self: flex-start; place-items: center; height: 58px; border: 1px solid #d8a94e; border-radius: 15px; background: #fbf4e4; color: #705519; font-size: 1.35rem; font-weight: 800; }
+.meetingBody { min-width: 0; }
+.meetingMeta { color: #526c6e; font-size: .76rem; font-weight: 700; margin: 0 0 .4rem; }
+.meetingMeta span { padding-inline: .3rem; }
+.meeting h3 { font-size: 1.2rem; line-height: 1.75; margin: 0; }
+.subtitle { font-size: .93rem; color: #526c6e; margin: .3rem 0 0; }
+.goalList { list-style: disc; padding-inline-start: 1.15rem; margin: .7rem 0 0; color: #425f62; font-size: .92rem; }
+.goalList li { padding-inline-start: .1rem; line-height: 1.8; }
+.worksheetLink { display: inline-flex; align-items: center; min-height: 44px; margin-top: .6rem; color: #1f6668; font-size: .88rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.planNote { margin: 1rem 0 0; font-size: .88rem; color: #526c6e; }
+.entrySection { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-top: 2.5rem; padding: 1.7rem; border-top: 2px solid #d8a94e; background: #f0e7d4; border-radius: 0 0 20px 20px; }
+.entrySection h2 { font-size: 1.3rem; margin: 0; }
+.entrySection p { color: #526c6e; margin: .5rem 0 0; max-width: 34rem; }
+.entryActions { display: flex; flex-wrap: wrap; gap: .7rem; flex-shrink: 0; }
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; }
+  .heroArt { min-height: 270px; border-inline-start: 0; border-top: 1px solid #496567; }
+  .heroCopy { padding: 1.6rem; }
+  .heroCopy h2 { font-size: 2rem; }
+  .classroomNote { padding: 1.15rem; gap: .75rem; }
+  .participationList { grid-template-columns: 1fr; gap: .75rem; }
+  .participationList li { padding: 1.2rem; }
+  .sectionHeading, .entrySection { align-items: flex-start; flex-direction: column; }
+  .sectionHeading { gap: .3rem; }
+  .meeting { padding: 1.2rem; gap: .9rem; }
+  .meetingNumber { flex-basis: 42px; height: 46px; border-radius: 12px; font-size: 1.05rem; }
+  .meeting h3 { font-size: 1.08rem; }
+  .entrySection { padding: 1.35rem; }
+}
+@media (max-width: 380px) {
+  .heroCopy h2 { font-size: 1.7rem; }
+  .meeting { gap: .6rem; padding: 1rem; }
+  .meetingNumber { flex-basis: 32px; height: 36px; font-size: .9rem; }
+}
+@media print {
+  .heroArt, .entryActions, .worksheetLink { display: none; }
+  .hero { display: block; color: #17363a; background: white; box-shadow: none; }
+  .heroCopy > p:not(.heroEyebrow) { color: #425f62; }
+  .meeting, .participationList li { break-inside: avoid; }
+}
+
+.cohortRecords { display: grid; gap: .8rem; margin-top: 1.1rem; }
+.scheduleFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 2rem; margin: 0; padding: 1rem 1.15rem; border: 1px solid #e2d8c6; border-radius: 15px; background: #faf5e9; }
+.scheduleFacts dt { font-size: .76rem; font-weight: 700; color: #526c6e; }
+.scheduleFacts dd { margin: .3rem 0 0; font-size: .95rem; line-height: 1.75; font-weight: 700; }
+.legacyRecords { margin-top: 2.7rem; padding: 1.3rem 1.5rem; border: 1px solid #d8ccb6; border-radius: 20px; background: #fffdf8; }
+.legacyRecords summary { cursor: pointer; font-weight: 800; min-height: 44px; line-height: 1.75; padding-block: .5rem; }
+@media (max-width: 600px) {
+  .scheduleFacts { grid-template-columns: 1fr; gap: .8rem; padding: 1rem; }
+  .legacyRecords { padding: 1.1rem; }
+}
