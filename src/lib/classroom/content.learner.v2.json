@@ -1,0 +1,263 @@
+{
+  "version": "2.0-approved-foundation",
+  "mode": "in_person",
+  "created": "2026-10-19",
+  "approval": {
+    "status": "approved_by_project_owner",
+    "approved_at": "2026-10-19T05:31:36+03:00",
+    "approval_text": "ممتاز جدا\nاعتمده",
+    "scope": "In-person educational foundation, simplified ten-encounter content, proposed five-meeting delivery structure, PowerPoint companion workflow, and UX requirements",
+    "delivery_mode": "in_person",
+    "clinical_review": "pending_supervisor_review",
+    "implementation_status": "not_implemented_on_live_site",
+    "powerpoint_status": "20-slide RTF outline; designed PPTX pending",
+    "decisions": [
+      "Teacher-led in-person sessions with PowerPoint as the main presentation surface",
+      "Simple Arabic instructions with medical terminology and cases in English",
+      "Vocabulary and worked examples before guided and independent practice",
+      "One clear task per educational step",
+      "Ten retained clinical encounters organized in four Missions and five teaching meetings",
+      "Paper and discussion participation, optional learner devices and site login",
+      "One teacher session page for attendance, files, session completion and grading",
+      "Preserve prior assessment records under their original versions"
+    ]
+  },
+  "cases": [
+    {
+      "id": "E01",
+      "title": "Exertional chest pressure",
+      "vocab": [
+        "Chest pressure",
+        "Exertion",
+        "Rest"
+      ],
+      "stem": "A 54-year-old man gets chest pressure when walking uphill. It settles within five minutes of rest. This pattern has been unchanged for two months.",
+      "question": "Which pattern is present?",
+      "hint": "ركز على شنو يثير العرض وشنو يخففه.",
+      "options": [
+        "Pain only after meals",
+        "Exertional symptoms relieved by rest",
+        "Pain only with a deep breath"
+      ],
+      "guided": "The resting ECG is normal. Does this exclude stable angina? Yes / No."
+    },
+    {
+      "id": "E02",
+      "title": "Dyspnea with congestion",
+      "vocab": [
+        "Dyspnea",
+        "Orthopnea",
+        "Edema"
+      ],
+      "stem": "A 63-year-old woman is short of breath when walking. She needs extra pillows to sleep and has swollen ankles.",
+      "question": "Which history question explores orthopnea?",
+      "hint": "اختار السؤال المرتبط بتغير Dyspnea عند الاستلقاء.",
+      "options": [
+        "Is breathing worse when you lie flat?",
+        "Do you have pain after eating?",
+        "Does moving your arm cause pain?"
+      ],
+      "guided": "New findings: raised JVP and bilateral basal crackles. Which working pattern fits better: congestion or isolated chest-wall pain?"
+    },
+    {
+      "id": "E03",
+      "title": "Fever and focal chest signs",
+      "vocab": [
+        "Fever",
+        "Cough",
+        "Crackles"
+      ],
+      "stem": "A 22-year-old has fever and cough for three days. Examination finds crackles at the right lung base.",
+      "question": "Which working diagnosis best fits this pattern?",
+      "hint": "اجمع Acute fever وCough مع Findings بمكان محدد.",
+      "options": [
+        "Dyspepsia",
+        "Thyrotoxicosis",
+        "Pneumonia"
+      ],
+      "guided": "Which finding helps assess respiratory severity: oxygen saturation or the exact location of the cough?"
+    },
+    {
+      "id": "E04",
+      "title": "Episodic wheeze",
+      "vocab": [
+        "Wheeze",
+        "Trigger",
+        "Symptom-free interval"
+      ],
+      "stem": "A 20-year-old has episodes of wheeze after exercise and at night. She feels well between episodes. Examination today is normal.",
+      "question": "Does a normal examination today exclude asthma?",
+      "hint": "انتبه إلى أن الأعراض Episodic.",
+      "options": [
+        "Yes",
+        "No"
+      ],
+      "guided": "Which pattern supports a variable airway problem: repeated episodes with symptom-free intervals, or one continuous episode of focal chest pain?"
+    },
+    {
+      "id": "E05",
+      "title": "Dyspepsia and medicine exposure",
+      "vocab": [
+        "Epigastric pain",
+        "NSAID",
+        "H. pylori"
+      ],
+      "stem": "A 28-year-old has epigastric discomfort. He takes ibuprofen on most days for back pain.",
+      "question": "Which medicine is most relevant to this assessment?",
+      "hint": "اختار الدواء المذكور الذي قد يرتبط بمشكلة Upper GI.",
+      "options": [
+        "Ibuprofen",
+        "Salbutamol",
+        "Levothyroxine"
+      ],
+      "guided": "Does NSAID use alone prove a peptic ulcer? Yes / No."
+    },
+    {
+      "id": "E06",
+      "title": "Pain moving to the right lower abdomen",
+      "vocab": [
+        "Periumbilical pain",
+        "Right lower quadrant",
+        "Tenderness"
+      ],
+      "stem": "A 19-year-old has abdominal pain. It began near the umbilicus and moved to the right lower abdomen. He feels nauseated.",
+      "question": "Which working diagnosis needs urgent assessment?",
+      "hint": "ركز على انتقال مكان الألم.",
+      "options": [
+        "Asthma",
+        "Stable angina",
+        "Appendicitis"
+      ],
+      "guided": "New finding: right lower quadrant tenderness. Does this strengthen or weaken the working hypothesis?"
+    },
+    {
+      "id": "E07",
+      "title": "Acute jaundice",
+      "vocab": [
+        "Jaundice",
+        "Dark urine",
+        "IgM anti-HAV"
+      ],
+      "stem": "A 23-year-old has nausea, dark urine and yellow eyes. The illness began a few days ago.",
+      "question": "Which symptom is described by yellow eyes?",
+      "hint": "اختار اسم Finding، وليس Etiology.",
+      "options": [
+        "Wheeze",
+        "Jaundice",
+        "Orthopnea"
+      ],
+      "guided": "In a symptomatic patient with suspected hepatitis A, which result supports acute HAV infection: IgM anti-HAV or a normal resting ECG?"
+    },
+    {
+      "id": "E08",
+      "title": "Fever with flank pain",
+      "vocab": [
+        "Dysuria",
+        "Flank pain",
+        "Pyelonephritis"
+      ],
+      "stem": "A 26-year-old has dysuria, fever and pain in the right flank.",
+      "question": "Which working diagnosis best fits?",
+      "hint": "اجمع Urinary symptoms مع Fever وFlank pain.",
+      "options": [
+        "Acute pyelonephritis",
+        "Dyspepsia",
+        "Thyrotoxicosis"
+      ],
+      "guided": "The patient becomes confused and hypotensive. Should the team continue routine discussion or seek immediate hospital assessment?"
+    },
+    {
+      "id": "E09",
+      "title": "Thirst and frequent urination",
+      "vocab": [
+        "Polyuria",
+        "Polydipsia",
+        "Blood glucose"
+      ],
+      "stem": "A 21-year-old is very thirsty and urinates often. He has lost weight without trying.",
+      "question": "Which test most directly checks the suspected problem?",
+      "hint": "فكر بالفحص المرتبط بـHyperglycemia.",
+      "options": [
+        "Chest X-ray",
+        "TRAb",
+        "Blood glucose"
+      ],
+      "guided": "New symptoms: vomiting and deep breathing. Should this be a routine follow-up or an urgent assessment?"
+    },
+    {
+      "id": "E10",
+      "title": "Palpitations and heat intolerance",
+      "vocab": [
+        "Palpitations",
+        "Heat intolerance",
+        "TSH and FT4"
+      ],
+      "stem": "A 30-year-old has palpitations, heat intolerance and weight loss. TSH is low and FT4 is high.",
+      "question": "Which biochemical state is supported?",
+      "hint": "المطلوب تسمية Functional state؛ Etiology خطوة لاحقة.",
+      "options": [
+        "Hypothyroidism",
+        "Thyrotoxicosis",
+        "Pneumonia"
+      ],
+      "guided": "What does a positive TRAb add in this context?"
+    }
+  ],
+  "sources": [
+    [
+      "C01",
+      "NICE CG95",
+      "https://www.nice.org.uk/guidance/CG95/chapter/recommendations"
+    ],
+    [
+      "C02",
+      "NICE NG106",
+      "https://www.nice.org.uk/guidance/ng106/chapter/recommendations"
+    ],
+    [
+      "C03",
+      "NICE NG250",
+      "https://www.nice.org.uk/guidance/NG250/chapter/recommendations"
+    ],
+    [
+      "C04",
+      "BTS NICE SIGN NG245",
+      "https://www.nice.org.uk/guidance/NG245/chapter/recommendations"
+    ],
+    [
+      "C05",
+      "NICE CG184",
+      "https://www.nice.org.uk/guidance/cg184/chapter/Recommendations"
+    ],
+    [
+      "C06",
+      "NIDDK Appendicitis",
+      "https://www.niddk.nih.gov/health-information/digestive-diseases/appendicitis"
+    ],
+    [
+      "C07",
+      "CDC Hepatitis A diagnosis",
+      "https://www.cdc.gov/hepatitis-a/hcp/diagnosis-testing/index.html"
+    ],
+    [
+      "C08",
+      "NICE NG111",
+      "https://www.nice.org.uk/guidance/ng111/chapter/Recommendations"
+    ],
+    [
+      "C09",
+      "NIDDK Diabetes",
+      "https://www.niddk.nih.gov/health-information/diabetes/overview/symptoms-causes"
+    ],
+    [
+      "C10",
+      "NICE NG145",
+      "https://www.nice.org.uk/guidance/NG145/chapter/recommendations"
+    ],
+    [
+      "C11",
+      "AASLD Acute liver failure",
+      "https://www.aasld.org/liver-fellow-network/core-series/back-basics/defining-and-managing-acute-liver-failure"
+    ]
+  ]
+}
